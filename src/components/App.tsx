@@ -2,7 +2,7 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
-function App() {
+export function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
 
@@ -35,5 +35,3 @@ function App() {
     </main>
   );
 }
-
-export default App;

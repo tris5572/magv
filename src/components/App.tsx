@@ -1,37 +1,47 @@
-import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useCallback, useEffect, useState } from "react";
+// import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 
 export function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [path, setPath] = useState("-");
+  const [key, setKey] = useState("-");
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+  // ファイルがドロップされたときの処理
+  async function handleDrop(path: string) {
+    setPath(path);
   }
 
+  // キーが押されたときの処理
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    setKey(event.key);
+  }, []);
+
+  // ファイルをドロップしたときのイベントを設定
+  useEffect(() => {
+    const unlisten = listen<{ paths: string[] }>(
+      "tauri://drag-drop",
+      (event) => {
+        handleDrop(event.payload.paths[0]);
+      }
+    );
+    return () => {
+      unlisten.then((f) => f());
+    };
+  }, []);
+
+  // キー押下のイベントを設定
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+    <main>
+      <div>Key: {key}</div>
+      <div>Path: {path}</div>
     </main>
   );
 }

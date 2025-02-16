@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 // import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import "./App.css";
 
 export function App() {
   const [path, setPath] = useState("-");

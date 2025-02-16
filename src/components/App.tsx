@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-// import { invoke } from "@tauri-apps/api/core";
+import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
+import { openImagePathAtom, openPathAtom } from "../states/image";
 
 export function App() {
-  const [path, setPath] = useState("-");
   const [key, setKey] = useState("-");
+  const [, openPath] = useAtom(openPathAtom);
+  const [openImagePath] = useAtom(openImagePathAtom);
 
   // ファイルがドロップされたときの処理
   async function handleDrop(path: string) {
-    setPath(path);
+    openPath(path);
   }
 
   // キーが押されたときの処理
@@ -40,7 +42,7 @@ export function App() {
   return (
     <main>
       <div>Key: {key}</div>
-      <div>Path: {path}</div>
+      <div>Path: {openImagePath}</div>
     </main>
   );
 }

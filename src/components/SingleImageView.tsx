@@ -1,4 +1,5 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { useImageSize } from "../utils/hooks";
 
 type Props = {
   /**
@@ -13,7 +14,9 @@ type Props = {
  * 画像のローカルなパスを渡すことで表示する
  */
 export function SingleImageView(props: Props) {
-  console.log(convertFileSrc(props.path ?? ""));
+  const imageSize = useImageSize(props.path ?? "");
+  console.log(imageSize);
+
   return (
     <div className="h-dvh bg-stone-900 flex justify-center items-center">
       {props.path ? (

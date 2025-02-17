@@ -1,13 +1,18 @@
 import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
-import { openImagePathAtom, openPathAtom } from "../states/image";
+import {
+  openImagePathAtom,
+  openPathAtom,
+  useKeyboardEvent,
+} from "../states/image";
 import { SingleImageView } from "./SingleImageView";
 
 export function App() {
   // const [key, setKey] = useState("-");
   const [, openPath] = useAtom(openPathAtom);
   const [openImagePath] = useAtom(openImagePathAtom);
+  const handleKeyboardEvent = useKeyboardEvent();
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
@@ -18,10 +23,14 @@ export function App() {
   );
 
   // キーが押されたときの処理
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    // setKey(event.key);
-    console.log(event);
-  }, []);
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      // setKey(event.key);
+      // console.log(event);
+      handleKeyboardEvent(event);
+    },
+    [handleKeyboardEvent]
+  );
 
   // ファイルをドロップしたときのイベントを設定
   useEffect(() => {

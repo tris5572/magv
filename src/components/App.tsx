@@ -9,7 +9,6 @@ import {
 import { SingleImageView } from "./SingleImageView";
 
 export function App() {
-  // const [key, setKey] = useState("-");
   const [, openPath] = useAtom(openPathAtom);
   const [openImagePath] = useAtom(openImagePathAtom);
   const handleKeyboardEvent = useKeyboardEvent();
@@ -25,8 +24,6 @@ export function App() {
   // キーが押されたときの処理
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // setKey(event.key);
-      // console.log(event);
       handleKeyboardEvent(event);
     },
     [handleKeyboardEvent]

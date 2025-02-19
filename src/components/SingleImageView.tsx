@@ -23,7 +23,7 @@ export function SingleImageView(props: Props) {
         <img className="max-h-dvh" src={convertFileSrc(props.path)} />
       ) : (
         <div className="text-stone-200">
-          画像またはフォルダをドロップしてください
+          画像ファイルまたはフォルダをドロップしてください
         </div>
       )}
     </div>

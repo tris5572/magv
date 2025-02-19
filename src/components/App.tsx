@@ -52,7 +52,7 @@ export function App() {
 
   return (
     <main className="h-dvh">
-      <SingleImageView path={openImagePath} />
+      <SingleImageView path={openImagePath?.path} />
     </main>
   );
 }

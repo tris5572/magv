@@ -1,5 +1,6 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
+import { SingleViewImage } from "../types/image";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -18,7 +19,7 @@ const imagePathsAtom = atom<string[]>([]);
 // =============================================================================
 
 /** 現在開いている画像ファイルのパス */
-export const openImagePathAtom = atom<string | undefined>(undefined);
+export const openImagePathAtom = atom<SingleViewImage | undefined>(undefined);
 
 /**
  * 開くパスを指定する
@@ -33,13 +34,13 @@ export const openPathAtom = atom(null, async (_, set, path: string) => {
 
   if (fileList.find((file) => file === path)) {
     // ドロップされたファイルが画像だったときは、そのまま表示する
-    set(openImagePathAtom, path);
+    set(openImagePathAtom, { type: "single", path });
     set(imagePathsAtom, fileList);
   } else {
     // 画像以外がドロップされたときは、当該フォルダの中の先頭の画像を表示する
     // 画像ファイルがない場合は何もしない
     if (fileList.length > 0) {
-      set(openImagePathAtom, fileList[0]);
+      set(openImagePathAtom, { type: "single", path: fileList[0] });
       set(imagePathsAtom, fileList);
     }
   }
@@ -72,12 +73,12 @@ export const nextImageAtom = atom(null, async (get, set) => {
   const currentImagePath = get(openImagePathAtom);
 
   const currentIndex = imagePaths.findIndex(
-    (path) => path === currentImagePath
+    (path) => path === currentImagePath?.path
   );
   const nextIndex = currentIndex + 1;
 
   if (nextIndex < imagePaths.length) {
-    set(openImagePathAtom, imagePaths[nextIndex]);
+    set(openImagePathAtom, { type: "single", path: imagePaths[nextIndex] });
   }
 });
 
@@ -89,11 +90,11 @@ export const prevImageAtom = atom(null, async (get, set) => {
   const currentImagePath = get(openImagePathAtom);
 
   const currentIndex = imagePaths.findIndex(
-    (path) => path === currentImagePath
+    (path) => path === currentImagePath?.path
   );
   const prevIndex = currentIndex - 1;
 
   if (prevIndex >= 0) {
-    set(openImagePathAtom, imagePaths[prevIndex]);
+    set(openImagePathAtom, { type: "single", path: imagePaths[prevIndex] });
   }
 });

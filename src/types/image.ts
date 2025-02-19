@@ -1,7 +1,7 @@
 /**
  * 1枚の画像を表示する
  */
-export type SingleViewImage = {
+export type SingleImageMode = {
   type: "single";
   path: string;
 };
@@ -9,7 +9,7 @@ export type SingleViewImage = {
 /**
  * 2枚の画像を表示する
  */
-export type DoubleViewImage = {
+export type DoubleImageMode = {
   type: "double";
   path1: string;
   path2: string;
@@ -18,4 +18,4 @@ export type DoubleViewImage = {
 /**
  * 画像の表示方法
  */
-export type ViewImage = SingleViewImage | DoubleViewImage;
+export type ViewImageMode = SingleImageMode | DoubleImageMode;

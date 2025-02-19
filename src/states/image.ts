@@ -1,6 +1,6 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import { SingleViewImage } from "../types/image";
+import { SingleImageMode } from "../types/image";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -19,7 +19,7 @@ const imagePathsAtom = atom<string[]>([]);
 // =============================================================================
 
 /** 現在開いている画像ファイルのパス */
-export const openImagePathAtom = atom<SingleViewImage | undefined>(undefined);
+export const openImagePathAtom = atom<SingleImageMode | undefined>(undefined);
 
 /**
  * 開くパスを指定する

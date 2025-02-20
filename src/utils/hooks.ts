@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-
-export type ImageSize = {
-  width: number;
-  height: number;
-};
+import { ImageSize } from "../types/image";
 
 /**
  * 画像のサイズを取得するカスタムフック

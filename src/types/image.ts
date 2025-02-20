@@ -19,3 +19,11 @@ export type DoubleImageMode = {
  * 画像の表示方法
  */
 export type ViewImageMode = SingleImageMode | DoubleImageMode;
+
+/**
+ * 画像のサイズ
+ */
+export type ImageSize = {
+  width: number;
+  height: number;
+};

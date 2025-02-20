@@ -52,7 +52,14 @@ export function App() {
 
   return (
     <main className="h-dvh">
-      <SingleImageView path={openImagePath?.path} />
+      {openImagePath && openImagePath?.type === "double" ? (
+        <div className="flex">
+          <SingleImageView path={openImagePath?.path1} />
+          <SingleImageView path={openImagePath?.path2} />
+        </div>
+      ) : (
+        <SingleImageView path={openImagePath?.path} />
+      )}
     </main>
   );
 }

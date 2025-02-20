@@ -1,6 +1,7 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import { SingleImageMode } from "../types/image";
+import { ViewImageMode } from "../types/image";
+import { getImageOrientation } from "../utils/utils";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -19,7 +20,7 @@ const imagePathsAtom = atom<string[]>([]);
 // =============================================================================
 
 /** 現在開いている画像ファイルのパス */
-export const openImagePathAtom = atom<SingleImageMode | undefined>(undefined);
+export const openImagePathAtom = atom<ViewImageMode | undefined>(undefined);
 
 /**
  * 開くパスを指定する
@@ -34,6 +35,7 @@ export const openPathAtom = atom(null, async (_, set, path: string) => {
 
   if (fileList.find((file) => file === path)) {
     // ドロップされたファイルが画像だったときは、そのまま表示する
+    // TODO: 縦横判定を行う
     set(openImagePathAtom, { type: "single", path });
     set(imagePathsAtom, fileList);
   } else {
@@ -66,35 +68,94 @@ export function useKeyboardEvent(): (event: KeyboardEvent) => void {
 }
 
 /**
- * 次の画像を表示する
+ * 次の画像を表示する atom
  */
-export const nextImageAtom = atom(null, async (get, set) => {
+const nextImageAtom = atom(null, async (get, set) => {
   const imagePaths = get(imagePathsAtom);
   const currentImagePath = get(openImagePathAtom);
 
-  const currentIndex = imagePaths.findIndex(
-    (path) => path === currentImagePath?.path
-  );
-  const nextIndex = currentIndex + 1;
+  // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
+  const path =
+    currentImagePath?.type === "single"
+      ? currentImagePath?.path
+      : currentImagePath?.path2;
 
-  if (nextIndex < imagePaths.length) {
-    set(openImagePathAtom, { type: "single", path: imagePaths[nextIndex] });
+  const currentIndex = imagePaths.findIndex((p) => p === path);
+
+  // 2つ先の画像までの縦横の向きを取得
+  const orientation1 = await getImageOrientation(
+    imagePaths[currentIndex + 1] ?? ""
+  );
+  const orientation2 = await getImageOrientation(
+    imagePaths[currentIndex + 2] ?? ""
+  );
+
+  // 1枚目がないときは何もしない
+  if (orientation1 === undefined) {
+    return;
   }
+  // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
+  if (
+    orientation1 === "landscape" ||
+    orientation2 === undefined ||
+    orientation2 === "landscape"
+  ) {
+    set(openImagePathAtom, {
+      type: "single",
+      path: imagePaths[currentIndex + 1],
+    });
+    return;
+  }
+  // 2枚とも縦長の画像だったときは、2枚表示にする
+  set(openImagePathAtom, {
+    type: "double",
+    path1: imagePaths[currentIndex + 1],
+    path2: imagePaths[currentIndex + 2],
+  });
 });
 
 /**
- * 前の画像を表示する
+ * 前の画像を表示する atom
  */
 export const prevImageAtom = atom(null, async (get, set) => {
   const imagePaths = get(imagePathsAtom);
   const currentImagePath = get(openImagePathAtom);
 
-  const currentIndex = imagePaths.findIndex(
-    (path) => path === currentImagePath?.path
-  );
-  const prevIndex = currentIndex - 1;
+  // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時も1枚目の画像にする
+  const path =
+    currentImagePath?.type === "single"
+      ? currentImagePath?.path
+      : currentImagePath?.path1;
+  const currentIndex = imagePaths.findIndex((p) => p === path);
 
-  if (prevIndex >= 0) {
-    set(openImagePathAtom, { type: "single", path: imagePaths[prevIndex] });
+  // 2つ前の画像までの縦横の向きを取得
+  const orientation1 = await getImageOrientation(
+    imagePaths[currentIndex - 1] ?? ""
+  );
+  const orientation2 = await getImageOrientation(
+    imagePaths[currentIndex - 2] ?? ""
+  );
+
+  // 1枚目がないときは何もしない
+  if (orientation1 === undefined) {
+    return;
   }
+  // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
+  if (
+    orientation1 === "landscape" ||
+    orientation2 === undefined ||
+    orientation2 === "landscape"
+  ) {
+    set(openImagePathAtom, {
+      type: "single",
+      path: imagePaths[currentIndex - 1],
+    });
+    return;
+  }
+  // 2枚とも縦長の画像だったときは、2枚表示にする
+  set(openImagePathAtom, {
+    type: "double",
+    path1: imagePaths[currentIndex - 2], // 2つ前の画像が1枚目
+    path2: imagePaths[currentIndex - 1],
+  });
 });

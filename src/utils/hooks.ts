@@ -33,3 +33,23 @@ export const useImageSize = (path: string): ImageSize | undefined => {
 
   return size;
 };
+
+/**
+ * 画像の向きを取得するカスタムフック
+ *
+ * - 縦向きの場合は "portrait"
+ * - 横向きの場合は "landscape"
+ * - 画像のサイズが取得できなかった場合は `undefined`
+ */
+export const useImageOrientation = (
+  path: string
+): "portrait" | "landscape" | undefined => {
+  const size = useImageSize(path);
+  // console.log(path, size);
+
+  if (!size) {
+    return undefined;
+  }
+
+  return size.width < size.height ? "portrait" : "landscape";
+};

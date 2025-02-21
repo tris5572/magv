@@ -14,7 +14,7 @@ type Props = {
  */
 export function SingleImageView(props: Props) {
   return (
-    <div className="h-dvh bg-stone-900 flex justify-center items-center">
+    <div className="h-dvh bg-stone-900 flex justify-center object-fill">
       {props.path ? (
         <img className="max-h-dvh" src={convertFileSrc(props.path)} />
       ) : (

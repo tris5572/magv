@@ -53,7 +53,7 @@ export function App() {
   return (
     <main className="h-dvh">
       {openImagePath && openImagePath?.type === "double" ? (
-        <div className="flex">
+        <div className="flex justify-center items-center">
           <SingleImageView path={openImagePath?.path1} />
           <SingleImageView path={openImagePath?.path2} />
         </div>

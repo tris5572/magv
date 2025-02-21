@@ -14,9 +14,12 @@ type Props = {
  */
 export function SingleImageView(props: Props) {
   return (
-    <div className="h-dvh bg-stone-900 flex justify-center object-fill">
+    <div className="h-dvh bg-stone900 flex items-center justify-center">
       {props.path ? (
-        <img className="max-h-dvh" src={convertFileSrc(props.path)} />
+        <img
+          className="h-dvh object-contain"
+          src={convertFileSrc(props.path)}
+        />
       ) : (
         <div className="text-stone-200">
           画像ファイルまたはフォルダをドロップしてください

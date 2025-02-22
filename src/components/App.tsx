@@ -7,6 +7,7 @@ import {
   useKeyboardEvent,
 } from "../states/image";
 import { SingleImageView } from "./SingleImageView";
+import { Log } from "./Log";
 
 export function App() {
   const [, openPath] = useAtom(openPathAtom);
@@ -60,6 +61,7 @@ export function App() {
       ) : (
         <SingleImageView path={openImagePath?.path} />
       )}
+      <Log />
     </main>
   );
 }

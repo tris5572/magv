@@ -3,23 +3,25 @@ import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import {
   openImagePathAtom,
-  openPathAtom,
+  // openPathAtom,
   useKeyboardEvent,
 } from "../states/image";
 import { SingleImageView } from "./SingleImageView";
 import { Log } from "./Log";
+import { openZipAtom } from "../types/zip";
 
 export function App() {
-  const [, openPath] = useAtom(openPathAtom);
+  // const [, openPath] = useAtom(openPathAtom);
+  const [, openZip] = useAtom(openZipAtom);
   const [openImagePath] = useAtom(openImagePathAtom);
   const handleKeyboardEvent = useKeyboardEvent();
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
     async (path: string) => {
-      openPath(path);
+      openZip(path);
     },
-    [openPath]
+    [openZip]
   );
 
   // キーが押されたときの処理

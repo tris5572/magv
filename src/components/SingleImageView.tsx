@@ -18,7 +18,11 @@ export function SingleImageView(props: Props) {
       {props.path ? (
         <img
           className="h-dvh object-contain"
-          src={convertFileSrc(props.path)}
+          src={
+            props.path.startsWith("data:")
+              ? props.path // base64 の場合はそのまま表示
+              : convertFileSrc(props.path)
+          }
         />
       ) : (
         <div className="text-stone-200">

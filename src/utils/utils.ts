@@ -4,6 +4,8 @@ import { convertFileSrc } from "@tauri-apps/api/core";
  * 画像のサイズを取得する
  *
  * 画像のパスを指定すると、その画像のサイズを取得する
+ *
+ * パスは Base64 エンコードされたデータの場合も対応している
  */
 export function getImageSize(
   path: string
@@ -23,7 +25,7 @@ export function getImageSize(
     img.onerror = (error) => {
       reject(error);
     };
-    img.src = convertFileSrc(path);
+    img.src = path.startsWith("data:") ? path : convertFileSrc(path);
   });
 }
 
@@ -33,6 +35,8 @@ export function getImageSize(
  * - 縦向きの場合は "portrait"
  * - 横向きの場合は "landscape"
  * - 画像のサイズが取得できなかった場合は `undefined`
+ *
+ * パスは Base64 エンコードされたデータの場合も対応している
  */
 export async function getImageOrientation(path: string) {
   const size = await getImageSize(path);

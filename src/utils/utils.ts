@@ -1,17 +1,19 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 
-/*
+/**
  * 画像のサイズを取得する
  *
- * 画像のパスを指定すると、その画像のサイズを取得する
+ * 指定可能な画像ソースは以下のもの
  *
- * パスは Base64 エンコードされたデータの場合も対応している
+ * - ローカルのパス (string)
+ * - 画像の Base64 エンコード (string)
+ * - 画像の Blob
  */
 export function getImageSize(
-  path: string
+  source: string | Blob
 ): Promise<{ width: number; height: number } | undefined> {
   // 何もしない Promise を返す
-  if (!path) {
+  if (!source) {
     return new Promise((resolve) => {
       resolve(undefined);
     });
@@ -25,21 +27,25 @@ export function getImageSize(
     img.onerror = (error) => {
       reject(error);
     };
-    img.src = path.startsWith("data:") ? path : convertFileSrc(path);
+    const src =
+      source instanceof Blob
+        ? URL.createObjectURL(source) // Blob は URL を生成
+        : source.startsWith("data:")
+        ? source // Base64 はそのまま
+        : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
+    img.src = src;
   });
 }
 
-/*
+/**
  * 画像の向きを取得する
  *
  * - 縦向きの場合は "portrait"
  * - 横向きの場合は "landscape"
  * - 画像のサイズが取得できなかった場合は `undefined`
- *
- * パスは Base64 エンコードされたデータの場合も対応している
  */
-export async function getImageOrientation(path: string) {
-  const size = await getImageSize(path);
+export async function getImageOrientation(source: string | Blob) {
+  const size = await getImageSize(source);
   if (!size) {
     return undefined;
   }

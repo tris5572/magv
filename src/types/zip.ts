@@ -30,6 +30,13 @@ type ZipData = {
   };
 };
 
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// 内部データ保持 atom
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+/**
+ * 開いている zip のデータを保持する atom
+ */
 const openZipDataAtom = atom<ZipData | undefined>(undefined);
 
 /**
@@ -41,6 +48,10 @@ const imageNameListAtom = atom<string[]>([]);
  * 開いている画像ファイルのインデックスを保持する atom
  */
 const openImageIndexAtom = atom<number>(0);
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// 外部公開 atom
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
  * zip ファイルを開く atom

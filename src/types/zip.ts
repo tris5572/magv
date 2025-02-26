@@ -9,12 +9,6 @@ import { getImageOrientation } from "../utils/utils";
  */
 type ZipData = {
   /**
-   * 開いている画像がファイルの何番目か
-   *
-   * 2枚開いているときは、若い方の番号
-   */
-  openIndex: number;
-  /**
    * 各ファイルのデータ
    */
   data: {
@@ -47,6 +41,11 @@ const openZipDataAtom = atom<ZipData | undefined>(undefined);
  * ファイル名のリストを保持する atom
  */
 const imageNameListAtom = atom<string[]>([]);
+
+/**
+ * 開いている画像ファイルのインデックスを保持する atom
+ */
+const openImageIndexAtom = atom<number>(0);
 
 /**
  * zip ファイルを開く atom
@@ -82,7 +81,8 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   if (!name2 || bufData[name1].orientation === "landscape") {
     // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
     set(openImagePathAtom, { type: "single", path: bufData[name1].base64! });
-    set(openZipDataAtom, { openIndex: 0, data: bufData });
+    set(openImageIndexAtom, 0);
+    set(openZipDataAtom, { data: bufData });
     return;
   }
 
@@ -98,13 +98,15 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
       path1: bufData[name1].base64!,
       path2: bufData[name2].base64!,
     });
-    set(openZipDataAtom, { openIndex: 1, data: bufData });
+    set(openImageIndexAtom, 1);
+    set(openZipDataAtom, { data: bufData });
     return;
   }
 
   // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
   set(openImagePathAtom, { type: "single", path: bufData[name1].base64! });
-  set(openZipDataAtom, { openIndex: 0, data: bufData });
+  set(openImageIndexAtom, 0);
+  set(openZipDataAtom, { data: bufData });
 });
 
 /**
@@ -130,6 +132,7 @@ export const handleKeyEventAtom = atom(
  */
 const nextImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
+  const openIndex = get(openImageIndexAtom);
   const zipData = get(openZipDataAtom);
   const imageData = get(openImagePathAtom);
 
@@ -138,8 +141,7 @@ const nextImageAtom = atom(null, async (get, set) => {
   }
 
   // 基準のインデックスとして、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
-  const index =
-    imageData.type === "single" ? zipData.openIndex : zipData.openIndex + 1;
+  const index = imageData.type === "single" ? openIndex : openIndex + 1;
 
   // 次の画像が存在しない場合は何もしない
   if (imageList.length <= index) {
@@ -165,7 +167,7 @@ const nextImageAtom = atom(null, async (get, set) => {
       type: "single",
       path: zipData.data[name1].base64!,
     });
-    zipData.openIndex = index + 1;
+    set(openImageIndexAtom, index + 1);
     set(openZipDataAtom, zipData);
     return;
   }
@@ -185,7 +187,7 @@ const nextImageAtom = atom(null, async (get, set) => {
       path1: zipData.data[name1].base64!,
       path2: zipData.data[name2].base64!,
     });
-    zipData.openIndex = index + 2;
+    set(openImageIndexAtom, index + 2);
     set(openZipDataAtom, zipData);
     return;
   }
@@ -195,7 +197,7 @@ const nextImageAtom = atom(null, async (get, set) => {
     type: "single",
     path: zipData.data[name1].base64!,
   });
-  zipData.openIndex = index + 1;
+  set(openImageIndexAtom, index + 1);
   set(openZipDataAtom, zipData);
 });
 

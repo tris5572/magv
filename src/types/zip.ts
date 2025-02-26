@@ -74,25 +74,17 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
     return; // 1つもファイルがない場合は何もしない
   }
 
-  const data1 = bufData[name1];
-  const blob1 = new Blob([data1.uint8]);
-  const base64_1 = await base64FromBlob(blob1);
-  bufData[name1].base64 = base64_1;
-  bufData[name1].orientation = await getImageOrientation(base64_1);
+  await convertData(bufData, name1);
 
   const name2 = fileNames[1];
   if (!name2 || bufData[name1].orientation === "landscape") {
     // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
-    set(openImagePathAtom, { type: "single", path: bufData[name1].base64 });
+    set(openImagePathAtom, { type: "single", path: bufData[name1].base64! });
     set(openZipDataAtom, { fileNames, openIndex: 0, data: bufData });
     return;
   }
 
-  const data2 = bufData[name2];
-  const blob2 = new Blob([data2.uint8]);
-  const base64_2 = await base64FromBlob(blob2);
-  bufData[name2].base64 = base64_2;
-  bufData[name2].orientation = await getImageOrientation(base64_2);
+  await convertData(bufData, name2);
 
   // 1枚目と2枚目が両方とも縦長だった場合は2枚表示する
   if (
@@ -101,15 +93,15 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   ) {
     set(openImagePathAtom, {
       type: "double",
-      path1: bufData[name1].base64,
-      path2: bufData[name2].base64,
+      path1: bufData[name1].base64!,
+      path2: bufData[name2].base64!,
     });
     set(openZipDataAtom, { fileNames, openIndex: 1, data: bufData });
     return;
   }
 
   // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
-  set(openImagePathAtom, { type: "single", path: bufData[name1].base64 });
+  set(openImagePathAtom, { type: "single", path: bufData[name1].base64! });
   set(openZipDataAtom, { fileNames, openIndex: 0, data: bufData });
 });
 
@@ -160,11 +152,7 @@ const nextImageAtom = atom(null, async (get, set) => {
 
   // +1枚目のデータを埋める
   if (!zipData.data[name1].base64) {
-    const data = zipData.data[name1];
-    const blob = new Blob([data.uint8]);
-    const base64 = await base64FromBlob(blob);
-    zipData.data[name1].base64 = base64;
-    zipData.data[name1].orientation = await getImageOrientation(base64);
+    await convertData(zipData.data, name1);
   }
 
   // +1枚目が横長のときと、+2枚目がないときは、+1枚目のみを表示する
@@ -172,7 +160,7 @@ const nextImageAtom = atom(null, async (get, set) => {
   if (zipData.data[name1].orientation !== "portrait" || !name2) {
     set(openImagePathAtom, {
       type: "single",
-      path: zipData.data[name1].base64,
+      path: zipData.data[name1].base64!,
     });
     zipData.openIndex = index + 1;
     set(openZipDataAtom, zipData);
@@ -181,11 +169,7 @@ const nextImageAtom = atom(null, async (get, set) => {
 
   // +2枚目のデータを埋める
   if (!zipData.data[name2].base64) {
-    const data = zipData.data[name2];
-    const blob = new Blob([data.uint8]);
-    const base64 = await base64FromBlob(blob);
-    zipData.data[name2].base64 = base64;
-    zipData.data[name2].orientation = await getImageOrientation(base64);
+    await convertData(zipData.data, name2);
   }
 
   // +1枚目と+2枚目が両方とも縦長のときは、2枚とも表示する
@@ -195,8 +179,8 @@ const nextImageAtom = atom(null, async (get, set) => {
   ) {
     set(openImagePathAtom, {
       type: "double",
-      path1: zipData.data[name1].base64,
-      path2: zipData.data[name2].base64,
+      path1: zipData.data[name1].base64!,
+      path2: zipData.data[name2].base64!,
     });
     zipData.openIndex = index + 2;
     set(openZipDataAtom, zipData);
@@ -206,7 +190,7 @@ const nextImageAtom = atom(null, async (get, set) => {
   // +1枚目が縦長で+2枚目が横長のときは、+1枚目のみを表示する
   set(openImagePathAtom, {
     type: "single",
-    path: zipData.data[name1].base64,
+    path: zipData.data[name1].base64!,
   });
   zipData.openIndex = index + 1;
   set(openZipDataAtom, zipData);
@@ -215,6 +199,18 @@ const nextImageAtom = atom(null, async (get, set) => {
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // ユーティリティ
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+/**
+ * データを変換する
+ *
+ * 基本的に、この関数を呼び出したときは await して終了を待つ必要がある
+ */
+async function convertData(target: ZipData["data"], fileName: string) {
+  const blob = new Blob([target[fileName].uint8]);
+  const base64 = await base64FromBlob(blob);
+  target[fileName].base64 = base64;
+  target[fileName].orientation = await getImageOrientation(base64);
+}
 
 /**
  * Blob を Base64 に変換する

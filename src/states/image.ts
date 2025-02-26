@@ -36,13 +36,13 @@ export const openPathAtom = atom(null, async (_, set, path: string) => {
   if (fileList.find((file) => file === path)) {
     // ドロップされたファイルが画像だったときは、そのまま表示する
     // TODO: 縦横判定を行う
-    set(openImagePathAtom, { type: "single", path });
+    set(openImagePathAtom, { type: "single", source: path });
     set(imagePathsAtom, fileList);
   } else {
     // 画像以外がドロップされたときは、当該フォルダの中の先頭の画像を表示する
     // 画像ファイルがない場合は何もしない
     if (fileList.length > 0) {
-      set(openImagePathAtom, { type: "single", path: fileList[0] });
+      set(openImagePathAtom, { type: "single", source: fileList[0] });
       set(imagePathsAtom, fileList);
     }
   }
@@ -77,8 +77,8 @@ const nextImageAtom = atom(null, async (get, set) => {
   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
   const path =
     currentImagePath?.type === "single"
-      ? currentImagePath?.path
-      : currentImagePath?.path2;
+      ? currentImagePath?.source
+      : currentImagePath?.source2;
 
   const currentIndex = imagePaths.findIndex((p) => p === path);
 
@@ -102,15 +102,15 @@ const nextImageAtom = atom(null, async (get, set) => {
   ) {
     set(openImagePathAtom, {
       type: "single",
-      path: imagePaths[currentIndex + 1],
+      source: imagePaths[currentIndex + 1],
     });
     return;
   }
   // 2枚とも縦長の画像だったときは、2枚表示にする
   set(openImagePathAtom, {
     type: "double",
-    path1: imagePaths[currentIndex + 1],
-    path2: imagePaths[currentIndex + 2],
+    source1: imagePaths[currentIndex + 1],
+    source2: imagePaths[currentIndex + 2],
   });
 });
 
@@ -124,8 +124,8 @@ export const prevImageAtom = atom(null, async (get, set) => {
   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時も1枚目の画像にする
   const path =
     currentImagePath?.type === "single"
-      ? currentImagePath?.path
-      : currentImagePath?.path1;
+      ? currentImagePath?.source
+      : currentImagePath?.source1;
   const currentIndex = imagePaths.findIndex((p) => p === path);
 
   // 2つ前の画像までの縦横の向きを取得
@@ -148,14 +148,14 @@ export const prevImageAtom = atom(null, async (get, set) => {
   ) {
     set(openImagePathAtom, {
       type: "single",
-      path: imagePaths[currentIndex - 1],
+      source: imagePaths[currentIndex - 1],
     });
     return;
   }
   // 2枚とも縦長の画像だったときは、2枚表示にする
   set(openImagePathAtom, {
     type: "double",
-    path1: imagePaths[currentIndex - 2], // 2つ前の画像が1枚目
-    path2: imagePaths[currentIndex - 1],
+    source1: imagePaths[currentIndex - 2], // 2つ前の画像が1枚目
+    source2: imagePaths[currentIndex - 1],
   });
 });

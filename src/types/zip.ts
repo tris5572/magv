@@ -9,43 +9,45 @@ import { getImageOrientation } from "../utils/utils";
  */
 type ZipData = {
   /**
-   * ファイル名のリスト
+   * キーは画像ファイル名
    */
-  fileNames: string[];
-  /**
-   * 開いている画像がファイルの何番目か
-   *
-   * 2枚開いているときは、若い方の番号
-   */
-  openIndex: number;
-  /**
-   * 各ファイルのデータ
-   */
-  data: {
+  [name: string]: {
     /**
-     * ファイル名
+     * Blob に変換した各画像データ
      */
-    [name: string]: {
-      /**
-       * zip ファイルから取得したデータ
-       */
-      uint8: Uint8Array;
-      /**
-       * Base64 エンコードされたデータ。まだ変換されていない場合は undefined
-       */
-      base64?: string;
-      /**
-       * 画像の向き
-       * - 縦向きの場合は "portrait"
-       * - 横向きの場合は "landscape"
-       * - 画像の向きが取得できなかった場合は `undefined`
-       */
-      orientation?: "portrait" | "landscape";
-    };
+    blob: Blob;
+    /**
+     * 画像の向き
+     * - 縦向きの場合は "portrait"
+     * - 横向きの場合は "landscape"
+     * - 画像の向きが未取得または取得できなかった場合は `undefined`
+     */
+    orientation?: "portrait" | "landscape";
   };
 };
 
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// 内部データ保持 atom
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+/**
+ * 開いている zip のデータを保持する atom
+ */
 const openZipDataAtom = atom<ZipData | undefined>(undefined);
+
+/**
+ * ファイル名のリストを保持する atom
+ */
+const imageNameListAtom = atom<string[]>([]);
+
+/**
+ * 開いている画像ファイルのインデックスを保持する atom
+ */
+const openImageIndexAtom = atom<number>(0);
+
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// 外部公開 atom
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
  * zip ファイルを開く atom
@@ -61,12 +63,14 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
     .filter((name) => !name.endsWith("/")) // ディレクトリを除く
     .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
     .sort();
+  set(imageNameListAtom, fileNames);
 
   // データを生成して保持する
-  const bufData: ZipData["data"] = fileNames.reduce((acc, name) => {
-    acc[name] = { uint8: unzipped[name] };
+  const bufData: ZipData = fileNames.reduce((acc, name) => {
+    const blob = new Blob([unzipped[name]]);
+    acc[name] = { blob };
     return acc;
-  }, {} as ZipData["data"]);
+  }, {} as ZipData);
 
   // ひとまず最初のファイルを表示する
   const name1 = fileNames[0];
@@ -74,25 +78,18 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
     return; // 1つもファイルがない場合は何もしない
   }
 
-  const data1 = bufData[name1];
-  const blob1 = new Blob([data1.uint8]);
-  const base64_1 = await base64FromBlob(blob1);
-  bufData[name1].base64 = base64_1;
-  bufData[name1].orientation = await getImageOrientation(base64_1);
+  await convertData(bufData, name1);
 
   const name2 = fileNames[1];
   if (!name2 || bufData[name1].orientation === "landscape") {
     // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
-    set(openImagePathAtom, { type: "single", path: bufData[name1].base64 });
-    set(openZipDataAtom, { fileNames, openIndex: 0, data: bufData });
+    set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
+    set(openImageIndexAtom, 0);
+    set(openZipDataAtom, bufData);
     return;
   }
 
-  const data2 = bufData[name2];
-  const blob2 = new Blob([data2.uint8]);
-  const base64_2 = await base64FromBlob(blob2);
-  bufData[name2].base64 = base64_2;
-  bufData[name2].orientation = await getImageOrientation(base64_2);
+  await convertData(bufData, name2);
 
   // 1枚目と2枚目が両方とも縦長だった場合は2枚表示する
   if (
@@ -101,16 +98,18 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   ) {
     set(openImagePathAtom, {
       type: "double",
-      path1: bufData[name1].base64,
-      path2: bufData[name2].base64,
+      source1: bufData[name1].blob,
+      source2: bufData[name2].blob,
     });
-    set(openZipDataAtom, { fileNames, openIndex: 1, data: bufData });
+    set(openImageIndexAtom, 1);
+    set(openZipDataAtom, bufData);
     return;
   }
 
   // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
-  set(openImagePathAtom, { type: "single", path: bufData[name1].base64 });
-  set(openZipDataAtom, { fileNames, openIndex: 0, data: bufData });
+  set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
+  set(openImageIndexAtom, 0);
+  set(openZipDataAtom, bufData);
 });
 
 /**
@@ -135,6 +134,8 @@ export const handleKeyEventAtom = atom(
  * 見開き表示可能な場合は見開き表示にする
  */
 const nextImageAtom = atom(null, async (get, set) => {
+  const imageList = get(imageNameListAtom);
+  const openIndex = get(openImageIndexAtom);
   const zipData = get(openZipDataAtom);
   const imageData = get(openImagePathAtom);
 
@@ -143,62 +144,49 @@ const nextImageAtom = atom(null, async (get, set) => {
   }
 
   // 基準のインデックスとして、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
-  const index =
-    imageData.type === "single" ? zipData.openIndex : zipData.openIndex + 1;
+  const index = imageData.type === "single" ? openIndex : openIndex + 1;
 
   // 次の画像が存在しない場合は何もしない
-  if (zipData.fileNames.length <= index) {
+  if (imageList.length <= index) {
     return;
   }
 
-  const name1 = zipData.fileNames[index + 1];
-  const name2 = zipData.fileNames[index + 2];
+  const name1 = imageList[index + 1];
+  const name2 = imageList[index + 2];
 
   if (!name1) {
     return;
   }
 
   // +1枚目のデータを埋める
-  if (!zipData.data[name1].base64) {
-    const data = zipData.data[name1];
-    const blob = new Blob([data.uint8]);
-    const base64 = await base64FromBlob(blob);
-    zipData.data[name1].base64 = base64;
-    zipData.data[name1].orientation = await getImageOrientation(base64);
-  }
+  await convertData(zipData, name1);
 
   // +1枚目が横長のときと、+2枚目がないときは、+1枚目のみを表示する
   // 「+1枚目が縦長ではない」という条件で、何らかの原因で縦横を取得できなかった場合に念の為対応している
-  if (zipData.data[name1].orientation !== "portrait" || !name2) {
+  if (zipData[name1].orientation !== "portrait" || !name2) {
     set(openImagePathAtom, {
       type: "single",
-      path: zipData.data[name1].base64,
+      source: zipData[name1].blob,
     });
-    zipData.openIndex = index + 1;
+    set(openImageIndexAtom, index + 1);
     set(openZipDataAtom, zipData);
     return;
   }
 
   // +2枚目のデータを埋める
-  if (!zipData.data[name2].base64) {
-    const data = zipData.data[name2];
-    const blob = new Blob([data.uint8]);
-    const base64 = await base64FromBlob(blob);
-    zipData.data[name2].base64 = base64;
-    zipData.data[name2].orientation = await getImageOrientation(base64);
-  }
+  await convertData(zipData, name2);
 
   // +1枚目と+2枚目が両方とも縦長のときは、2枚とも表示する
   if (
-    zipData.data[name1].orientation === "portrait" &&
-    zipData.data[name2].orientation === "portrait"
+    zipData[name1].orientation === "portrait" &&
+    zipData[name2].orientation === "portrait"
   ) {
     set(openImagePathAtom, {
       type: "double",
-      path1: zipData.data[name1].base64,
-      path2: zipData.data[name2].base64,
+      source1: zipData[name1].blob,
+      source2: zipData[name2].blob,
     });
-    zipData.openIndex = index + 2;
+    set(openImageIndexAtom, index + 2);
     set(openZipDataAtom, zipData);
     return;
   }
@@ -206,15 +194,27 @@ const nextImageAtom = atom(null, async (get, set) => {
   // +1枚目が縦長で+2枚目が横長のときは、+1枚目のみを表示する
   set(openImagePathAtom, {
     type: "single",
-    path: zipData.data[name1].base64,
+    source: zipData[name1].blob,
   });
-  zipData.openIndex = index + 1;
+  set(openImageIndexAtom, index + 1);
   set(openZipDataAtom, zipData);
 });
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // ユーティリティ
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
+/**
+ * データを変換する
+ *
+ * 現状では画像の向きの取得のみを行う
+ *
+ * 基本的に、この関数を呼び出したときは await して終了を待つ必要がある
+ */
+async function convertData(target: ZipData, fileName: string) {
+  const base64 = await base64FromBlob(target[fileName].blob);
+  target[fileName].orientation = await getImageOrientation(base64);
+}
 
 /**
  * Blob を Base64 に変換する

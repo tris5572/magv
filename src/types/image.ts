@@ -3,7 +3,7 @@
  */
 export type SingleImageMode = {
   type: "single";
-  path: string;
+  source: string | Blob;
 };
 
 /**
@@ -11,8 +11,8 @@ export type SingleImageMode = {
  */
 export type DoubleImageMode = {
   type: "double";
-  path1: string;
-  path2: string;
+  source1: string | Blob;
+  source2: string | Blob;
 };
 
 /**

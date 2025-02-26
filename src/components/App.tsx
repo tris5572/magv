@@ -8,13 +8,14 @@ import {
 } from "../states/image";
 import { SingleImageView } from "./SingleImageView";
 import { Log } from "./Log";
-import { openZipAtom } from "../types/zip";
+import { handleKeyEventAtom, openZipAtom } from "../types/zip";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
   const [, openZip] = useAtom(openZipAtom);
   const [openImagePath] = useAtom(openImagePathAtom);
   const handleKeyboardEvent = useKeyboardEvent();
+  const [, handleKeyEvent] = useAtom(handleKeyEventAtom);
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
@@ -48,10 +49,12 @@ export function App() {
   // キー押下のイベントを設定
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keydown", handleKeyEvent);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyEvent);
     };
-  }, [handleKeyDown]);
+  }, [handleKeyDown, handleKeyEvent]);
 
   return (
     <main className="h-dvh">

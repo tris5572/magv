@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import * as fflate from "fflate";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { openImagePathAtom } from "../states/image";
 import { getImageOrientation } from "../utils/utils";
 
@@ -58,6 +58,11 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   const response = await fetch(convertFileSrc(path));
   const arrayBuffer = await response.arrayBuffer();
   const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
+
+  const fileList = (await invoke("get_archive_file_list", {
+    path,
+  })) as string[];
+  console.log(fileList);
 
   // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
   const fileNames = Object.keys(unzipped)

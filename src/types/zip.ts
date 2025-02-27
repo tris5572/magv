@@ -72,11 +72,11 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   set(imageNameListAtom, fileNames);
 
   // 生データを Blob に変換
-  const bufData: ZipData = fileNames.reduce((acc, name) => {
+  const bufData = fileNames.reduce<ZipData>((acc, name) => {
     const blob = new Blob([unzipped[name]]);
     acc[name] = { blob };
     return acc;
-  }, {} as ZipData);
+  }, {});
 
   // 最初のファイルを表示する
   const name1 = fileNames[0];

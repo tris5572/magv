@@ -5,7 +5,7 @@ import { openImagePathAtom } from "../states/image";
 import { getImageOrientation } from "../utils/utils";
 
 /**
- * 解凍した zip ファイルのデータ
+ * 解凍したアーカイブのデータ
  */
 type ZipData = {
   /**
@@ -13,46 +13,45 @@ type ZipData = {
    */
   [name: string]: {
     /**
-     * Blob に変換した各画像データ
+     * Blob に変換した画像データ
      */
     blob: Blob;
     /**
      * 画像の向き
-     * - 縦向きの場合は "portrait"
-     * - 横向きの場合は "landscape"
-     * - 画像の向きが未取得または取得できなかった場合は `undefined`
+     *
+     * 向きを未取得または取得できなかった場合は `undefined`
      */
     orientation?: "portrait" | "landscape";
   };
 };
 
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // 内部データ保持 atom
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
- * 開いている zip のデータを保持する atom
+ * 開いているアーカイブのデータを保持する atom
  */
 const openZipDataAtom = atom<ZipData | undefined>(undefined);
 
 /**
- * ファイル名のリストを保持する atom
+ * アーカイブ内のファイル名のリストを保持する atom
  */
 const imageNameListAtom = atom<string[]>([]);
 
 /**
- * 開いている画像ファイルのインデックスを保持する atom
+ * 表示している画像ファイルのインデックスを保持する atom
  *
  * 2枚表示時は若い方のインデックス
  */
 const openImageIndexAtom = atom<number>(0);
 
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // 外部公開 atom
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
- * zip ファイルを開く atom
+ * アーカイブ（zip ファイル）を開く atom
  */
 export const openZipAtom = atom(null, async (_, set, path: string) => {
   const response = await fetch(convertFileSrc(path));
@@ -72,25 +71,26 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
     .sort();
   set(imageNameListAtom, fileNames);
 
-  // データを生成して保持する
+  // 生データを Blob に変換
   const bufData: ZipData = fileNames.reduce((acc, name) => {
     const blob = new Blob([unzipped[name]]);
     acc[name] = { blob };
     return acc;
   }, {} as ZipData);
 
-  // ひとまず最初のファイルを表示する
+  // 最初のファイルを表示する
   const name1 = fileNames[0];
+  // 1つも画像ファイルがない場合は何もしない
   if (!name1) {
-    return; // 1つもファイルがない場合は何もしない
+    return;
   }
 
   await convertData(bufData, name1);
   set(openZipDataAtom, bufData);
 
   const name2 = fileNames[1];
+  // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
   if (!name2 || bufData[name1].orientation === "landscape") {
-    // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
     set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
     return;
   }
@@ -129,14 +129,14 @@ export const handleKeyEventAtom = atom(
   }
 );
 
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // イベント系
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
- * 次の画像を表示する
+ * 次の画像（ページ）を表示する atom
  *
- * 見開き表示可能な場合は見開き表示にする
+ * 見開き表示に対応している
  */
 const nextImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
@@ -205,7 +205,9 @@ const nextImageAtom = atom(null, async (get, set) => {
 });
 
 /**
- * 前の画像を表示する
+ * 前の画像（ページ）を表示する atom
+ *
+ * 見開き表示に対応している
  */
 const prevImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
@@ -216,11 +218,6 @@ const prevImageAtom = atom(null, async (get, set) => {
   if (!zipData || !imageData) {
     return;
   }
-
-  // 前の画像が存在しない場合は何もしない
-  // if (index <= 0) {
-  //   return;
-  // }
 
   const name0 = imageList[index];
   const name1 = imageList[index - 1];
@@ -286,9 +283,9 @@ const prevImageAtom = atom(null, async (get, set) => {
   set(openImageIndexAtom, index - 1);
 });
 
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // ユーティリティ
-// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
  * データを変換する

@@ -159,6 +159,7 @@ const nextImageAtom = atom(null, async (get, set) => {
 
   // +1枚目のデータを埋める
   await convertData(zipData, name1);
+  set(openZipDataAtom, zipData);
 
   // +1枚目が横長のときと、+2枚目がないときは、+1枚目のみを表示する
   // 「+1枚目が縦長ではない」という条件で、何らかの原因で縦横を取得できなかった場合に念の為対応している
@@ -168,12 +169,12 @@ const nextImageAtom = atom(null, async (get, set) => {
       source: zipData[name1].blob,
     });
     set(openImageIndexAtom, index + 1);
-    set(openZipDataAtom, zipData);
     return;
   }
 
   // +2枚目のデータを埋める
   await convertData(zipData, name2);
+  set(openZipDataAtom, zipData);
 
   // +1枚目と+2枚目が両方とも縦長のときは、2枚とも表示する
   if (
@@ -186,7 +187,6 @@ const nextImageAtom = atom(null, async (get, set) => {
       source2: zipData[name2].blob,
     });
     set(openImageIndexAtom, index + 2);
-    set(openZipDataAtom, zipData);
     return;
   }
 

@@ -42,6 +42,8 @@ const imageNameListAtom = atom<string[]>([]);
 
 /**
  * 開いている画像ファイルのインデックスを保持する atom
+ *
+ * 2枚表示時は若い方のインデックス
  */
 const openImageIndexAtom = atom<number>(0);
 
@@ -84,7 +86,6 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   if (!name2 || bufData[name1].orientation === "landscape") {
     // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
     set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-    set(openImageIndexAtom, 0);
     set(openZipDataAtom, bufData);
     return;
   }
@@ -101,14 +102,12 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
       source1: bufData[name1].blob,
       source2: bufData[name2].blob,
     });
-    set(openImageIndexAtom, 1);
     set(openZipDataAtom, bufData);
     return;
   }
 
   // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
   set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-  set(openImageIndexAtom, 0);
   set(openZipDataAtom, bufData);
 });
 

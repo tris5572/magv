@@ -81,16 +81,17 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   }
 
   await convertData(bufData, name1);
+  set(openZipDataAtom, bufData);
 
   const name2 = fileNames[1];
   if (!name2 || bufData[name1].orientation === "landscape") {
     // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
     set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-    set(openZipDataAtom, bufData);
     return;
   }
 
   await convertData(bufData, name2);
+  set(openZipDataAtom, bufData);
 
   // 1枚目と2枚目が両方とも縦長だった場合は2枚表示する
   if (
@@ -102,13 +103,11 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
       source1: bufData[name1].blob,
       source2: bufData[name2].blob,
     });
-    set(openZipDataAtom, bufData);
     return;
   }
 
   // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
   set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-  set(openZipDataAtom, bufData);
 });
 
 /**

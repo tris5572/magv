@@ -46,6 +46,18 @@ const imageNameListAtom = atom<string[]>([]);
  */
 const openImageIndexAtom = atom<number>(0);
 
+/**
+ * 現在開いているアーカイブファイルのパスを保持する atom
+ *
+ * 何も開いていない初期状態では `undefined`
+ */
+const openArchivePathAtom = atom<string | undefined>();
+
+/**
+ * 対象フォルダ内にあるアーカイブファイルのリストを保持する atom
+ */
+const archivePathListAtom = atom<string[]>([]);
+
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // 外部公開 atom
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
@@ -58,10 +70,11 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
   const arrayBuffer = await response.arrayBuffer();
   const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
 
-  const fileList = (await invoke("get_archive_file_list", {
-    path,
-  })) as string[];
-  console.log(fileList);
+  // フォルダ内のアーカイブファイルのリストを更新
+  set(updateArchiveListAtom, path);
+  set(openArchivePathAtom, path);
+
+  set(openImageIndexAtom, 0);
 
   // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
   const fileNames = Object.keys(unzipped)
@@ -125,6 +138,8 @@ export const handleKeyEventAtom = atom(
       set(nextImageAtom);
     } else if (event.key === "ArrowRight") {
       set(prevImageAtom);
+    } else if (event.key === "ArrowDown") {
+      set(openNextArchiveAtom);
     }
   }
 );
@@ -281,6 +296,40 @@ const prevImageAtom = atom(null, async (get, set) => {
     source: zipData[name1].blob,
   });
   set(openImageIndexAtom, index - 1);
+});
+
+/**
+ * 渡されたパスに存在するアーカイブファイルのリストを更新する
+ */
+const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
+  const fileList = (await invoke("get_archive_file_list", {
+    path,
+  })) as string[];
+  set(archivePathListAtom, fileList);
+});
+
+/**
+ * 次のアーカイブファイルを開く
+ */
+const openNextArchiveAtom = atom(null, async (get, set) => {
+  const archiveList = get(archivePathListAtom);
+  const nowPath = get(openArchivePathAtom);
+
+  // 現在のファイルのインデックスを探す
+  const index = archiveList.findIndex((path) => path === nowPath);
+
+  // 現在のファイルと一致するものがなかったときは、フォルダ内の最初のファイルを開く
+  if (index === -1) {
+    const path = archiveList[0];
+    if (path) {
+      set(openZipAtom, path);
+    }
+  }
+
+  const path = archiveList[index + 1];
+  if (path) {
+    set(openZipAtom, path);
+  }
 });
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -

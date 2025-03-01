@@ -19,7 +19,7 @@ type Props = {
 export function SingleImageView({ source }: Props) {
   if (!source) {
     return (
-      <div className="h-dvh bg-stone900 flex items-center justify-center">
+      <div className="h-dvh bg-stone900 flex items-center justify-center select-none">
         <div className="text-stone-200">
           画像ファイルまたはフォルダをドロップしてください
         </div>
@@ -35,7 +35,7 @@ export function SingleImageView({ source }: Props) {
       : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
 
   return (
-    <div className="h-dvh bg-stone900 flex items-center justify-center">
+    <div className="h-dvh bg-stone900 flex items-center justify-center select-none">
       {<img className="h-dvh object-contain" src={src} />}
     </div>
   );

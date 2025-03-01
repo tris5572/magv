@@ -59,9 +59,9 @@ export function App() {
   return (
     <main className="h-dvh">
       {openImagePath && openImagePath?.type === "double" ? (
-        <div className="flex justify-center items-center">
-          <SingleImageView source={openImagePath?.source2} />
+        <div className="flex flex-row-reverse justify-center items-center">
           <SingleImageView source={openImagePath?.source1} />
+          <SingleImageView source={openImagePath?.source2} />
         </div>
       ) : (
         <SingleImageView source={openImagePath?.source} />

@@ -217,7 +217,7 @@ const nextImageAtom = atom(null, async (get, set) => {
       source1: zipData[name1].blob,
       source2: zipData[name2].blob,
     });
-    set(openImageIndexAtom, index + 2);
+    set(openImageIndexAtom, index + 1);
     return;
   }
 

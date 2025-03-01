@@ -66,66 +66,66 @@ const archivePathListAtom = atom<string[]>([]);
  * アーカイブ（zip ファイル）を開く atom
  */
 export const openZipAtom = atom(null, async (_, set, path: string) => {
-  const response = await fetch(convertFileSrc(path));
-  const arrayBuffer = await response.arrayBuffer();
-  const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
+    const response = await fetch(convertFileSrc(path));
+    const arrayBuffer = await response.arrayBuffer();
+    const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
 
-  // フォルダ内のアーカイブファイルのリストを更新
-  set(updateArchiveListAtom, path);
-  set(openArchivePathAtom, path);
+    // フォルダ内のアーカイブファイルのリストを更新
+    set(updateArchiveListAtom, path);
+    set(openArchivePathAtom, path);
 
-  set(openImageIndexAtom, 0);
+    set(openImageIndexAtom, 0);
 
-  // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
-  const fileNames = Object.keys(unzipped)
-    .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く
-    .filter((name) => !name.endsWith("/")) // ディレクトリを除く
-    .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
-    .sort();
-  set(imageNameListAtom, fileNames);
+    // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
+    const fileNames = Object.keys(unzipped)
+      .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く
+      .filter((name) => !name.endsWith("/")) // ディレクトリを除く
+      .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
+      .sort();
+    set(imageNameListAtom, fileNames);
 
-  // 生データを Blob に変換
-  const bufData = fileNames.reduce<ZipData>((acc, name) => {
-    const blob = new Blob([unzipped[name]]);
-    acc[name] = { blob };
-    return acc;
-  }, {});
+    // 生データを Blob に変換
+    const bufData = fileNames.reduce<ZipData>((acc, name) => {
+      const blob = new Blob([unzipped[name]]);
+      acc[name] = { blob };
+      return acc;
+    }, {});
 
-  // 最初のファイルを表示する
-  const name1 = fileNames[0];
-  // 1つも画像ファイルがない場合は何もしない
-  if (!name1) {
-    return;
-  }
+    // 最初のファイルを表示する
+    const name1 = fileNames[0];
+    // 1つも画像ファイルがない場合は何もしない
+    if (!name1) {
+      return;
+    }
 
-  await convertData(bufData, name1);
-  set(openZipDataAtom, bufData);
+    await convertData(bufData, name1);
+    set(openZipDataAtom, bufData);
 
-  const name2 = fileNames[1];
-  // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
-  if (!name2 || bufData[name1].orientation === "landscape") {
+    const name2 = fileNames[1];
+    // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
+    if (!name2 || bufData[name1].orientation === "landscape") {
+      set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
+      return;
+    }
+
+    await convertData(bufData, name2);
+    set(openZipDataAtom, bufData);
+
+    // 1枚目と2枚目が両方とも縦長だった場合は2枚表示する
+    if (
+      bufData[name1].orientation === "portrait" &&
+      bufData[name2].orientation === "portrait"
+    ) {
+      set(openImagePathAtom, {
+        type: "double",
+        source1: bufData[name1].blob,
+        source2: bufData[name2].blob,
+      });
+      return;
+    }
+
+    // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
     set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-    return;
-  }
-
-  await convertData(bufData, name2);
-  set(openZipDataAtom, bufData);
-
-  // 1枚目と2枚目が両方とも縦長だった場合は2枚表示する
-  if (
-    bufData[name1].orientation === "portrait" &&
-    bufData[name2].orientation === "portrait"
-  ) {
-    set(openImagePathAtom, {
-      type: "double",
-      source1: bufData[name1].blob,
-      source2: bufData[name2].blob,
-    });
-    return;
-  }
-
-  // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
-  set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
 });
 
 /**
@@ -140,6 +140,8 @@ export const handleKeyEventAtom = atom(
       set(prevImageAtom);
     } else if (event.key === "ArrowDown") {
       set(openNextArchiveAtom);
+    } else if (event.key === "ArrowUp") {
+      set(openPrevArchiveAtom);
     }
   }
 );
@@ -330,6 +332,29 @@ const openNextArchiveAtom = atom(null, async (get, set) => {
   if (path) {
     set(openZipAtom, path);
   }
+});
+
+/**
+ * 前のアーカイブファイルを開く
+ */
+const openPrevArchiveAtom = atom(null, async (get, set) => {
+  const archiveList = get(archivePathListAtom);
+  const nowPath = get(openArchivePathAtom);
+
+  // 現在のファイルのインデックスを探す
+  const index = archiveList.findIndex((path) => path === nowPath);
+
+  // 現在のファイルと一致するものがなかったときは、フォルダ内の最初のファイルを開く
+  // TODO: このときの挙動はどうなっているべきか見直す
+  if (index === -1) {
+    const path = archiveList[0];
+    if (path) {
+      set(openZipAtom, path);
+    }
+  }
+
+  const path = archiveList[index - 1];
+  set(openZipAtom, path);
 });
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -

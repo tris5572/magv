@@ -65,7 +65,14 @@ const archivePathListAtom = atom<string[]>([]);
 /**
  * アーカイブ（zip ファイル）を開く atom
  */
-export const openZipAtom = atom(null, async (_, set, path: string) => {
+export const openZipAtom = atom(
+  null,
+  async (_, set, path: string | undefined) => {
+    // パスがない場合は何もしない
+    if (!path) {
+      return;
+    }
+
     const response = await fetch(convertFileSrc(path));
     const arrayBuffer = await response.arrayBuffer();
     const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
@@ -126,7 +133,8 @@ export const openZipAtom = atom(null, async (_, set, path: string) => {
 
     // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
     set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-});
+  }
+);
 
 /**
  * キーボード操作を処理する atom

@@ -1,6 +1,7 @@
 import { atom } from "jotai";
 import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openImagePathAtom } from "../states/image";
 import { getImageOrientation } from "../utils/utils";
 
@@ -82,6 +83,12 @@ export const openZipAtom = atom(
     set(openArchivePathAtom, path);
 
     set(openImageIndexAtom, 0);
+
+    // アーカイブのファイル名をウィンドウのタイトルに設定
+    const zipName = path.split("/").pop();
+    if (zipName) {
+      getCurrentWindow().setTitle(zipName);
+    }
 
     // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
     const fileNames = Object.keys(unzipped)

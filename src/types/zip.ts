@@ -98,6 +98,8 @@ export const openZipAtom = atom(
       getCurrentWindow().setTitle(zipName);
     }
 
+    getCurrentWindow().setFocus();
+
     // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
     const fileNames = Object.keys(unzipped)
       .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く

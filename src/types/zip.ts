@@ -161,9 +161,6 @@ export const handleMouseWheelEventAtom = atom(
 
 /**
  * 指定したインデックスのページへ移動する atom
- *
- * @param index 開くインデックス
- * @param isForceSingle 強制的に1枚表示にするかどうかのフラグ
  */
 const moveIndexAtom = atom(
   null,
@@ -172,10 +169,12 @@ const moveIndexAtom = atom(
     set,
     {
       index,
-      isForceSingle = false,
+      forceSingle = false,
     }: {
+      /** 開くインデックス */
       index: number;
-      isForceSingle?: boolean;
+      /** 強制的に1枚表示にするかどうかのフラグ */
+      forceSingle?: boolean;
     }
   ) => {
     const imageList = get(imageNameListAtom);
@@ -196,7 +195,7 @@ const moveIndexAtom = atom(
     set(openImageIndexAtom, index);
 
     // 強制的に1枚のみを表示する
-    if (isForceSingle) {
+    if (forceSingle) {
       await convertData(zipData, name1);
       set(openZipDataAtom, zipData);
       set(openImagePathAtom, {
@@ -310,7 +309,7 @@ const prevImageAtom = atom(null, async (get, set) => {
     (name2 && zipData[name2].orientation === "landscape")
   ) {
     // 最初の画像が 縦縦 と並んでいるときに見開き表示とならないよう、1枚表示を強制
-    set(moveIndexAtom, { index: index - 1, isForceSingle: true });
+    set(moveIndexAtom, { index: index - 1, forceSingle: true });
     return;
   }
 

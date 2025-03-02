@@ -437,14 +437,13 @@ const moveFirstImageAtom = atom(null, async (_, set) => {
 /**
  * 最後のページを表示する atom
  *
- * 最後の2枚が縦画像だったら2枚とも表示する
+ * 最後の2枚が縦画像だったら見開き表示する
  */
 const moveLastImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
   const zipData = get(openZipDataAtom);
-  const imageData = get(openImagePathAtom);
 
-  if (!zipData || !imageData) {
+  if (!zipData) {
     return;
   }
 
@@ -466,21 +465,12 @@ const moveLastImageAtom = atom(null, async (get, set) => {
     zipData[name1].orientation === "portrait" &&
     zipData[name2].orientation === "portrait"
   ) {
-    set(openImagePathAtom, {
-      type: "double",
-      source1: zipData[name1].blob,
-      source2: zipData[name2].blob,
-    });
-    set(openImageIndexAtom, lastIndex - 1);
+    set(moveIndexAtom, { index: lastIndex - 1 });
     return;
   }
 
-  // 2枚目(最後の画像)が横長のとき、または2枚目が縦長で1枚目が横長のときは、2枚目のみを表示する
-  set(openImagePathAtom, {
-    type: "single",
-    source: zipData[name1].blob,
-  });
-  set(openImageIndexAtom, lastIndex);
+  // その他のときは最後の画像のみを表示する
+  set(moveIndexAtom, { index: lastIndex });
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

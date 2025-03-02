@@ -159,6 +159,8 @@ export const handleKeyEventAtom = atom(
       set(openPrevArchiveAtom);
     } else if (event.key === "End") {
       set(moveFirstImageAtom);
+    } else if (event.key === "Home") {
+      set(moveLastImageAtom);
     }
   }
 );
@@ -375,6 +377,55 @@ const moveFirstImageAtom = atom(null, async (get, set) => {
     source: zipData[name1].blob,
   });
   set(openImageIndexAtom, 1);
+});
+
+/**
+ * 最後の画像（ページ）を表示する atom
+ *
+ * 見開き表示に対応している
+ */
+const moveLastImageAtom = atom(null, async (get, set) => {
+  const imageList = get(imageNameListAtom);
+  const zipData = get(openZipDataAtom);
+  const imageData = get(openImagePathAtom);
+
+  if (!zipData || !imageData) {
+    return;
+  }
+
+  // 最後の2枚を取得する。name1 の方が若く、name2 が本当に最後
+  const lastIndex = imageList.length - 1;
+  const name1 = imageList[lastIndex - 1];
+  const name2 = imageList[lastIndex];
+
+  if (!name1) {
+    return;
+  }
+
+  await convertData(zipData, name1);
+  await convertData(zipData, name2);
+  set(openZipDataAtom, zipData);
+
+  // 1枚目と2枚目の両方が縦長のときは、2枚とも表示する
+  if (
+    zipData[name1].orientation === "portrait" &&
+    zipData[name2].orientation === "portrait"
+  ) {
+    set(openImagePathAtom, {
+      type: "double",
+      source1: zipData[name1].blob,
+      source2: zipData[name2].blob,
+    });
+    set(openImageIndexAtom, lastIndex - 1);
+    return;
+  }
+
+  // 2枚目(最後の画像)が横長のとき、または2枚目が縦長で1枚目が横長のときは、2枚目のみを表示する
+  set(openImagePathAtom, {
+    type: "single",
+    source: zipData[name1].blob,
+  });
+  set(openImageIndexAtom, lastIndex);
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

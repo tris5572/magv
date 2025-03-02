@@ -631,8 +631,8 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
  *
  * 基本的に、この関数を呼び出したときは await して終了を待つ必要がある
  */
-async function convertData(target: ZipData, fileName: string) {
-  if (!target[fileName].orientation) {
+async function convertData(target: ZipData, fileName: string | undefined) {
+  if (fileName && !target[fileName].orientation) {
     const base64 = await base64FromBlob(target[fileName].blob);
     target[fileName].orientation = await getImageOrientation(base64);
   }

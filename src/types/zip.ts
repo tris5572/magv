@@ -268,15 +268,27 @@ const nextImageAtom = atom(null, async (get, set) => {
  *
  * 前のページに相当する画像の縦横を元に、表示する枚数を判定する
  *
- * 現在表示している画像は重複して表示しないため、縦画像が1枚だけ表示されるケースもあり得る
+ * 現在表示している画像は重複して表示しないのが基本。したがって縦画像が1枚だけ表示されるケースもあり得る。
+ *
+ * 右開きのときの動作は以下の表の通り。「0枚目」は表示中の若い方を指す。
+ *
+ * 0枚目 | -1枚目 | -2枚目 | 表示
+ * :--: | :--: | :--: | :--:
+ * 縦0 | 縦1 | 縦2 | 縦1 縦2
+ * 縦0 | 縦1 | 横2 | 縦1
+ * 横0 | 縦1 | 縦2 | 縦1 縦2
+ * 横0 | 縦1 | 横2 | 縦1
+ * 縦0 | 縦1 | (なし) | 縦1
+ * 縦0 | 横1 | (なし) | 横1
+ * 横0 | 縦1 | (なし) | 縦1
+ * 横0 | 横1 | (なし) | 横1
  */
 const prevImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
   const index = get(openImageIndexAtom);
   const zipData = get(openZipDataAtom);
-  const imageData = get(openImagePathAtom);
 
-  if (!zipData || !imageData) {
+  if (!zipData) {
     return;
   }
 
@@ -284,64 +296,29 @@ const prevImageAtom = atom(null, async (get, set) => {
   const name1 = imageList[index - 1];
   const name2 = imageList[index - 2];
 
+  // 前ページ（と現ページ）を取得できなかった場合は何もしない
   if (!name0 || !name1) {
     return;
   }
 
-  // -1枚目のデータを埋める
+  await convertData(zipData, name0);
   await convertData(zipData, name1);
-  set(openZipDataAtom, zipData);
-
-  // -1枚目が最初の画像で、0枚目と-1枚目が両方とも縦長のときは、それらを2枚とも表示する
-  if (
-    index === 1 &&
-    zipData[name0].orientation === "portrait" &&
-    zipData[name1].orientation === "portrait"
-  ) {
-    set(openImagePathAtom, {
-      type: "double",
-      source1: zipData[name1].blob,
-      source2: zipData[name0].blob,
-    });
-    set(openImageIndexAtom, 0);
-    return;
-  }
-
-  // -1枚目が横長のときと、-2枚目がないときは、-1枚目のみを表示する
-  // 「-1枚目が縦長ではない」という条件で、何らかの原因で縦横を取得できなかった場合に念の為対応している
-  if (zipData[name1].orientation !== "portrait" || !name2) {
-    set(openImagePathAtom, {
-      type: "single",
-      source: zipData[name1].blob,
-    });
-    set(openImageIndexAtom, index - 1);
-    return;
-  }
-
-  // -2枚目のデータを埋める
   await convertData(zipData, name2);
   set(openZipDataAtom, zipData);
 
-  // -1枚目と-2枚目が両方とも縦長のときは、2枚とも表示する
+  // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
   if (
-    zipData[name1].orientation === "portrait" &&
-    zipData[name2].orientation === "portrait"
+    zipData[name1].orientation === "landscape" ||
+    !name2 ||
+    (name2 && zipData[name2].orientation === "landscape")
   ) {
-    set(openImagePathAtom, {
-      type: "double",
-      source1: zipData[name2].blob,
-      source2: zipData[name1].blob,
-    });
-    set(openImageIndexAtom, index - 2);
+    // 最初の画像が 縦縦 と並んでいるときに見開き表示とならないよう、1枚表示を強制
+    set(moveIndexAtom, { index: index - 1, isForceSingle: true });
     return;
   }
 
-  // -1枚目が縦長で-2枚目が横長のときは、-1枚目のみを表示する
-  set(openImagePathAtom, {
-    type: "single",
-    source: zipData[name1].blob,
-  });
-  set(openImageIndexAtom, index - 1);
+  // -1枚目と-2枚目が両方とも縦長のときは、見開き表示する
+  set(moveIndexAtom, { index: index - 2 });
 });
 
 /**

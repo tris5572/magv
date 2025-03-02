@@ -192,6 +192,89 @@ export const handleMouseWheelEventAtom = atom(
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**
+ * 指定したインデックスのページへ移動する atom
+ *
+ * @param index 開くインデックス
+ * @param isForceSingle 強制的に1枚表示にするかどうかのフラグ
+ */
+const moveIndexAtom = atom(
+  null,
+  async (
+    get,
+    set,
+    {
+      index,
+      isForceSingle = false,
+    }: {
+      index: number;
+      isForceSingle?: boolean;
+    }
+  ) => {
+    const imageList = get(imageNameListAtom);
+    const zipData = get(openZipDataAtom);
+
+    if (!zipData) {
+      return;
+    }
+
+    const name1 = imageList[index];
+    const name2 = imageList[index + 1];
+
+    // 指定されたインデックスのファイルが存在しないときは何もしない
+    if (!name1) {
+      return;
+    }
+
+    set(openImageIndexAtom, index);
+
+    // 強制的に1枚のみを表示する
+    if (isForceSingle) {
+      await convertData(zipData, name1);
+      set(openZipDataAtom, zipData);
+      set(openImagePathAtom, {
+        type: "single",
+        source: zipData[name1].blob,
+      });
+    }
+
+    await convertData(zipData, name1);
+    set(openZipDataAtom, zipData);
+
+    // 1枚目が横長のときと、2枚目がないときは、1枚目のみを表示する
+    if (zipData[name1].orientation === "landscape" || !name2) {
+      set(openImagePathAtom, {
+        type: "single",
+        source: zipData[name1].blob,
+      });
+      return;
+    }
+
+    // 2枚目のデータを埋める
+    await convertData(zipData, name2);
+    set(openZipDataAtom, zipData);
+
+    // 1枚目と2枚目が両方とも縦長のときは、2枚とも表示する
+    if (
+      zipData[name1].orientation === "portrait" &&
+      zipData[name2].orientation === "portrait"
+    ) {
+      set(openImagePathAtom, {
+        type: "double",
+        source1: zipData[name1].blob,
+        source2: zipData[name2].blob,
+      });
+      return;
+    }
+
+    // 1枚目が縦長で2枚目が横長のときは、1枚目のみを表示する
+    set(openImagePathAtom, {
+      type: "single",
+      source: zipData[name1].blob,
+    });
+  }
+);
+
+/**
  * 次のページを表示する atom
  *
  * 次のページに相当する画像の縦横を元に、表示する枚数を判定する

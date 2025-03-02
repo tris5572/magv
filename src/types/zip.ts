@@ -173,6 +173,20 @@ export const handleKeyEventAtom = atom(
   }
 );
 
+/**
+ * マウスホイールのイベントを処理する atom
+ */
+export const handleMouseWheelEventAtom = atom(
+  null,
+  async (_, set, event: WheelEvent) => {
+    if (0 < event.deltaY) {
+      set(nextImageAtom);
+    } else if (event.deltaY < 0) {
+      set(prevImageAtom);
+    }
+  }
+);
+
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
 // イベント系
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

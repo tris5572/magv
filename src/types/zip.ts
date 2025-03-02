@@ -430,61 +430,8 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 /**
  * 最初のページを表示する atom
  */
-const moveFirstImageAtom = atom(null, async (get, set) => {
-  const imageList = get(imageNameListAtom);
-  const zipData = get(openZipDataAtom);
-  const imageData = get(openImagePathAtom);
-
-  if (!zipData || !imageData) {
-    return;
-  }
-
-  const name1 = imageList[0];
-  const name2 = imageList[1];
-
-  if (!name1) {
-    return;
-  }
-
-  // 1枚目のデータを埋める
-  await convertData(zipData, name1);
-  set(openZipDataAtom, zipData);
-
-  // 1枚目が横長のときと、2枚目がないときは、1枚目のみを表示する
-  // 「+1枚目が縦長ではない」という条件で、何らかの原因で縦横を取得できなかった場合に念の為対応している
-  if (zipData[name1].orientation !== "portrait" || !name2) {
-    set(openImagePathAtom, {
-      type: "single",
-      source: zipData[name1].blob,
-    });
-    set(openImageIndexAtom, 1);
-    return;
-  }
-
-  // +2枚目のデータを埋める
-  await convertData(zipData, name2);
-  set(openZipDataAtom, zipData);
-
-  // +1枚目と+2枚目が両方とも縦長のときは、2枚とも表示する
-  if (
-    zipData[name1].orientation === "portrait" &&
-    zipData[name2].orientation === "portrait"
-  ) {
-    set(openImagePathAtom, {
-      type: "double",
-      source1: zipData[name1].blob,
-      source2: zipData[name2].blob,
-    });
-    set(openImageIndexAtom, 1);
-    return;
-  }
-
-  // +1枚目が縦長で+2枚目が横長のときは、+1枚目のみを表示する
-  set(openImagePathAtom, {
-    type: "single",
-    source: zipData[name1].blob,
-  });
-  set(openImageIndexAtom, 1);
+const moveFirstImageAtom = atom(null, async (_, set) => {
+  set(moveIndexAtom, { index: 0 });
 });
 
 /**

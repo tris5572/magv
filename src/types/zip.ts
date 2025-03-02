@@ -206,6 +206,7 @@ const moveIndexAtom = atom(
     }
 
     await convertData(zipData, name1);
+    await convertData(zipData, name2);
     set(openZipDataAtom, zipData);
 
     // 1枚目が横長のときと、2枚目がないときは、1枚目のみを表示する
@@ -216,10 +217,6 @@ const moveIndexAtom = atom(
       });
       return;
     }
-
-    // 2枚目のデータを埋める
-    await convertData(zipData, name2);
-    set(openZipDataAtom, zipData);
 
     // 1枚目と2枚目が両方とも縦長のときは、2枚とも表示する
     if (

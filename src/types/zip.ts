@@ -143,6 +143,12 @@ export const handleKeyEventAtom = atom(
       } else {
         set(prevImageAtom);
       }
+    } else if (event.key === " ") {
+      if (event.shiftKey) {
+        set(prevImageAtom);
+      } else {
+        set(nextImageAtom);
+      }
     } else if (event.key === "ArrowDown") {
       set(openNextArchiveAtom);
     } else if (event.key === "ArrowUp") {

@@ -26,6 +26,11 @@ type ZipData = {
   };
 };
 
+type LastIndex = {
+  path: string;
+  index: number;
+};
+
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 内部データ保持 atom
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -59,6 +64,11 @@ const openArchivePathAtom = atom<string | undefined>();
  */
 const archivePathListAtom = atom<string[]>([]);
 
+/**
+ * 各アーカイブファイルで最後に開いた画像のインデックスを保持する atom
+ */
+const _lastIndexArrayAtom = atom<LastIndex[]>([]);
+
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -68,7 +78,7 @@ const archivePathListAtom = atom<string[]>([]);
  */
 export const openZipAtom = atom(
   null,
-  async (_, set, path: string | undefined) => {
+  async (get, set, path: string | undefined) => {
     // パスがない場合は何もしない
     if (!path) {
       return;
@@ -106,8 +116,12 @@ export const openZipAtom = atom(
     // 初期化したデータを保持
     set(openZipDataAtom, bufData);
 
-    // 最初のページを表示
-    set(moveIndexAtom, { index: 0 });
+    // 当該アーカイブを最後に開いていたときのインデックスを取得
+    // 初めて開く場合は 0
+    const index = get(lastOpenIndexAtom);
+
+    // ページを表示
+    set(moveIndexAtom, { index });
   }
 );
 
@@ -193,6 +207,12 @@ const moveIndexAtom = atom(
     }
 
     set(openImageIndexAtom, index);
+
+    // このアーカイブで最後に開いたインデックスを保持
+    const archivePath = get(openArchivePathAtom);
+    if (archivePath) {
+      set(lastOpenIndexAtom, archivePath, index);
+    }
 
     // 強制的に1枚のみを表示する
     if (forceSingle) {
@@ -491,6 +511,41 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
   const path = archiveList[index - 1];
   set(openZipAtom, path);
 });
+
+// -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
+// #region その他
+// -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
+
+/**
+ * 各アーカイブファイルで最後に開いた画像のインデックスを取得・更新する atom
+ */
+const lastOpenIndexAtom = atom(
+  (get) => {
+    const array = get(_lastIndexArrayAtom);
+    const path = get(openArchivePathAtom);
+    if (!path) {
+      return 0;
+    }
+    for (const v of array) {
+      if (v.path === path) {
+        return v.index;
+      }
+    }
+    return 0;
+  },
+  (get, set, path: string, index: number) => {
+    const array = get(_lastIndexArrayAtom);
+    for (const v of array) {
+      if (v.path === path) {
+        v.index = index;
+        set(_lastIndexArrayAtom, array);
+        return;
+      }
+    }
+    array.push({ path, index });
+    set(_lastIndexArrayAtom, array);
+  }
+);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region ユーティリティ

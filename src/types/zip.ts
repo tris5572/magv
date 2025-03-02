@@ -27,7 +27,7 @@ type ZipData = {
 };
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-// 内部データ保持 atom
+// #region 内部データ保持 atom
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**
@@ -60,7 +60,7 @@ const openArchivePathAtom = atom<string | undefined>();
 const archivePathListAtom = atom<string[]>([]);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-// 外部公開 atom
+// #region 外部公開 atom
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**
@@ -187,14 +187,16 @@ export const handleMouseWheelEventAtom = atom(
   }
 );
 
-// -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
-// イベント系
-// -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// #region ページ移動系
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**
- * 次の画像（ページ）を表示する atom
+ * 次のページを表示する atom
  *
- * 見開き表示に対応している
+ * 次のページに相当する画像の縦横を元に、表示する枚数を判定する
+ *
+ * 縦画像が1枚だけ表示されるケースもあり得る
  */
 const nextImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
@@ -263,9 +265,11 @@ const nextImageAtom = atom(null, async (get, set) => {
 });
 
 /**
- * 前の画像（ページ）を表示する atom
+ * 前のページを表示する atom
  *
- * 見開き表示に対応している
+ * 前のページに相当する画像の縦横を元に、表示する枚数を判定する
+ *
+ * 現在表示している画像は重複して表示しないため、縦画像が1枚だけ表示されるケースもあり得る
  */
 const prevImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
@@ -489,7 +493,7 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 });
 
 /**
- * 最初の画像（ページ）を表示する atom
+ * 最初のページを表示する atom
  */
 const moveFirstImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
@@ -549,9 +553,9 @@ const moveFirstImageAtom = atom(null, async (get, set) => {
 });
 
 /**
- * 最後の画像（ページ）を表示する atom
+ * 最後のページを表示する atom
  *
- * 見開き表示に対応している
+ * 最後の2枚が縦画像だったら2枚とも表示する
  */
 const moveLastImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
@@ -598,7 +602,7 @@ const moveLastImageAtom = atom(null, async (get, set) => {
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
-// アーカイブ操作系
+// #region アーカイブ操作系
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
 
 /**
@@ -659,7 +663,7 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-// ユーティリティ
+// #region ユーティリティ
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**

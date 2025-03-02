@@ -82,8 +82,6 @@ export const openZipAtom = atom(
     set(updateArchiveListAtom, path);
     set(openArchivePathAtom, path);
 
-    set(openImageIndexAtom, 0);
-
     // アーカイブのファイル名をウィンドウのタイトルに設定
     const zipName = path.split("/").pop();
     if (zipName) {
@@ -105,41 +103,11 @@ export const openZipAtom = atom(
       return acc;
     }, {});
 
-    // 最初のファイルを表示する
-    const name1 = fileNames[0];
-    // 1つも画像ファイルがない場合は何もしない
-    if (!name1) {
-      return;
-    }
-
-    await convertData(bufData, name1);
+    // 初期化したデータを保持
     set(openZipDataAtom, bufData);
 
-    const name2 = fileNames[1];
-    // 1つしかファイルがない場合と1枚目が横長だった場合は、1つだけ表示する
-    if (!name2 || bufData[name1].orientation === "landscape") {
-      set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
-      return;
-    }
-
-    await convertData(bufData, name2);
-    set(openZipDataAtom, bufData);
-
-    // 1枚目と2枚目が両方とも縦長だった場合は2枚表示する
-    if (
-      bufData[name1].orientation === "portrait" &&
-      bufData[name2].orientation === "portrait"
-    ) {
-      set(openImagePathAtom, {
-        type: "double",
-        source1: bufData[name1].blob,
-        source2: bufData[name2].blob,
-      });
-      return;
-    }
-
-    // 1枚目が縦長で2枚目が横長だった場合は1枚目だけ表示する
-    set(openImagePathAtom, { type: "single", source: bufData[name1].blob });
+    // 最初のページを表示
+    set(moveIndexAtom, { index: 0 });
   }
 );
 

@@ -357,9 +357,8 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
   const index = get(openImageIndexAtom);
   const zipData = get(openZipDataAtom);
-  const imageData = get(openImagePathAtom);
 
-  if (!zipData || !imageData) {
+  if (!zipData) {
     return;
   }
 
@@ -373,58 +372,21 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 
   await convertData(zipData, name0);
   await convertData(zipData, name1);
-  set(openZipDataAtom, zipData);
-
-  // 現在が縦画像を表示しているとき
-  if (zipData[name0].orientation === "portrait") {
-    // -1枚目が縦のときは、0枚目と-1枚目を表示する
-    if (zipData[name1].orientation === "portrait") {
-      set(openImagePathAtom, {
-        type: "double",
-        source1: zipData[name1].blob,
-        source2: zipData[name0].blob,
-      });
-      set(openImageIndexAtom, index - 1);
-      return;
-    } else {
-      // -1枚目が横のときは、-1枚目のみを表示する
-      set(openImagePathAtom, {
-        type: "single",
-        source: zipData[name1].blob,
-      });
-      set(openImageIndexAtom, index - 1);
-      return;
-    }
-  }
-
   await convertData(zipData, name2);
   set(openZipDataAtom, zipData);
 
-  // 現在が横画像を表示しているとき
-
-  // -1枚目と-2枚目が両方とも縦長のときは、2枚とも表示する
+  // 現在、横画像を表示していて、-1枚目と-2枚目が両方とも縦長のときは、2枚戻って見開き表示する
   if (
+    zipData[name0].orientation === "landscape" &&
+    name2 &&
     zipData[name1].orientation === "portrait" &&
     zipData[name2].orientation === "portrait"
   ) {
-    set(openImagePathAtom, {
-      type: "double",
-      source1: zipData[name2].blob,
-      source2: zipData[name1].blob,
-    });
-    set(openImageIndexAtom, index - 2);
-    return;
+    set(moveIndexAtom, { index: index - 2 });
   }
 
-  // それ以外のときは、-1枚目のみを表示する
-  if (zipData[name1].orientation === "landscape") {
-    set(openImagePathAtom, {
-      type: "single",
-      source: zipData[name1].blob,
-    });
-    set(openImageIndexAtom, index - 1);
-    return;
-  }
+  // それ以外のときは、-1枚目のみを基準に表示する (見開き判定は表示処理で実施)
+  set(moveIndexAtom, { index: index - 1 });
 });
 
 /**

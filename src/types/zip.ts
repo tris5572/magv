@@ -468,6 +468,7 @@ const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
   const fileList = (await invoke("get_archive_file_list", {
     path,
   })) as string[];
+  fileList.sort((a, b) => a.localeCompare(b, [], { numeric: true }));
   set(archivePathListAtom, fileList);
 });
 

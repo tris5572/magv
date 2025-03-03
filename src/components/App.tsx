@@ -13,6 +13,7 @@ import {
   handleMouseWheelEventAtom,
   openZipAtom,
 } from "../types/zip";
+import { useInitialize } from "../hooks/config";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
@@ -21,6 +22,8 @@ export function App() {
   const handleKeyboardEvent = useKeyboardEvent();
   const [, handleKeyEvent] = useAtom(handleKeyEventAtom);
   const [, handleWheelEvent] = useAtom(handleMouseWheelEventAtom);
+
+  useInitialize();
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(

@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { Config } from "../types/config";
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 内部データ保持 atom
@@ -7,12 +8,16 @@ import { atom } from "jotai";
 /**
  * ウィンドウサイズを保持する atom
  */
-const $windowSizeAtom = atom<{ width: number; height: number } | null>(null);
+const $windowSizeAtom = atom<{ width: number; height: number } | undefined>(
+  undefined
+);
 
 /**
  * ウィンドウ位置を保持する atom
  */
-const $windowPositionAtom = atom<{ x: number; y: number } | null>(null);
+const $windowPositionAtom = atom<{ x: number; y: number } | undefined>(
+  undefined
+);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
@@ -41,6 +46,15 @@ export const windowPositionAtom = atom(
     set($windowPositionAtom, position);
   }
 );
+
+/**
+ * 保存するコンフィグデータを返す atom
+ */
+export const configDataAtom = atom((get) => {
+  return {
+    window: { size: get($windowSizeAtom), position: get($windowPositionAtom) },
+  } satisfies Config;
+});
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region hooks

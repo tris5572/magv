@@ -5,7 +5,12 @@ import {
 } from "@tauri-apps/api/window";
 import { useAtom } from "jotai";
 import { useState } from "react";
-import { windowPositionAtom, windowSizeAtom } from "../states/config";
+import {
+  configDataAtom,
+  windowPositionAtom,
+  windowSizeAtom,
+} from "../states/config";
+import { storeConfigFile } from "../utils/utils";
 
 /**
  * 初期化を行うカスタムフック
@@ -35,13 +40,30 @@ export function useWindowEvent() {
   const [, setWindowPosition] = useAtom(windowPositionAtom);
   const [, setWindowSize] = useAtom(windowSizeAtom);
 
+  // ウィンドウを移動・リサイズしたときに設定ファイルへ保存する暫定挙動
+  // TODO: 終了時のみ保存するように変更
+  const storeConfig = useStoreConfig();
+
   const windowMoved = (position: { x: number; y: number }) => {
     setWindowPosition(position);
+    storeConfig();
   };
 
   const windowResized = (size: { width: number; height: number }) => {
     setWindowSize(size);
+    storeConfig();
   };
 
   return { windowMoved, windowResized };
+}
+
+/**
+ * 設定ファイルを保存する関数を返すカスタムフック
+ *
+ * アプリの終了前などに呼び出す
+ */
+export function useStoreConfig() {
+  const [configData] = useAtom(configDataAtom);
+
+  return () => storeConfigFile(configData);
 }

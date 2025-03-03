@@ -9,6 +9,9 @@
     "core:window:allow-set-focus",
     "core:window:allow-set-position",
     "core:window:allow-set-size",
-    "core:window:allow-set-title"
+    "core:window:allow-set-title",
+    "fs:default",
+    { "identifier": "fs:read-all", "allow": [{ "path": "$CONFIG/**" }] },
+    { "identifier": "fs:write-all", "allow": [{ "path": "$CONFIG/**" }] }
   ]
 }

@@ -1,4 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { Config, CONFIG_FILE_NAME } from "../types/config";
+import { appConfigDir, join } from "@tauri-apps/api/path";
+import { exists, mkdir, open } from "@tauri-apps/plugin-fs";
 
 /**
  * 画像のサイズを取得する
@@ -51,4 +54,23 @@ export async function getImageOrientation(source: string | Blob) {
   }
 
   return size.width < size.height ? "portrait" : "landscape";
+}
+
+/**
+ * 設定ファイルを保存する
+ */
+export async function storeConfigFile(config: Config) {
+  const json = JSON.stringify(config);
+  const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
+  const path = await join(dir, CONFIG_FILE_NAME);
+
+  // 保存先のディレクトリが存在しないときは作成する
+  if (!(await exists(dir))) {
+    await mkdir(dir);
+  }
+
+  // ファイルを書き込む
+  const file = await open(path, { create: true, write: true });
+  await file.write(new TextEncoder().encode(json));
+  await file.close();
 }

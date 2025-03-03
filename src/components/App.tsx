@@ -13,8 +13,7 @@ import {
   handleMouseWheelEventAtom,
   openZipAtom,
 } from "../types/zip";
-import { useInitialize } from "../hooks/config";
-import { handleWindowMoveAtom, handleWindowResizeAtom } from "../states/event";
+import { useInitialize, useWindowEvent } from "../hooks/config";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
@@ -23,8 +22,7 @@ export function App() {
   const handleKeyboardEvent = useKeyboardEvent();
   const [, handleKeyEvent] = useAtom(handleKeyEventAtom);
   const [, handleWheelEvent] = useAtom(handleMouseWheelEventAtom);
-  const [, handleWindowMove] = useAtom(handleWindowMoveAtom);
-  const [, handleWindowResize] = useAtom(handleWindowResizeAtom);
+  const { windowResized, windowMoved } = useWindowEvent();
 
   useInitialize();
 
@@ -59,23 +57,23 @@ export function App() {
 
   // ウィンドウの移動とリサイズのイベントを設定
   useEffect(() => {
-    const unlistenMove = listen<{ x: number; y: number }>(
-      "tauri://move",
-      (event) => {
-        handleWindowMove(event.payload);
-      }
-    );
     const unlistenResize = listen<{ width: number; height: number }>(
       "tauri://resize",
       (event) => {
-        handleWindowResize(event.payload);
+        windowResized(event.payload);
+      }
+    );
+    const unlistenMove = listen<{ x: number; y: number }>(
+      "tauri://move",
+      (event) => {
+        windowMoved(event.payload);
       }
     );
     return () => {
-      unlistenMove.then((f) => f());
       unlistenResize.then((f) => f());
+      unlistenMove.then((f) => f());
     };
-  }, [handleWindowMove, handleWindowResize]);
+  }, [windowMoved, windowResized]);
 
   // キー押下のイベントを設定
   useEffect(() => {

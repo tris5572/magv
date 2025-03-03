@@ -6,3 +6,10 @@ export const handleWindowMoveAtom = atom(
     console.log(value);
   }
 );
+
+export const handleWindowResizeAtom = atom(
+  null,
+  (get, set, value: { width: number; height: number }) => {
+    console.log(value);
+  }
+);

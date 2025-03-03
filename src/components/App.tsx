@@ -14,7 +14,7 @@ import {
   openZipAtom,
 } from "../types/zip";
 import { useInitialize } from "../hooks/config";
-import { handleWindowMoveAtom } from "../states/event";
+import { handleWindowMoveAtom, handleWindowResizeAtom } from "../states/event";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
@@ -24,6 +24,7 @@ export function App() {
   const [, handleKeyEvent] = useAtom(handleKeyEventAtom);
   const [, handleWheelEvent] = useAtom(handleMouseWheelEventAtom);
   const [, handleWindowMove] = useAtom(handleWindowMoveAtom);
+  const [, handleWindowResize] = useAtom(handleWindowResizeAtom);
 
   useInitialize();
 
@@ -56,7 +57,7 @@ export function App() {
     };
   }, [handleDrop]);
 
-  // ウィンドウを移動したときのイベントを設定
+  // ウィンドウの移動とリサイズのイベントを設定
   useEffect(() => {
     const unlistenMove = listen<{ x: number; y: number }>(
       "tauri://move",
@@ -64,10 +65,17 @@ export function App() {
         handleWindowMove(event.payload);
       }
     );
+    const unlistenResize = listen<{ width: number; height: number }>(
+      "tauri://resize",
+      (event) => {
+        handleWindowResize(event.payload);
+      }
+    );
     return () => {
       unlistenMove.then((f) => f());
+      unlistenResize.then((f) => f());
     };
-  }, [handleWindowMove]);
+  }, [handleWindowMove, handleWindowResize]);
 
   // キー押下のイベントを設定
   useEffect(() => {

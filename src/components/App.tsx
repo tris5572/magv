@@ -13,7 +13,7 @@ import {
   handleMouseWheelEventAtom,
   openZipAtom,
 } from "../types/zip";
-import { useInitialize, useWindowEvent } from "../hooks/config";
+import { useRestoreConfig, useWindowEvent } from "../hooks/config";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
@@ -24,7 +24,7 @@ export function App() {
   const [, handleWheelEvent] = useAtom(handleMouseWheelEventAtom);
   const { windowResized, windowMoved } = useWindowEvent();
 
-  useInitialize();
+  useRestoreConfig();
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
@@ -63,6 +63,11 @@ export function App() {
         windowResized(event.payload);
       }
     );
+    return () => {
+      unlistenResize.then((f) => f());
+    };
+  }, [windowResized]);
+  useEffect(() => {
     const unlistenMove = listen<{ x: number; y: number }>(
       "tauri://move",
       (event) => {
@@ -70,10 +75,9 @@ export function App() {
       }
     );
     return () => {
-      unlistenResize.then((f) => f());
       unlistenMove.then((f) => f());
     };
-  }, [windowMoved, windowResized]);
+  }, [windowMoved]);
 
   // キー押下のイベントを設定
   useEffect(() => {

@@ -56,6 +56,17 @@ export const configDataAtom = atom((get) => {
   } satisfies Config;
 });
 
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-// #region hooks
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+/**
+ * 設定ファイルから設定を読み取って初期化する atom
+ */
+export const initializeConfigAtom = atom(
+  null,
+  (_, set, config: Config | undefined) => {
+    if (config?.window?.size) {
+      set($windowSizeAtom, config?.window.size);
+    }
+    if (config?.window?.position) {
+      set($windowPositionAtom, config?.window.position);
+    }
+  }
+);

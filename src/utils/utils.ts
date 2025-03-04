@@ -1,4 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { Config, CONFIG_FILE_NAME } from "../types/config";
+import { appConfigDir, join } from "@tauri-apps/api/path";
+import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
 
 /**
  * 画像のサイズを取得する
@@ -51,4 +54,47 @@ export async function getImageOrientation(source: string | Blob) {
   }
 
   return size.width < size.height ? "portrait" : "landscape";
+}
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// #region 設定ファイル
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+/**
+ * 設定ファイルを保存する
+ */
+export async function storeConfigFile(config: Config) {
+  const json = JSON.stringify(config);
+  const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
+  const path = await join(dir, CONFIG_FILE_NAME);
+
+  // 保存先のディレクトリが存在しないときは作成する
+  if (!(await exists(dir))) {
+    await mkdir(dir);
+  }
+
+  // ファイルを書き込む
+  const file = await open(path, { create: true, write: true, truncate: true });
+  await file.write(new TextEncoder().encode(json));
+  await file.close();
+}
+
+/**
+ * 設定ファイルを読み込む
+ *
+ * 設定が存在しない等で読み込めなかった場合は undefined を返す
+ */
+export async function readConfigFile(): Promise<Config | undefined> {
+  const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
+  const path = await join(dir, CONFIG_FILE_NAME);
+
+  // 設定ファイルが見つからないときは何もしない
+  if (!(await exists(path))) {
+    return undefined;
+  }
+
+  // ファイルを読み込む
+  const text = await readTextFile(path);
+  const json = JSON.parse(text) as Config;
+  return json;
 }

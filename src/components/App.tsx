@@ -1,12 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
-import {
-  openImagePathAtom,
-  // openPathAtom,
-  useKeyboardEvent,
-} from "../states/image";
-import { SingleImageView } from "./SingleImageView";
+import { useKeyboardEvent } from "../states/image";
 import { Log } from "./Log";
 import {
   handleKeyEventAtom,
@@ -14,11 +9,11 @@ import {
   openZipAtom,
 } from "../types/zip";
 import { useRestoreConfig, useWindowEvent } from "../hooks/config";
+import { ImageView } from "./ImageView";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
   const [, openZip] = useAtom(openZipAtom);
-  const [openImagePath] = useAtom(openImagePathAtom);
   const handleKeyboardEvent = useKeyboardEvent();
   const [, handleKeyEvent] = useAtom(handleKeyEventAtom);
   const [, handleWheelEvent] = useAtom(handleMouseWheelEventAtom);
@@ -93,14 +88,7 @@ export function App() {
 
   return (
     <main className="h-dvh">
-      {openImagePath && openImagePath?.type === "double" ? (
-        <div className="flex flex-row-reverse justify-center items-center">
-          <SingleImageView source={openImagePath?.source1} />
-          <SingleImageView source={openImagePath?.source2} />
-        </div>
-      ) : (
-        <SingleImageView source={openImagePath?.source} />
-      )}
+      <ImageView />
       <Log />
     </main>
   );

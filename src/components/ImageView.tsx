@@ -1,0 +1,23 @@
+import { useAtom } from "jotai";
+import { openImagePathAtom } from "../states/image";
+import { SingleImageView } from "./SingleImageView";
+
+/**
+ * 画像を表示するコンポーネント
+ */
+export function ImageView() {
+  const [openImagePath] = useAtom(openImagePathAtom);
+
+  return (
+    <>
+      {openImagePath && openImagePath?.type === "double" ? (
+        <div className="flex flex-row-reverse justify-center items-center">
+          <SingleImageView source={openImagePath?.source1} />
+          <SingleImageView source={openImagePath?.source2} />
+        </div>
+      ) : (
+        <SingleImageView source={openImagePath?.source} />
+      )}
+    </>
+  );
+}

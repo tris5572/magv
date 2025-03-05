@@ -53,7 +53,7 @@ export function Indicator() {
 
   return (
     <div
-      className="w-dvw bg-transparent h-8 cursor-pointer relative"
+      className="w-dvw bg-transparent h-8 cursor-pointer relative select-none"
       ref={elementRef}
       onClick={handleClick}
     >

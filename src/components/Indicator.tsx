@@ -20,5 +20,14 @@ type Props = {
  * 画像のページ位置を表示するインジケーターコンポーネント
  */
 export function Indicator({ index, last, direction = "left" }: Props) {
-  return <div className="w-dvw bg-amber-700 h-8"></div>;
+  const percent = last === 0 ? 0 : (index / last) * 100;
+  const rl = direction === "left" ? "right" : "left";
+
+  return (
+    <div className="w-dvw bg-transparent h-8 cursor-pointer relative">
+      {/* <div
+        className={`absolute top-0 ${rl}-0 bg-amber-700 w-[${percent}%] h-8`}
+      ></div> */}
+    </div>
+  );
 }

@@ -18,9 +18,9 @@ export function Indicator() {
   // TODO: 見開き方法を変えられるようになったときは変更に対応する
   const direction = "left";
 
-  const last = list.length - 1;
-  const width = last === 0 ? 0 : (index / last) * 100;
-  const pageStr = last === -1 ? "- / -" : `${index} / ${last}`;
+  const last = list.length;
+  const width = last === 0 ? 0 : (index / (last - 1)) * 100;
+  const pageStr = last === 0 ? "- / -" : `${index + 1} / ${last}`;
 
   /** 進捗バーのスタイル。Tailwind では動的スタイルを利用できないため、自前でスタイルを生成する */
   const barStyle: React.CSSProperties = {

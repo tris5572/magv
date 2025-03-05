@@ -198,7 +198,7 @@ export const handleMouseWheelEventAtom = atom(
 /**
  * 指定したインデックスのページへ移動する atom
  */
-const moveIndexAtom = atom(
+export const moveIndexAtom = atom(
   null,
   async (
     get,

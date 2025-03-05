@@ -10,6 +10,7 @@ import {
 } from "../types/zip";
 import { useRestoreConfig, useWindowEvent } from "../hooks/config";
 import { ImageView } from "./ImageView";
+import { Indicator } from "./Indicator";
 
 export function App() {
   // const [, openPath] = useAtom(openPathAtom);
@@ -87,8 +88,9 @@ export function App() {
   }, [handleKeyDown, handleKeyEvent, handleWheelEvent]);
 
   return (
-    <main className="h-dvh">
+    <main className="h-dvh grid grid-rows-[1fr_32px]">
       <ImageView />
+      <Indicator index={3} last={10} />
       <Log />
     </main>
   );

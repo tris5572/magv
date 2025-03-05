@@ -90,7 +90,7 @@ export function App() {
   return (
     <main className="h-dvh grid grid-rows-[1fr_32px]">
       <ImageView />
-      <Indicator index={3} last={10} />
+      <Indicator />
       <Log />
     </main>
   );

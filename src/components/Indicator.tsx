@@ -1,33 +1,33 @@
-type Props = {
-  /**
-   * 現在開いているページのインデックス
-   */
-  index: number;
-  /**
-   * 最後のページのインデックス
-   */
-  last: number;
-  /**
-   * インジケーターの方向
-   *
-   * - "left": 左に進む（右開き） default
-   * - "right": 右に進む（左開き）
-   */
-  direction?: "left" | "right";
-};
+import { useAtom } from "jotai";
+import { imageListAtom, openingImageIndexAtom } from "../types/zip";
 
 /**
  * 画像のページ位置を表示するインジケーターコンポーネント
  */
-export function Indicator({ index, last, direction = "left" }: Props) {
-  const percent = last === 0 ? 0 : (index / last) * 100;
-  const rl = direction === "left" ? "right" : "left";
+export function Indicator() {
+  const [list] = useAtom(imageListAtom);
+  const [index] = useAtom(openingImageIndexAtom);
+
+  // TODO: 見開き方法を変えられるようになったときは変更に対応する
+  const direction = "left";
+
+  const last = list.length - 1;
+  const width = last === 0 ? 0 : (index / last) * 100;
+
+  /** 進捗バーのスタイル。Tailwind では動的スタイルを利用できないため、自前でスタイルを生成する */
+  const barStyle: React.CSSProperties = {
+    position: "absolute",
+    top: 0,
+    height: "32px",
+    background: "hsl(200 10% 30%)",
+    width: `${width}%`,
+    right: direction === "left" ? 0 : undefined,
+    // left: direction === "right" ? 0 : undefined,
+  };
 
   return (
     <div className="w-dvw bg-transparent h-8 cursor-pointer relative">
-      {/* <div
-        className={`absolute top-0 ${rl}-0 bg-amber-700 w-[${percent}%] h-8`}
-      ></div> */}
+      <div style={barStyle}></div>
     </div>
   );
 }

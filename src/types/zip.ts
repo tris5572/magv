@@ -128,6 +128,20 @@ export const openZipAtom = atom(
 );
 
 /**
+ * アーカイブ内の画像のパスの一覧を取得する atom
+ */
+export const imageListAtom = atom((get) => {
+  return get(imageNameListAtom);
+});
+
+/**
+ * アーカイブ内で開いている画像のインデックスを取得する atom
+ */
+export const openingImageIndexAtom = atom((get) => {
+  return get(openImageIndexAtom);
+});
+
+/**
  * キーボード操作を処理する atom
  */
 export const handleKeyEventAtom = atom(

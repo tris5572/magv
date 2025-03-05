@@ -13,6 +13,7 @@ export function Indicator() {
 
   const last = list.length - 1;
   const width = last === 0 ? 0 : (index / last) * 100;
+  const pageStr = `${index} / ${last}`;
 
   /** 進捗バーのスタイル。Tailwind では動的スタイルを利用できないため、自前でスタイルを生成する */
   const barStyle: React.CSSProperties = {
@@ -28,6 +29,9 @@ export function Indicator() {
   return (
     <div className="w-dvw bg-transparent h-8 cursor-pointer relative">
       <div style={barStyle}></div>
+      <div className="w-dvw h-8 absolute top-0 left-0 flex justify-center items-center text-zinc-200">
+        {pageStr}
+      </div>
     </div>
   );
 }

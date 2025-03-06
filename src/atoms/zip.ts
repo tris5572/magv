@@ -481,12 +481,18 @@ const moveLastImageAtom = atom(null, async (get, set) => {
 
 /**
  * 渡されたパスに存在するアーカイブファイルのリストを更新する
+ *
+ * Rust 側からファイルの一覧を文字列の配列で取得し、
+ * ロケールを考慮してソートして Mac (Finder) の並びと同じにしてからセットする
  */
 const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
   const fileList = (await invoke("get_archive_file_list", {
     path,
   })) as string[];
+
+  // ロケールを考慮してソートし、Finder のファイル名の並び順と同じにする
   fileList.sort((a, b) => a.localeCompare(b, [], { numeric: true }));
+
   set(archivePathListAtom, fileList);
 });
 

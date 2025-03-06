@@ -1,7 +1,7 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import { ViewImageMode } from "../types/image";
 import { getImageOrientation } from "../utils/utils";
+import { openImagePathAtom } from "./view";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -18,9 +18,6 @@ const imagePathsAtom = atom<string[]>([]);
 // =============================================================================
 // 外部公開 atom
 // =============================================================================
-
-/** 現在開いている画像ファイルのパス */
-export const openImagePathAtom = atom<ViewImageMode | undefined>(undefined);
 
 /**
  * 開くパスを指定する

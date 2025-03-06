@@ -429,8 +429,10 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 
 /**
  * 最初のページを表示する atom
+ *
+ * テストのために export
  */
-const moveFirstImageAtom = atom(null, async (_, set) => {
+export const moveFirstImageAtom = atom(null, async (_, set) => {
   set(moveIndexAtom, { index: 0 });
 });
 

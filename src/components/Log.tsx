@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { logMessageAtom } from "../states/log";
+import { logMessageAtom } from "../atoms/log";
 
 /**
  * ログのメッセージを表示するコンポーネント

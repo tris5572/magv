@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { openImagePathAtom } from "../states/image";
+import { openImagePathAtom } from "../atoms/image";
 import { SingleImageView } from "./SingleImageView";
 
 /**

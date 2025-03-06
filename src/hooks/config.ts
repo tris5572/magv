@@ -9,7 +9,7 @@ import {
   configDataAtom,
   windowPositionAtom,
   windowSizeAtom,
-} from "../states/config";
+} from "../atoms/config";
 import { readConfigFile, storeConfigFile } from "../utils/utils";
 
 /**

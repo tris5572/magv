@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
-import { useKeyboardEvent } from "../states/image";
+import { useKeyboardEvent } from "../atoms/image";
 import { Log } from "./Log";
 import {
   handleKeyEventAtom,

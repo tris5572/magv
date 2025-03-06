@@ -42,15 +42,19 @@ const openZipDataAtom = atom<ZipData | undefined>(undefined);
 
 /**
  * アーカイブ内のファイル名のリストを保持する atom
+ *
+ * export for testing
  */
-const imageNameListAtom = atom<string[]>([]);
+export const imageNameListAtom = atom<string[]>([]);
 
 /**
  * 表示している画像ファイルのインデックスを保持する atom
  *
  * 2枚表示時は若い方のインデックス
+ *
+ * export for testing
  */
-const openImageIndexAtom = atom<number>(0);
+export const openImageIndexAtom = atom<number>(0);
 
 /**
  * 現在開いているアーカイブファイルのパスを保持する atom
@@ -361,8 +365,10 @@ const prevImageAtom = atom(null, async (get, set) => {
 
 /**
  * 1枚だけ次の画像に移動する atom
+ *
+ * export for testing
  */
-const moveNextSingleImageAtom = atom(null, async (get, set) => {
+export const moveNextSingleImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
   const index = get(openImageIndexAtom);
   const imageProperty = get(viewingImageAtom);

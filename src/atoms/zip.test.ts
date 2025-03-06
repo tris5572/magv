@@ -78,19 +78,19 @@ describe("moveNextSingleImageAtom", () => {
     );
   });
 
-  // test("最後の1枚を表示しているとき、移動しないこと", () => {
-  //   const store = createStore();
-  //   vi.spyOn(imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
-  //   vi.spyOn(openImageIndexAtom, "read").mockReturnValue(3);
-  //   vi.spyOn(viewingImageAtom, "read").mockReturnValue({
-  //     type: "single",
-  //     source: "",
-  //   });
-  //   const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+  test("最後の1枚を表示しているとき、移動しないこと", () => {
+    const store = createStore();
+    vi.spyOn(imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
+    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(3);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({
+      type: "single",
+      source: "",
+    });
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
 
-  //   store.set(moveNextSingleImageAtom);
-  //   expect(moveIndexAtomSpy).not.toHaveBeenCalled();
-  // });
+    store.set(moveNextSingleImageAtom);
+    expect(moveIndexAtomSpy).not.toHaveBeenCalled();
+  });
 
   test("最後の2枚を見開き表示しているとき、移動しないこと", () => {
     const store = createStore();

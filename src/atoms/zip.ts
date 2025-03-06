@@ -377,6 +377,11 @@ export const moveNextSingleImageAtom = atom(null, async (get, set) => {
     return;
   }
 
+  // 最後の画像を表示しているときは何もしない
+  if (imageList.length - 1 <= index) {
+    return;
+  }
+
   // 最後のページとして2枚表示されている場合は移動せず見開きのままとする
   if (imageProperty.type === "double" && imageList.length - 2 <= index) {
     return;

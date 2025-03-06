@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { openImagePathAtom } from "../atoms/image";
+import { openImagePathAtom } from "./image";
 import { getImageOrientation } from "../utils/utils";
 
 /**

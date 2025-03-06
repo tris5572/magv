@@ -7,7 +7,7 @@ import {
   handleKeyEventAtom,
   handleMouseWheelEventAtom,
   openZipAtom,
-} from "../types/zip";
+} from "../atoms/zip";
 import { useRestoreConfig, useWindowEvent } from "../hooks/config";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";

@@ -3,7 +3,7 @@ import {
   imageListAtom,
   moveIndexAtom,
   openingImageIndexAtom,
-} from "../types/zip";
+} from "../atoms/zip";
 import { useCallback, useRef } from "react";
 
 /**

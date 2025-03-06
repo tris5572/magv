@@ -1,7 +1,7 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { getImageOrientation } from "../utils/utils";
-import { openImagePathAtom } from "./view";
+import { viewingImageAtom } from "./view";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -33,13 +33,13 @@ export const openPathAtom = atom(null, async (_, set, path: string) => {
   if (fileList.find((file) => file === path)) {
     // ドロップされたファイルが画像だったときは、そのまま表示する
     // TODO: 縦横判定を行う
-    set(openImagePathAtom, { type: "single", source: path });
+    set(viewingImageAtom, { type: "single", source: path });
     set(imagePathsAtom, fileList);
   } else {
     // 画像以外がドロップされたときは、当該フォルダの中の先頭の画像を表示する
     // 画像ファイルがない場合は何もしない
     if (fileList.length > 0) {
-      set(openImagePathAtom, { type: "single", source: fileList[0] });
+      set(viewingImageAtom, { type: "single", source: fileList[0] });
       set(imagePathsAtom, fileList);
     }
   }
@@ -69,7 +69,7 @@ export function useKeyboardEvent(): (event: KeyboardEvent) => void {
  */
 const nextImageAtom = atom(null, async (get, set) => {
   const imagePaths = get(imagePathsAtom);
-  const currentImagePath = get(openImagePathAtom);
+  const currentImagePath = get(viewingImageAtom);
 
   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
   const path =
@@ -97,14 +97,14 @@ const nextImageAtom = atom(null, async (get, set) => {
     orientation2 === undefined ||
     orientation2 === "landscape"
   ) {
-    set(openImagePathAtom, {
+    set(viewingImageAtom, {
       type: "single",
       source: imagePaths[currentIndex + 1],
     });
     return;
   }
   // 2枚とも縦長の画像だったときは、2枚表示にする
-  set(openImagePathAtom, {
+  set(viewingImageAtom, {
     type: "double",
     source1: imagePaths[currentIndex + 1],
     source2: imagePaths[currentIndex + 2],
@@ -116,7 +116,7 @@ const nextImageAtom = atom(null, async (get, set) => {
  */
 export const prevImageAtom = atom(null, async (get, set) => {
   const imagePaths = get(imagePathsAtom);
-  const currentImagePath = get(openImagePathAtom);
+  const currentImagePath = get(viewingImageAtom);
 
   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時も1枚目の画像にする
   const path =
@@ -143,14 +143,14 @@ export const prevImageAtom = atom(null, async (get, set) => {
     orientation2 === undefined ||
     orientation2 === "landscape"
   ) {
-    set(openImagePathAtom, {
+    set(viewingImageAtom, {
       type: "single",
       source: imagePaths[currentIndex - 1],
     });
     return;
   }
   // 2枚とも縦長の画像だったときは、2枚表示にする
-  set(openImagePathAtom, {
+  set(viewingImageAtom, {
     type: "double",
     source1: imagePaths[currentIndex - 2], // 2つ前の画像が1枚目
     source2: imagePaths[currentIndex - 1],

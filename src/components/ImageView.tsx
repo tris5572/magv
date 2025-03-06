@@ -1,12 +1,12 @@
 import { useAtom } from "jotai";
-import { openImagePathAtom } from "../atoms/view";
+import { viewingImageAtom } from "../atoms/view";
 import { SingleImageView } from "./SingleImageView";
 
 /**
  * 画像を表示するコンポーネント
  */
 export function ImageView() {
-  const [openImagePath] = useAtom(openImagePathAtom);
+  const [openImagePath] = useAtom(viewingImageAtom);
 
   return (
     <>

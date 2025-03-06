@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { openImagePathAtom } from "./view";
+import { viewingImageAtom } from "./view";
 import { getImageOrientation } from "../utils/utils";
 
 /**
@@ -240,7 +240,7 @@ export const moveIndexAtom = atom(
     if (forceSingle) {
       await convertData(zipData, name1);
       set(openZipDataAtom, zipData);
-      set(openImagePathAtom, {
+      set(viewingImageAtom, {
         type: "single",
         source: zipData[name1].blob,
       });
@@ -252,7 +252,7 @@ export const moveIndexAtom = atom(
 
     // 1枚目が横長のときと、2枚目がないときは、1枚目のみを表示する
     if (zipData[name1].orientation === "landscape" || !name2) {
-      set(openImagePathAtom, {
+      set(viewingImageAtom, {
         type: "single",
         source: zipData[name1].blob,
       });
@@ -264,7 +264,7 @@ export const moveIndexAtom = atom(
       zipData[name1].orientation === "portrait" &&
       zipData[name2].orientation === "portrait"
     ) {
-      set(openImagePathAtom, {
+      set(viewingImageAtom, {
         type: "double",
         source1: zipData[name1].blob,
         source2: zipData[name2].blob,
@@ -273,7 +273,7 @@ export const moveIndexAtom = atom(
     }
 
     // 1枚目が縦長で2枚目が横長のときは、1枚目のみを表示する
-    set(openImagePathAtom, {
+    set(viewingImageAtom, {
       type: "single",
       source: zipData[name1].blob,
     });
@@ -289,7 +289,7 @@ export const moveIndexAtom = atom(
  */
 const nextImageAtom = atom(null, async (get, set) => {
   const openIndex = get(openImageIndexAtom);
-  const imageData = get(openImagePathAtom);
+  const imageData = get(viewingImageAtom);
 
   if (!imageData) {
     return;
@@ -365,7 +365,7 @@ const prevImageAtom = atom(null, async (get, set) => {
 const moveNextSingleImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
   const index = get(openImageIndexAtom);
-  const imageProperty = get(openImagePathAtom);
+  const imageProperty = get(viewingImageAtom);
 
   if (!imageProperty) {
     return;

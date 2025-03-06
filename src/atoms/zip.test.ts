@@ -29,12 +29,9 @@ describe("moveFirstImageAtom", () => {
 describe("moveNextSingleImageAtom", () => {
   test("画像が表示されていないとき、何もしないこと", () => {
     const store = createStore();
-    const imageListSpy = vi.spyOn(imageNameListAtom, "read");
-    imageListSpy.mockReturnValue([]);
-    const indexSpy = vi.spyOn(openImageIndexAtom, "read");
-    indexSpy.mockReturnValue(0);
-    const viewingImageSpy = vi.spyOn(viewingImageAtom, "read");
-    viewingImageSpy.mockReturnValue(undefined);
+    vi.spyOn(imageNameListAtom, "read").mockReturnValue([]);
+    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
 
     store.set(moveNextSingleImageAtom);

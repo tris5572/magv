@@ -6,7 +6,7 @@ import {
   moveNextSingleImageAtom,
   openImageIndexAtom,
 } from "./zip";
-import { viewingImageAtom } from "./view";
+import { viewingImageAtom } from "./app";
 
 afterEach(() => {
   vi.clearAllMocks();

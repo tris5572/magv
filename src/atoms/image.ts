@@ -1,7 +1,7 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { getImageOrientation } from "../utils/utils";
-import { viewingImageAtom } from "./view";
+import { viewingImageAtom } from "./app";
 
 // 画像ファイルを開いたときの状態を管理する
 

@@ -1,4 +1,4 @@
-const AppEvent = {
+export const AppEvent = {
   /** 次のページへ移動する */
   MOVE_NEXT_PAGE: "MOVE_NEXT_PAGE",
   /** 前のページへ移動する */

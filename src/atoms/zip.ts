@@ -4,6 +4,7 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { viewingImageAtom } from "./app";
 import { getImageOrientation } from "../utils/utils";
+import { AppEvent } from "../types/event";
 
 /**
  * 解凍したアーカイブのデータ
@@ -146,54 +147,44 @@ export const openingImageIndexAtom = atom((get) => {
 });
 
 /**
- * キーボード操作を処理する atom
+ * 操作イベントを処理する atom
  */
-export const handleKeyEventAtom = atom(
-  null,
-  async (_, set, event: KeyboardEvent) => {
-    if (event.key === "ArrowLeft") {
-      if (event.shiftKey) {
-        set(moveNextSingleImageAtom);
-      } else {
-        set(nextImageAtom);
-      }
-    } else if (event.key === "ArrowRight") {
-      if (event.shiftKey) {
-        set(movePrevSingleImageAtom);
-      } else {
-        set(prevImageAtom);
-      }
-    } else if (event.key === " ") {
-      if (event.shiftKey) {
-        set(prevImageAtom);
-      } else {
-        set(nextImageAtom);
-      }
-    } else if (event.key === "ArrowDown") {
-      set(openNextArchiveAtom);
-    } else if (event.key === "ArrowUp") {
-      set(openPrevArchiveAtom);
-    } else if (event.key === "End") {
-      set(moveFirstImageAtom);
-    } else if (event.key === "Home") {
-      set(moveLastImageAtom);
-    }
-  }
-);
-
-/**
- * マウスホイールのイベントを処理する atom
- */
-export const handleMouseWheelEventAtom = atom(
-  null,
-  async (_, set, event: WheelEvent) => {
-    if (0 < event.deltaY) {
+export const handleAppEvent = atom(null, async (_, set, event: AppEvent) => {
+  switch (event) {
+    case AppEvent.MOVE_NEXT_PAGE: {
       set(nextImageAtom);
-    } else if (event.deltaY < 0) {
+      break;
+    }
+    case AppEvent.MOVE_PREV_PAGE: {
       set(prevImageAtom);
+      break;
+    }
+    case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+      set(moveNextSingleImageAtom);
+      break;
+    }
+    case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+      set(movePrevSingleImageAtom);
+      break;
+    }
+    case AppEvent.MOVE_FIRST_PAGE: {
+      set(moveFirstImageAtom);
+      break;
+    }
+    case AppEvent.MOVE_LAST_PAGE: {
+      set(moveLastImageAtom);
+      break;
+    }
+    case AppEvent.SWITCH_NEXT_ARCHIVE: {
+      set(openNextArchiveAtom);
+      break;
+    }
+    case AppEvent.SWITCH_PREV_ARCHIVE: {
+      set(openPrevArchiveAtom);
+      break;
     }
   }
-);
+});
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region ページ移動系
@@ -291,7 +282,7 @@ export const moveIndexAtom = atom(
  *
  * 縦画像が1枚だけ表示されるケースもあり得る
  */
-const nextImageAtom = atom(null, async (get, set) => {
+export const nextImageAtom = atom(null, async (get, set) => {
   const openIndex = get(openImageIndexAtom);
   const imageData = get(viewingImageAtom);
 
@@ -325,7 +316,7 @@ const nextImageAtom = atom(null, async (get, set) => {
  * 横0 | 縦1 | (なし) | 縦1
  * 横0 | 横1 | (なし) | 横1
  */
-const prevImageAtom = atom(null, async (get, set) => {
+export const prevImageAtom = atom(null, async (get, set) => {
   const imageList = get(imageNameListAtom);
   const index = get(openImageIndexAtom);
   const zipData = get(openZipDataAtom);

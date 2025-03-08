@@ -1,5 +1,51 @@
 import { atom } from "jotai";
-import { Config } from "../types/config";
+import { Config, KeyboardConfig } from "../types/config";
+import { AppEvent } from "../types/event";
+
+const DEFAULT_KEYBORAD_CONFIG = [
+  {
+    key: "ArrowLeft",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.MOVE_NEXT_PAGE,
+  },
+  {
+    key: "ArrowRight",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.MOVE_PREV_PAGE,
+  },
+  {
+    key: "ArrowLeft",
+    ctrl: false,
+    meta: false,
+    shift: true,
+    event: AppEvent.MOVE_NEXT_SINGLE_IMAGE,
+  },
+  {
+    key: "ArrowRight",
+    ctrl: false,
+    meta: false,
+    shift: true,
+    event: AppEvent.MOVE_PREV_SINGLE_IMAGE,
+  },
+  {
+    key: "ArrowDown",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.SWITCH_NEXT_ARCHIVE,
+  },
+  {
+    key: "ArrowUp",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.SWITCH_PREV_ARCHIVE,
+  },
+] satisfies KeyboardConfig[];
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 内部データ保持 atom
@@ -18,6 +64,8 @@ const $windowSizeAtom = atom<{ width: number; height: number } | undefined>(
 const $windowPositionAtom = atom<{ x: number; y: number } | undefined>(
   undefined
 );
+
+const $keyboardConfigAtom = atom<KeyboardConfig[]>(DEFAULT_KEYBORAD_CONFIG);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
@@ -68,5 +116,18 @@ export const initializeConfigAtom = atom(
     if (config?.window?.position) {
       set($windowPositionAtom, config?.window.position);
     }
+  }
+);
+
+/**
+ * キーボード操作の設定内容を取得する atom
+ */
+export const keyboardConfigAtom = atom(
+  (get) => {
+    return get($keyboardConfigAtom);
+  },
+  (_, set, config: KeyboardConfig[]) => {
+    // TODO: ちゃんとセットする
+    set($keyboardConfigAtom, config);
   }
 );

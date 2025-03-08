@@ -1,24 +1,17 @@
 import { useCallback, useEffect } from "react";
 import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
-import { useKeyboardEvent } from "../atoms/image";
 import { Log } from "./Log";
-import {
-  handleKeyEventAtom,
-  handleMouseWheelEventAtom,
-  openZipAtom,
-} from "../atoms/zip";
+import { openZipAtom } from "../atoms/zip";
 import { useRestoreConfig, useWindowEvent } from "../hooks/config";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
+import { useHandleEvent } from "../hooks/event";
 
 export function App() {
-  // const [, openPath] = useAtom(openPathAtom);
   const [, openZip] = useAtom(openZipAtom);
-  const handleKeyboardEvent = useKeyboardEvent();
-  const [, handleKeyEvent] = useAtom(handleKeyEventAtom);
-  const [, handleWheelEvent] = useAtom(handleMouseWheelEventAtom);
   const { windowResized, windowMoved } = useWindowEvent();
+  const handleEvent = useHandleEvent();
 
   useRestoreConfig();
 
@@ -28,14 +21,6 @@ export function App() {
       openZip(path);
     },
     [openZip]
-  );
-
-  // キーが押されたときの処理
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      handleKeyboardEvent(event);
-    },
-    [handleKeyboardEvent]
   );
 
   // ファイルをドロップしたときのイベントを設定
@@ -75,17 +60,20 @@ export function App() {
     };
   }, [windowMoved]);
 
-  // キー押下のイベントを設定
+  // キー押下のイベントリスナーを設定
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keydown", handleKeyEvent);
-    document.addEventListener("wheel", handleWheelEvent);
+    document.addEventListener("keydown", handleEvent);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keydown", handleKeyEvent);
-      document.removeEventListener("wheel", handleWheelEvent);
+      document.removeEventListener("keydown", handleEvent);
     };
-  }, [handleKeyDown, handleKeyEvent, handleWheelEvent]);
+  }, []);
+  // マウスホイール操作のイベントリスナーを設定
+  useEffect(() => {
+    document.addEventListener("wheel", handleEvent);
+    return () => {
+      document.removeEventListener("wheel", handleEvent);
+    };
+  }, []);
 
   return (
     <main className="h-dvh grid grid-rows-[1fr_32px]">

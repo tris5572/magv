@@ -62,6 +62,20 @@ const DEFAULT_KEYBORAD_CONFIG = [
     shift: false,
     event: AppEvent.MOVE_FIRST_PAGE,
   },
+  {
+    key: " ",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.MOVE_NEXT_PAGE,
+  },
+  {
+    key: " ",
+    ctrl: false,
+    meta: false,
+    shift: true,
+    event: AppEvent.MOVE_PREV_PAGE,
+  },
 ] satisfies KeyboardConfig[];
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

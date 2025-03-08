@@ -3,7 +3,11 @@ import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
-import { useRestoreConfig, useWindowEvent } from "../hooks/config";
+import {
+  useRestoreConfig,
+  useStoreConfig,
+  useWindowEvent,
+} from "../hooks/config";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
@@ -11,6 +15,7 @@ import { useHandleEvent } from "../hooks/event";
 export function App() {
   const [, openZip] = useAtom(openZipAtom);
   const { windowResized, windowMoved } = useWindowEvent();
+  const storeConfig = useStoreConfig();
   const handleEvent = useHandleEvent();
 
   useRestoreConfig();
@@ -59,6 +64,16 @@ export function App() {
       unlistenMove.then((f) => f());
     };
   }, [windowMoved]);
+
+  // ウィンドウが閉じる直前に設定を保存するコールバックを設定する
+  useEffect(() => {
+    const unlisten = listen("tauri://close-requested", () => {
+      storeConfig();
+    });
+    return () => {
+      unlisten.then((f) => f());
+    };
+  }, [storeConfig]);
 
   // キー押下のイベントリスナーを設定
   useEffect(() => {

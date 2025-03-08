@@ -4,7 +4,7 @@ import {
   LogicalSize,
 } from "@tauri-apps/api/window";
 import { useAtom } from "jotai";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   configDataAtom,
   windowPositionAtom,
@@ -15,11 +15,9 @@ import { readConfigFile, storeConfigFile } from "../utils/utils";
 /**
  * ウィンドウ操作のイベント（移動とリサイズ）を扱う関数を返すカスタムフック
  *
- * ウィンドウを移動・リサイズしたときに設定ファイルへ保存するが、起動から1秒間は行わない。
- * これは設定ファイルからの復元を保存しないための挙動。
- * TODO: 将来的にはもうちょっと何とかする。
- *
- * TODO: ウィンドウの上を掴んで位置とサイズが同時に変更されたときの保存値が重複するので対応する
+ * ウィンドウを移動・リサイズしたときに情報を atom として保持するが、起動から1秒間は行わない。
+ * これは設定ファイルからの復元の移動・リサイズを反映しないための挙動。
+ * TODO: 将来的には Rust 側で起動時にサイズを設定するなどで対応する。起動後にウィンドウサイズが変わる挙動も解消されるので。
  */
 export function useWindowEvent() {
   const [, setWindowPosition] = useAtom(windowPositionAtom);
@@ -29,11 +27,7 @@ export function useWindowEvent() {
   const isInitialRender = useRef(true);
   const [isWarmup, setIsWarmup] = useState(true);
 
-  // ウィンドウを移動・リサイズしたときに設定ファイルへ保存する暫定挙動
-  // TODO: 終了時のみ保存するように変更
-  const storeConfig = useStoreConfig();
-
-  // 起動から1秒間は設定ファイルへ保存しないためにカウントする
+  // 起動直後の位置・サイズ復元を無視するため、起動から1秒間をカウントする
   useEffect(() => {
     if (isInitialRender.current) {
       isInitialRender.current = false;
@@ -42,21 +36,17 @@ export function useWindowEvent() {
       }, 1000);
       return () => clearTimeout(timerId);
     }
-    storeConfig();
   });
 
   const windowMoved = (position: { x: number; y: number }) => {
-    setWindowPosition(position);
     if (isWarmup) {
-      storeConfig();
+      setWindowPosition(position);
     }
-    storeConfig();
   };
 
   const windowResized = (size: { width: number; height: number }) => {
-    setWindowSize(size);
     if (isWarmup) {
-      storeConfig();
+      setWindowSize(size);
     }
   };
 
@@ -71,7 +61,8 @@ export function useWindowEvent() {
 export function useStoreConfig() {
   const [configData] = useAtom(configDataAtom);
 
-  return () => storeConfigFile(configData);
+  const f = useCallback(() => storeConfigFile(configData), [configData]);
+  return f;
 }
 
 /**

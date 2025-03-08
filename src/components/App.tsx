@@ -66,14 +66,14 @@ export function App() {
     return () => {
       document.removeEventListener("keydown", handleEvent);
     };
-  }, []);
+  }, [handleEvent]);
   // マウスホイール操作のイベントリスナーを設定
   useEffect(() => {
     document.addEventListener("wheel", handleEvent);
     return () => {
       document.removeEventListener("wheel", handleEvent);
     };
-  }, []);
+  }, [handleEvent]);
 
   return (
     <main className="h-dvh grid grid-rows-[1fr_32px]">

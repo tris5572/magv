@@ -2,6 +2,9 @@ import { atom } from "jotai";
 import { Config, KeyboardConfig } from "../types/config";
 import { AppEvent } from "../types/event";
 
+/**
+ * 右開きでのデフォルトのキーボード操作
+ */
 const DEFAULT_KEYBORAD_CONFIG = [
   {
     key: "ArrowLeft",
@@ -44,6 +47,20 @@ const DEFAULT_KEYBORAD_CONFIG = [
     meta: false,
     shift: false,
     event: AppEvent.SWITCH_PREV_ARCHIVE,
+  },
+  {
+    key: "Home",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.MOVE_LAST_PAGE,
+  },
+  {
+    key: "End",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.MOVE_FIRST_PAGE,
   },
 ] satisfies KeyboardConfig[];
 

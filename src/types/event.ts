@@ -17,6 +17,10 @@ export const AppEvent = {
   SWITCH_PREV_ARCHIVE: "SWITCH_PREV_ARCHIVE",
   /** ファイル名の先頭にビックリマークを付与する */
   ADD_EXCLAMATION_MARK: "ADD_EXCLAMATION_MARK",
+  /** リネーム入力ビューを表示する */
+  OPEN_RENAME_VIEW: "OPEN_RENAME_VIEW",
+  /** リネーム入力ビューを閉じる */
+  CLOSE_RENAME_VIEW: "CLOSE_RENAME_VIEW",
 } as const;
 
 /**

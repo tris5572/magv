@@ -83,6 +83,13 @@ const DEFAULT_KEYBOARD_CONFIG = [
     shift: true,
     event: AppEvent.ADD_EXCLAMATION_MARK,
   },
+  {
+    key: "Enter",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.OPEN_RENAME_VIEW,
+  },
 ] satisfies KeyboardConfig[];
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

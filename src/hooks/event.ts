@@ -3,6 +3,7 @@ import { AppEvent } from "../types/event";
 import { handleAppEvent } from "../atoms/zip";
 import { keyboardConfigAtom } from "../atoms/config";
 import { KeyboardConfig } from "../types/config";
+import { isOpeningRenameViewAtom } from "../atoms/app";
 
 /**
  * ユーザー操作等により発生したイベントによりアプリ操作を行うカスタムフック
@@ -10,6 +11,9 @@ import { KeyboardConfig } from "../types/config";
 export function useHandleEvent() {
   const [keyboardConfig] = useAtom(keyboardConfigAtom);
   const [, handleZip] = useAtom(handleAppEvent);
+  const [openingRenameView, setOpeningRenameView] = useAtom(
+    isOpeningRenameViewAtom
+  );
 
   // TODO: アプリの動作モードによりイベント送信先と挙動を切り替える
 
@@ -20,7 +24,11 @@ export function useHandleEvent() {
     if (event instanceof KeyboardEvent) {
       const ev = convertKeyboardEvent(event, keyboardConfig);
       if (ev) {
-        handleZip(ev);
+        if (ev === AppEvent.OPEN_RENAME_VIEW) {
+          setOpeningRenameView(!openingRenameView);
+        } else {
+          handleZip(ev);
+        }
       }
     } else if (event instanceof WheelEvent) {
       // TODO: ホイールイベントはページ移動のみに決め打ちしているので、カスタマイズ可能にする

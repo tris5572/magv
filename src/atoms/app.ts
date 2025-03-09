@@ -13,3 +13,8 @@ import { ViewImageMode } from "../types/image";
  * この atom にデータをセットすることで、表示する画像が切り替わる
  */
 export const viewingImageAtom = atom<ViewImageMode | undefined>(undefined);
+
+/**
+ * リネーム入力欄を開いているかどうかの atom
+ */
+export const isOpeningRenameViewAtom = atom<boolean>(false);

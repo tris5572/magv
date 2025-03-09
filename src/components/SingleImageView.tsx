@@ -15,6 +15,14 @@ type Props = {
    * 見開き表示時に渡すことで、左右の画像を同じ幅に設定でき、サイズが不安定になる事象を防げる
    */
   isHalf?: boolean;
+  /**
+   * 見開きで半分にしたとき、左右どちらに寄せるかの設定
+   *
+   * 見開き表示時のみ有効
+   *
+   * 省略すると `center` として中央に寄せる
+   */
+  justify?: "left" | "center" | "right";
 };
 
 /**
@@ -22,7 +30,7 @@ type Props = {
  *
  * 画像のローカルなパスを渡すことで表示する
  */
-export function SingleImageView({ source, isHalf }: Props) {
+export function SingleImageView({ source, isHalf, justify }: Props) {
   if (!source) {
     return (
       <div className="h-full bg-stone900 flex items-center justify-center select-none text-stone-200">
@@ -39,7 +47,11 @@ export function SingleImageView({ source, isHalf }: Props) {
       : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
 
   const className = isHalf
-    ? "h-full bg-stone900 flex items-center justify-center select-none w-1/2"
+    ? justify === "left"
+      ? "h-full bg-stone900 flex items-center justify-start select-none w-1/2"
+      : justify === "right"
+      ? "h-full bg-stone900 flex items-center justify-end select-none w-1/2"
+      : "h-full bg-stone900 flex items-center justify-center select-none w-1/2"
     : "h-full bg-stone900 flex items-center justify-center select-none";
 
   return (

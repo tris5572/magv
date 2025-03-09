@@ -66,6 +66,20 @@ export const openImageIndexAtom = atom<number>(0);
 const openArchivePathAtom = atom<string | undefined>();
 
 /**
+ * 「前」のアーカイブファイルのパスを保持する atom
+ *
+ * 「前」が存在しないときは `undefined`
+ */
+const $prevArchivePathAtom = atom<string | undefined>();
+
+/**
+ * 「次」のアーカイブファイルのパスを保持する atom
+ *
+ * 「次」が存在しないときは `undefined`
+ */
+const $nextArchivePathAtom = atom<string | undefined>();
+
+/**
  * 対象フォルダ内にあるアーカイブファイルのリストを保持する atom
  */
 const archivePathListAtom = atom<string[]>([]);
@@ -95,7 +109,7 @@ export const openZipAtom = atom(
     const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
 
     // フォルダ内のアーカイブファイルのリストを更新
-    set(updateArchiveListAtom, path);
+    await set(updateArchiveListAtom, path);
     set(openArchivePathAtom, path);
 
     // アーカイブのファイル名をウィンドウのタイトルに設定
@@ -123,6 +137,18 @@ export const openZipAtom = atom(
 
     // 初期化したデータを保持
     set(openZipDataAtom, bufData);
+
+    // 前後のアーカイブファイルのパスを更新して保持する
+    const archiveList = get(archivePathListAtom);
+    const archiveIndex = archiveList.findIndex((p) => p === path); // 現在のアーカイブのインデックスを探す
+    if (archiveIndex !== -1) {
+      // 現在のアーカイブが見付かったときのみ保持する（基本的に見付かるはず）
+      // 前後のファイルが存在しないときは、自動的に undefined が入るので気にしない
+      const prevPath = archiveList[archiveIndex - 1];
+      const nextPath = archiveList[archiveIndex + 1];
+      set($prevArchivePathAtom, prevPath);
+      set($nextArchivePathAtom, nextPath);
+    }
 
     // 当該アーカイブを最後に開いていたときのインデックスを取得
     // 初めて開く場合は 0
@@ -507,53 +533,22 @@ const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
  * 次のアーカイブファイルを開く
  */
 const openNextArchiveAtom = atom(null, async (get, set) => {
-  const archiveList = get(archivePathListAtom);
-  const nowPath = get(openArchivePathAtom);
-
-  // 現在のファイルのインデックスを探す
-  const index = archiveList.findIndex((path) => path === nowPath);
-
-  // 現在のファイルと一致するものがなかったときは、フォルダ内の最初のファイルを開く
-  if (index === -1) {
-    const path = archiveList[0];
-    if (path) {
-      set(openZipAtom, path);
-    }
-  }
-
-  const path = archiveList[index + 1];
-  if (path) {
-    set(openZipAtom, path);
-  }
+  const path = get($nextArchivePathAtom);
+  set(openZipAtom, path);
 });
 
 /**
  * 前のアーカイブファイルを開く
  */
 const openPrevArchiveAtom = atom(null, async (get, set) => {
-  const archiveList = get(archivePathListAtom);
-  const nowPath = get(openArchivePathAtom);
-
-  // 現在のファイルのインデックスを探す
-  const index = archiveList.findIndex((path) => path === nowPath);
-
-  // 現在のファイルと一致するものがなかったときは、フォルダ内の最初のファイルを開く
-  // TODO: このときの挙動はどうなっているべきか見直す
-  if (index === -1) {
-    const path = archiveList[0];
-    if (path) {
-      set(openZipAtom, path);
-    }
-  }
-
-  const path = archiveList[index - 1];
+  const path = get($prevArchivePathAtom);
   set(openZipAtom, path);
 });
 
 /**
  * 現在開いているファイルに対して、ファイル名の先頭にビックリマークを付与してリネームする
  */
-const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
+const renameAddExclamationMarkAtom = atom(null, async (get) => {
   const path = get(openArchivePathAtom);
 
   // ファイルを開いていないときは何もしない
@@ -564,6 +559,8 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
   // ファイル名にビックリマークを付与してリネーム
   const newPath = await createExclamationAddedPath(path);
   rename(path, newPath);
+  // リネーム後は特に何もしない
+  // 前後のアーカイブのパスは保持されていて、ファイル切替は上手く動く（リネーム前の前後のファイルへ移動する）
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

@@ -2,6 +2,7 @@ import { atom } from "jotai";
 import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { exists, rename } from "@tauri-apps/plugin-fs";
 import { viewingImageAtom } from "./app";
 import { getImageOrientation } from "../utils/utils";
 import { AppEvent } from "../types/event";
@@ -181,6 +182,10 @@ export const handleAppEvent = atom(null, async (_, set, event: AppEvent) => {
     }
     case AppEvent.SWITCH_PREV_ARCHIVE: {
       set(openPrevArchiveAtom);
+      break;
+    }
+    case AppEvent.ADD_EXCLAMATION_MARK: {
+      set(renameAddExclamationMarkAtom);
       break;
     }
   }
@@ -545,6 +550,22 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
   set(openZipAtom, path);
 });
 
+/**
+ * 現在開いているファイルに対して、ファイル名の先頭にビックリマークを付与してリネームする
+ */
+const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
+  const path = get(openArchivePathAtom);
+
+  // ファイルを開いていないときは何もしない
+  if (!path) {
+    return;
+  }
+
+  // ファイル名にビックリマークを付与してリネーム
+  const newPath = await createExclamationAddedPath(path);
+  rename(path, newPath);
+});
+
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
 // #region その他
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
@@ -617,3 +638,29 @@ export const base64FromBlob = async (file: File | Blob): Promise<string> => {
     reader.readAsDataURL(file);
   });
 };
+
+/**
+ * ビックリマークを付与したファイル名を生成する
+ *
+ * 変更後の名前のファイルがすでに存在している場合、存在しなくなるまで末尾に `_` を付与する
+ */
+async function createExclamationAddedPath(path: string): Promise<string> {
+  const buf = path.split("/"); // TODO: どの文字で区切るかを環境に基づいて判定する
+  const name = buf.pop();
+
+  if (!name) {
+    throw new Error("不正なパス");
+  }
+
+  let newName = "!" + name;
+  let newPath = [...buf, newName].join("/");
+
+  // 変更後のファイル名がすでに存在している場合、ファイル名と拡張子に分割し、ファイル名の末尾に `_` を付与してから結合して戻す
+  while (await exists(newPath)) {
+    const [n, e] = newName.split(".");
+    newName = `${n}_.${e}`;
+    newPath = [...buf, newName].join("/");
+  }
+
+  return newPath;
+}

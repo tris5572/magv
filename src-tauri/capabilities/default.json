@@ -11,7 +11,13 @@
     "core:window:allow-set-size",
     "core:window:allow-set-title",
     "fs:default",
-    { "identifier": "fs:read-all", "allow": [{ "path": "$CONFIG/**" }] },
-    { "identifier": "fs:write-all", "allow": [{ "path": "$CONFIG/**" }] }
+    {
+      "identifier": "fs:read-all",
+      "allow": [{ "path": "$CONFIG/**" }, { "path": "/**" }]
+    },
+    {
+      "identifier": "fs:write-all",
+      "allow": [{ "path": "$CONFIG/**" }, { "path": "/**" }]
+    }
   ]
 }

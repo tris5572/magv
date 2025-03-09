@@ -76,6 +76,13 @@ const DEFAULT_KEYBOARD_CONFIG = [
     shift: true,
     event: AppEvent.MOVE_PREV_PAGE,
   },
+  {
+    key: "!",
+    ctrl: false,
+    meta: false,
+    shift: true,
+    event: AppEvent.ADD_EXCLAMATION_MARK,
+  },
 ] satisfies KeyboardConfig[];
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

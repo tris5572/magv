@@ -15,6 +15,8 @@ export const AppEvent = {
   SWITCH_NEXT_ARCHIVE: "SWITCH_NEXT_ARCHIVE",
   /** 前のアーカイブファイルへ切り替える */
   SWITCH_PREV_ARCHIVE: "SWITCH_PREV_ARCHIVE",
+  /** ファイル名の先頭にビックリマークを付与する */
+  ADD_EXCLAMATION_MARK: "ADD_EXCLAMATION_MARK",
 } as const;
 
 /**

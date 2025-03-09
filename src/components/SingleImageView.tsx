@@ -9,6 +9,12 @@ type Props = {
    * - 画像の Blob
    */
   source?: string | Blob;
+  /**
+   * 画像の表示幅を 50% にするかどうかのフラグ
+   *
+   * 見開き表示時に渡すことで、左右の画像を同じ幅に設定でき、サイズが不安定になる事象を防げる
+   */
+  isHalf?: boolean;
 };
 
 /**
@@ -16,7 +22,7 @@ type Props = {
  *
  * 画像のローカルなパスを渡すことで表示する
  */
-export function SingleImageView({ source }: Props) {
+export function SingleImageView({ source, isHalf }: Props) {
   if (!source) {
     return (
       <div className="h-full bg-stone900 flex items-center justify-center select-none text-stone-200">
@@ -32,8 +38,12 @@ export function SingleImageView({ source }: Props) {
       ? source // Base64 はそのまま
       : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
 
+  const className = isHalf
+    ? "h-full bg-stone900 flex items-center justify-center select-none w-1/2"
+    : "h-full bg-stone900 flex items-center justify-center select-none";
+
   return (
-    <div className="h-full bg-stone900 flex items-center justify-center select-none">
+    <div className={className}>
       {<img className="h-full object-contain" src={src} />}
     </div>
   );

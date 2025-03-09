@@ -5,7 +5,7 @@ import { AppEvent } from "../types/event";
 /**
  * 右開きでのデフォルトのキーボード操作
  */
-const DEFAULT_KEYBORAD_CONFIG = [
+const DEFAULT_KEYBOARD_CONFIG = [
   {
     key: "ArrowLeft",
     ctrl: false,
@@ -96,7 +96,7 @@ const $windowPositionAtom = atom<{ x: number; y: number } | undefined>(
   undefined
 );
 
-const $keyboardConfigAtom = atom<KeyboardConfig[]>(DEFAULT_KEYBORAD_CONFIG);
+const $keyboardConfigAtom = atom<KeyboardConfig[]>(DEFAULT_KEYBOARD_CONFIG);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom

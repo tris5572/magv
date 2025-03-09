@@ -1,5 +1,7 @@
 import { createStore } from "jotai";
+import { exists } from "@tauri-apps/plugin-fs";
 import {
+  createExclamationAddedPath,
   imageNameListAtom,
   moveFirstImageAtom,
   moveIndexAtom,
@@ -7,6 +9,12 @@ import {
   openImageIndexAtom,
 } from "./zip";
 import { viewingImageAtom } from "./app";
+
+vi.mock("@tauri-apps/plugin-fs", () => {
+  return {
+    exists: vi.fn(),
+  };
+});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -102,5 +110,34 @@ describe("moveNextSingleImageAtom", () => {
 
     store.set(moveNextSingleImageAtom);
     expect(moveIndexAtomSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("Utilities", () => {
+  describe("createExclamationAddedPath", () => {
+    test("エクスクラメーションマークが付加されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValue(Promise.resolve(false));
+      expect(await createExclamationAddedPath("/a/b/c.txt")).toBe(
+        "/a/b/!c.txt"
+      );
+    });
+
+    test("変更後のファイルが存在している場合、アンダースコアが付加されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(false));
+      expect(await createExclamationAddedPath("/a/b/c.txt")).toBe(
+        "/a/b/!c_.txt"
+      );
+    });
+
+    test("変更後のファイルが複数個存在している場合、その分だけアンダースコアが付加されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(false));
+      expect(await createExclamationAddedPath("/a/b/c.txt")).toBe(
+        "/a/b/!c___.txt"
+      );
+    });
   });
 });

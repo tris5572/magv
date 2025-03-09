@@ -641,7 +641,9 @@ export const base64FromBlob = async (file: File | Blob): Promise<string> => {
  *
  * 変更後の名前のファイルがすでに存在している場合、存在しなくなるまで末尾に `_` を付与する
  */
-async function createExclamationAddedPath(path: string): Promise<string> {
+export async function createExclamationAddedPath(
+  path: string
+): Promise<string> {
   const buf = path.split("/"); // TODO: どの文字で区切るかを環境に基づいて判定する
   const name = buf.pop();
 

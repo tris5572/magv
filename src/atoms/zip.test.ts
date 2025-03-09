@@ -2,6 +2,7 @@ import { createStore } from "jotai";
 import { exists } from "@tauri-apps/plugin-fs";
 import {
   createExclamationAddedPath,
+  getFileNameRemovedExtension,
   imageNameListAtom,
   moveFirstImageAtom,
   moveIndexAtom,
@@ -138,6 +139,40 @@ describe("Utilities", () => {
       expect(await createExclamationAddedPath("/a/b/c.txt")).toBe(
         "/a/b/!c___.txt"
       );
+    });
+  });
+
+  describe("getFileNameRemovedExtension", () => {
+    test("zip ファイルの拡張子を取り除いて返すこと", () => {
+      expect(getFileNameRemovedExtension("/a/b/アーカイブ.zip")).toBe(
+        "アーカイブ"
+      );
+    });
+
+    test("拡張子がない場合、そのまま返すこと", () => {
+      expect(getFileNameRemovedExtension("/a/b/アーカイブ")).toBe("アーカイブ");
+    });
+
+    test("フォルダだった場合、空文字列を返すこと", () => {
+      expect(getFileNameRemovedExtension("/a/b/フォルダ/")).toBe("");
+    });
+
+    test("複数のピリオドを含む場合、最後の拡張子を除いて返すこと", () => {
+      expect(getFileNameRemovedExtension("/a/b/アーカイブ.tar.zip")).toBe(
+        "アーカイブ.tar"
+      );
+    });
+
+    test("拡張子部分が長い文字列の場合、拡張子を取り除かずに返すこと", () => {
+      expect(
+        getFileNameRemovedExtension("/a/b/単なる.区切りとして使っている")
+      ).toBe("単なる.区切りとして使っている");
+    });
+
+    test("途中にピリオドと長い文字列を含む場合、最後の拡張子を除いて返すこと", () => {
+      expect(
+        getFileNameRemovedExtension("/a/b/単なる.区切りとして使っている.zip")
+      ).toBe("単なる.区切りとして使っている");
     });
   });
 });

@@ -703,3 +703,31 @@ export function getFileNameRemovedExtension(path: string): string {
   // 拡張子部分を除いて返す
   return name.split(".").slice(0, -1).join(".");
 }
+
+/**
+ * パス `path` のファイルを `name` へリネームしたパスを返す
+ *
+ * `name` は拡張子を除いた部分を指定する
+ *
+ * 変更後のファイル名がすでに存在している場合、存在しなくなるまで末尾に `_` を付与してからリネームする
+ */
+export async function createRenamedPathToExcludeExtensionName(
+  path: string,
+  name: string
+): Promise<string> {
+  const buf = path.split("/"); // TODO: どの文字で区切るかを環境に基づいて判定する
+  const beforeName = buf.pop() ?? ""; // 元のファイル名を取り除きつつ、取得
+  const ext = beforeName.split(".").pop(); // 拡張子を取得
+
+  let newName = ext ? `${name}.${ext}` : name;
+  let newPath = [...buf, newName].join("/");
+
+  // 変更後のファイル名がすでに存在している場合、ファイル名と拡張子に分割し、ファイル名の末尾に `_` を付与してから結合して戻す
+  while (await exists(newPath)) {
+    const [n] = newName.split(".");
+    newName = ext ? `${n}_.${ext}` : `${n}_`; // 拡張子の有無で生成するファイル名を切り替える
+    newPath = [...buf, newName].join("/");
+  }
+
+  return newPath;
+}

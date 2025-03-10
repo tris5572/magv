@@ -2,6 +2,7 @@ import { createStore } from "jotai";
 import { exists } from "@tauri-apps/plugin-fs";
 import {
   createExclamationAddedPath,
+  createRenamedPathToExcludeExtensionName,
   getFileNameRemovedExtension,
   imageNameListAtom,
   moveFirstImageAtom,
@@ -173,6 +174,42 @@ describe("Utilities", () => {
       expect(
         getFileNameRemovedExtension("/a/b/単なる.区切りとして使っている.zip")
       ).toBe("単なる.区切りとして使っている");
+    });
+  });
+
+  describe("createRenamedPathToExcludeExtensionName", () => {
+    test("リネームされたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValue(Promise.resolve(false));
+      expect(
+        await createRenamedPathToExcludeExtensionName(
+          "/a/b/元の名前.txt",
+          "変更後"
+        )
+      ).toBe("/a/b/変更後.txt");
+    });
+
+    test("変更後のファイルが存在している場合、アンダースコアが付加されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(false));
+      expect(
+        await createRenamedPathToExcludeExtensionName(
+          "/a/b/元の名前.txt",
+          "変更後"
+        )
+      ).toBe("/a/b/変更後_.txt");
+    });
+
+    test("変更後のファイルが複数個存在している場合、その分だけアンダースコアが付加されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(false));
+      expect(
+        await createRenamedPathToExcludeExtensionName(
+          "/a/b/元の名前.txt",
+          "変更後"
+        )
+      ).toBe("/a/b/変更後___.txt");
     });
   });
 });

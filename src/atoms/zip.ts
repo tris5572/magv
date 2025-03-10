@@ -187,46 +187,60 @@ export const openingArchivePathWithoutExtension = atom((get) => {
 /**
  * 操作イベントを処理する atom
  */
-export const handleAppEvent = atom(null, async (_, set, event: AppEvent) => {
-  switch (event) {
-    case AppEvent.MOVE_NEXT_PAGE: {
-      set(nextImageAtom);
-      break;
+export const handleAppEvent = atom(
+  null,
+  async (
+    _,
+    set,
+    event: AppEvent | { event: AppEvent; payload: number | string }
+  ) => {
+    if (typeof event === "object") {
+      if (event.event === AppEvent.RENAME_ARCHIVE) {
+        set(renameArchiveAtom, String(event.payload));
+      }
+      return;
     }
-    case AppEvent.MOVE_PREV_PAGE: {
-      set(prevImageAtom);
-      break;
-    }
-    case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
-      set(moveNextSingleImageAtom);
-      break;
-    }
-    case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
-      set(movePrevSingleImageAtom);
-      break;
-    }
-    case AppEvent.MOVE_FIRST_PAGE: {
-      set(moveFirstImageAtom);
-      break;
-    }
-    case AppEvent.MOVE_LAST_PAGE: {
-      set(moveLastImageAtom);
-      break;
-    }
-    case AppEvent.SWITCH_NEXT_ARCHIVE: {
-      set(openNextArchiveAtom);
-      break;
-    }
-    case AppEvent.SWITCH_PREV_ARCHIVE: {
-      set(openPrevArchiveAtom);
-      break;
-    }
-    case AppEvent.ADD_EXCLAMATION_MARK: {
-      set(renameAddExclamationMarkAtom);
-      break;
+
+    switch (event) {
+      case AppEvent.MOVE_NEXT_PAGE: {
+        set(nextImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_PREV_PAGE: {
+        set(prevImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+        set(moveNextSingleImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+        set(movePrevSingleImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_FIRST_PAGE: {
+        set(moveFirstImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_LAST_PAGE: {
+        set(moveLastImageAtom);
+        break;
+      }
+      case AppEvent.SWITCH_NEXT_ARCHIVE: {
+        set(openNextArchiveAtom);
+        break;
+      }
+      case AppEvent.SWITCH_PREV_ARCHIVE: {
+        set(openPrevArchiveAtom);
+        break;
+      }
+      case AppEvent.ADD_EXCLAMATION_MARK: {
+        set(renameAddExclamationMarkAtom);
+        break;
+      }
     }
   }
-});
+);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region ページ移動系
@@ -519,6 +533,26 @@ const moveLastImageAtom = atom(null, async (get, set) => {
   set(moveIndexAtom, { index: lastIndex });
 });
 
+/**
+ * 開いているアーカイブファイルをリネームする atom
+ */
+export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
+  const beforePath = get(openArchivePathAtom);
+
+  if (!beforePath) {
+    return;
+  }
+
+  const newPath = await createRenamedPathToExcludeExtensionName(
+    beforePath,
+    name
+  );
+
+  // リネームして、変更後のファイル名を開いていることにする
+  rename(beforePath, newPath);
+  set(openArchivePathAtom, newPath);
+});
+
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
 // #region アーカイブ操作系
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
@@ -559,7 +593,7 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
 /**
  * 現在開いているファイルに対して、ファイル名の先頭にビックリマークを付与してリネームする
  */
-const renameAddExclamationMarkAtom = atom(null, async (get) => {
+const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
   const path = get(openArchivePathAtom);
 
   // ファイルを開いていないときは何もしない
@@ -569,9 +603,10 @@ const renameAddExclamationMarkAtom = atom(null, async (get) => {
 
   // ファイル名にビックリマークを付与してリネーム
   const newPath = await createExclamationAddedPath(path);
+
+  // リネームして、変更後のファイル名を開いていることにする
   rename(path, newPath);
-  // リネーム後は特に何もしない
-  // 前後のアーカイブのパスは保持されていて、ファイル切替は上手く動く（リネーム前の前後のファイルへ移動する）
+  set(openArchivePathAtom, newPath);
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

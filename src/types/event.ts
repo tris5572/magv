@@ -21,6 +21,8 @@ export const AppEvent = {
   OPEN_RENAME_VIEW: "OPEN_RENAME_VIEW",
   /** リネーム入力ビューを閉じる */
   CLOSE_RENAME_VIEW: "CLOSE_RENAME_VIEW",
+  /** アーカイブファイルをリネームする */
+  RENAME_ARCHIVE: "RENAME_ARCHIVE",
 } as const;
 
 /**

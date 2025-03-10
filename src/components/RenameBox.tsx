@@ -1,7 +1,11 @@
 import { useAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
-import { openingArchivePathWithoutExtension } from "../atoms/zip";
+import {
+  handleAppEvent,
+  openingArchivePathWithoutExtension,
+} from "../atoms/zip";
+import { AppEvent } from "../types/event";
 
 /**
  * ファイルのリネーム情報を入力するビュー
@@ -11,6 +15,7 @@ export function RenameBox() {
   const [, setIsOpeningView] = useAtom(isOpeningRenameViewAtom);
   const inputRef = useRef<HTMLInputElement>(null);
   const [defaultValue] = useAtom(openingArchivePathWithoutExtension);
+  const [, handleZip] = useAtom(handleAppEvent);
 
   // 表示したとき、テキストボックスにフォーカスを当てて中身を選択する
   useEffect(() => {
@@ -23,14 +28,15 @@ export function RenameBox() {
     // キー入力がアプリのイベントとして伝わらないようにする
     event.stopPropagation();
 
-    // 変換中の Enter 押下時にイベントの伝播を防ぎ、ビューが閉じないようにする
-    if (event.key === "Enter") {
-      event.preventDefault();
-    }
-    // 名前が確定したときの処理（変換確定の Enter を無視する）
+    // 変換中以外で Enter が押されたときにリネームする
     if (event.key === "Enter" && !isComposing) {
-      // event.preventDefault();
-      // event.stopPropagation();
+      const value = inputRef.current?.value;
+      if (!value) {
+        return;
+      }
+      // ファイル名変更イベントを発火し、リネームビューを閉じる
+      handleZip({ event: AppEvent.RENAME_ARCHIVE, payload: value });
+      setIsOpeningView(false);
     }
     // Esc 押下時（変換中以外）は、変更を反映せずに閉じる
     if (event.key === "Escape" && !isComposing) {

@@ -1,6 +1,7 @@
 import { useAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
+import { openingArchivePathWithoutExtension } from "../atoms/zip";
 
 /**
  * ファイルのリネーム情報を入力するビュー
@@ -8,13 +9,23 @@ import { isOpeningRenameViewAtom } from "../atoms/app";
 export function RenameBox() {
   const [isComposing, setIsComposing] = useState(false); // 変換中かどうか
   const [, setIsOpeningView] = useAtom(isOpeningRenameViewAtom);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [defaultValue] = useAtom(openingArchivePathWithoutExtension);
 
-  /** キー押下時のイベントハンドラ */
+  // 表示したとき、テキストボックスにフォーカスを当てて中身を選択する
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  /** テキストフィールドのキー押下時のイベントハンドラ */
   function handleKeyDown(event: React.KeyboardEvent) {
+    // キー入力がアプリのイベントとして伝わらないようにする
+    event.stopPropagation();
+
     // 変換中の Enter 押下時にイベントの伝播を防ぎ、ビューが閉じないようにする
     if (event.key === "Enter") {
       event.preventDefault();
-      event.stopPropagation();
     }
     // 名前が確定したときの処理（変換確定の Enter を無視する）
     if (event.key === "Enter" && !isComposing) {
@@ -24,12 +35,8 @@ export function RenameBox() {
     // Esc 押下時（変換中以外）は、変更を反映せずに閉じる
     if (event.key === "Escape" && !isComposing) {
       event.preventDefault();
-      event.stopPropagation();
       setIsOpeningView(false);
     }
-
-    // 他のキー入力がアプリのイベントとして伝わらないようにする
-    event.stopPropagation();
   }
 
   return (
@@ -39,6 +46,8 @@ export function RenameBox() {
           type="text"
           size={100}
           className="bg-neutral-100/60 rounded-md p-1 border border-neutral-300"
+          ref={inputRef}
+          defaultValue={defaultValue}
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => {

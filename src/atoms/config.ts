@@ -56,9 +56,23 @@ const DEFAULT_KEYBOARD_CONFIG = [
     event: AppEvent.MOVE_LAST_PAGE,
   },
   {
+    key: "ArrowLeft",
+    ctrl: false,
+    meta: true,
+    shift: false,
+    event: AppEvent.MOVE_LAST_PAGE,
+  },
+  {
     key: "End",
     ctrl: false,
     meta: false,
+    shift: false,
+    event: AppEvent.MOVE_FIRST_PAGE,
+  },
+  {
+    key: "ArrowRight",
+    ctrl: false,
+    meta: true,
     shift: false,
     event: AppEvent.MOVE_FIRST_PAGE,
   },

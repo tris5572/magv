@@ -90,6 +90,13 @@ const DEFAULT_KEYBOARD_CONFIG = [
     shift: false,
     event: AppEvent.OPEN_RENAME_VIEW,
   },
+  {
+    key: "f",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.SEARCH_FILE_NAME,
+  },
 ] satisfies KeyboardConfig[];
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

@@ -4,7 +4,7 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
 import { viewingImageAtom } from "./app";
-import { getImageOrientation } from "../utils/utils";
+import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 
 /**
@@ -190,7 +190,7 @@ export const openingArchivePathWithoutExtension = atom((get) => {
 export const handleAppEvent = atom(
   null,
   async (
-    _,
+    get,
     set,
     event: AppEvent | { event: AppEvent; payload: number | string }
   ) => {
@@ -237,6 +237,9 @@ export const handleAppEvent = atom(
       case AppEvent.ADD_EXCLAMATION_MARK: {
         set(renameAddExclamationMarkAtom);
         break;
+      }
+      case AppEvent.SEARCH_FILE_NAME: {
+        searchAtBrowser(get(openingArchivePathWithoutExtension));
       }
     }
   }

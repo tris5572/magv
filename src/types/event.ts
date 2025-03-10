@@ -23,6 +23,8 @@ export const AppEvent = {
   CLOSE_RENAME_VIEW: "CLOSE_RENAME_VIEW",
   /** アーカイブファイルをリネームする */
   RENAME_ARCHIVE: "RENAME_ARCHIVE",
+  /** ファイル名で検索する */
+  SEARCH_FILE_NAME: "SEARCH_FILE_NAME",
 } as const;
 
 /**

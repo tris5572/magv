@@ -2,7 +2,7 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { Config, CONFIG_FILE_NAME } from "../types/config";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
-
+import { openUrl } from "@tauri-apps/plugin-opener";
 /**
  * 画像のサイズを取得する
  *
@@ -97,4 +97,16 @@ export async function readConfigFile(): Promise<Config | undefined> {
   const text = await readTextFile(path);
   const json = JSON.parse(text) as Config;
   return json;
+}
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// #region その他
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+export function searchAtBrowser(keyword: string) {
+  if (keyword) {
+    // const url = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
+    const url = `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(keyword)}`;
+    openUrl(url);
+  }
 }

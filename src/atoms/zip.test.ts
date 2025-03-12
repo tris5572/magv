@@ -4,11 +4,11 @@ import {
   createExclamationAddedPath,
   createRenamedPathToExcludeExtensionName,
   getFileNameRemovedExtension,
-  imageNameListAtom,
+  $imageNameListAtom,
   moveFirstImageAtom,
   moveIndexAtom,
   moveNextSingleImageAtom,
-  openImageIndexAtom,
+  $openingImageIndexAtom,
 } from "./zip";
 import { viewingImageAtom } from "./app";
 
@@ -39,8 +39,8 @@ describe("moveFirstImageAtom", () => {
 describe("moveNextSingleImageAtom", () => {
   test("画像が表示されていないとき、何もしないこと", () => {
     const store = createStore();
-    vi.spyOn(imageNameListAtom, "read").mockReturnValue([]);
-    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue([]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
 
@@ -50,8 +50,8 @@ describe("moveNextSingleImageAtom", () => {
 
   test("見開き表示しているとき、1枚分だけ移動すること", () => {
     const store = createStore();
-    vi.spyOn(imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
-    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(1);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue({
       type: "double",
       source1: "",
@@ -69,8 +69,8 @@ describe("moveNextSingleImageAtom", () => {
 
   test("1枚表示しているとき、1枚分だけ移動すること", () => {
     const store = createStore();
-    vi.spyOn(imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
-    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(1);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue({
       type: "single",
       source: "",
@@ -87,8 +87,8 @@ describe("moveNextSingleImageAtom", () => {
 
   test("最後の1枚を表示しているとき、移動しないこと", () => {
     const store = createStore();
-    vi.spyOn(imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
-    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(3);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(3);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue({
       type: "single",
       source: "",
@@ -101,8 +101,8 @@ describe("moveNextSingleImageAtom", () => {
 
   test("最後の2枚を見開き表示しているとき、移動しないこと", () => {
     const store = createStore();
-    vi.spyOn(imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
-    vi.spyOn(openImageIndexAtom, "read").mockReturnValue(2);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue({
       type: "double",
       source1: "",

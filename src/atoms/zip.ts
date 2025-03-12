@@ -40,14 +40,14 @@ type LastIndex = {
 /**
  * 開いているアーカイブのデータを保持する atom
  */
-const openZipDataAtom = atom<ZipData | undefined>(undefined);
+const $openingZipDataAtom = atom<ZipData | undefined>(undefined);
 
 /**
  * アーカイブ内のファイル名のリストを保持する atom
  *
  * export for testing
  */
-export const imageNameListAtom = atom<string[]>([]);
+export const $imageNameListAtom = atom<string[]>([]);
 
 /**
  * 表示している画像ファイルのインデックスを保持する atom
@@ -56,14 +56,14 @@ export const imageNameListAtom = atom<string[]>([]);
  *
  * export for testing
  */
-export const openImageIndexAtom = atom<number>(0);
+export const $openingImageIndexAtom = atom<number>(0);
 
 /**
  * 現在開いているアーカイブファイルのパスを保持する atom
  *
  * 何も開いていない初期状態では `undefined`
  */
-const openArchivePathAtom = atom<string | undefined>();
+const $openingArchivePathAtom = atom<string | undefined>();
 
 /**
  * 「前」のアーカイブファイルのパスを保持する atom
@@ -82,12 +82,12 @@ const $nextArchivePathAtom = atom<string | undefined>();
 /**
  * 対象フォルダ内にあるアーカイブファイルのリストを保持する atom
  */
-const archivePathListAtom = atom<string[]>([]);
+const $archivePathListAtom = atom<string[]>([]);
 
 /**
  * 各アーカイブファイルで最後に開いた画像のインデックスを保持する atom
  */
-const _lastIndexArrayAtom = atom<LastIndex[]>([]);
+const $lastIndexArrayAtom = atom<LastIndex[]>([]);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
@@ -110,7 +110,7 @@ export const openZipAtom = atom(
 
     // フォルダ内のアーカイブファイルのリストを更新
     await set(updateArchiveListAtom, path);
-    set(openArchivePathAtom, path);
+    set($openingArchivePathAtom, path);
 
     // アーカイブのファイル名をウィンドウのタイトルに設定
     const zipName = path.split("/").pop();
@@ -126,7 +126,7 @@ export const openZipAtom = atom(
       .filter((name) => !name.endsWith("/")) // ディレクトリを除く
       .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
       .sort();
-    set(imageNameListAtom, fileNames);
+    set($imageNameListAtom, fileNames);
 
     // 生データを Blob に変換
     const bufData = fileNames.reduce<ZipData>((acc, name) => {
@@ -136,10 +136,10 @@ export const openZipAtom = atom(
     }, {});
 
     // 初期化したデータを保持
-    set(openZipDataAtom, bufData);
+    set($openingZipDataAtom, bufData);
 
     // 前後のアーカイブファイルのパスを更新して保持する
-    const archiveList = get(archivePathListAtom);
+    const archiveList = get($archivePathListAtom);
     const archiveIndex = archiveList.findIndex((p) => p === path); // 現在のアーカイブのインデックスを探す
     if (archiveIndex !== -1) {
       // 現在のアーカイブが見付かったときのみ保持する（基本的に見付かるはず）
@@ -163,21 +163,21 @@ export const openZipAtom = atom(
  * アーカイブ内の画像のパスの一覧を取得する atom
  */
 export const imageListAtom = atom((get) => {
-  return get(imageNameListAtom);
+  return get($imageNameListAtom);
 });
 
 /**
  * アーカイブ内で開いている画像のインデックスを取得する atom
  */
 export const openingImageIndexAtom = atom((get) => {
-  return get(openImageIndexAtom);
+  return get($openingImageIndexAtom);
 });
 
 /**
  * 開いているアーカイブのパスから、拡張子を取り除いたファイル名を取得する atom
  */
 export const openingArchivePathWithoutExtension = atom((get) => {
-  const path = get(openArchivePathAtom);
+  const path = get($openingArchivePathAtom);
   if (!path) {
     return "";
   }
@@ -289,8 +289,8 @@ export const moveIndexAtom = atom(
       forceSingle?: boolean;
     }
   ) => {
-    const imageList = get(imageNameListAtom);
-    const zipData = get(openZipDataAtom);
+    const imageList = get($imageNameListAtom);
+    const zipData = get($openingZipDataAtom);
 
     if (!zipData) {
       return;
@@ -304,10 +304,10 @@ export const moveIndexAtom = atom(
       return;
     }
 
-    set(openImageIndexAtom, index);
+    set($openingImageIndexAtom, index);
 
     // このアーカイブで最後に開いたインデックスを保持
-    const archivePath = get(openArchivePathAtom);
+    const archivePath = get($openingArchivePathAtom);
     if (archivePath) {
       set(lastOpenIndexAtom, archivePath, index);
     }
@@ -315,7 +315,7 @@ export const moveIndexAtom = atom(
     // 強制的に1枚のみを表示する
     if (forceSingle) {
       await convertData(zipData, name1);
-      set(openZipDataAtom, zipData);
+      set($openingZipDataAtom, zipData);
       set(viewingImageAtom, {
         type: "single",
         source: zipData[name1].blob,
@@ -324,7 +324,7 @@ export const moveIndexAtom = atom(
 
     await convertData(zipData, name1);
     await convertData(zipData, name2);
-    set(openZipDataAtom, zipData);
+    set($openingZipDataAtom, zipData);
 
     // 1枚目が横長のときと、2枚目がないときは、1枚目のみを表示する
     if (zipData[name1].orientation === "landscape" || !name2) {
@@ -364,7 +364,7 @@ export const moveIndexAtom = atom(
  * 縦画像が1枚だけ表示されるケースもあり得る
  */
 export const nextImageAtom = atom(null, async (get, set) => {
-  const openIndex = get(openImageIndexAtom);
+  const openIndex = get($openingImageIndexAtom);
   const imageData = get(viewingImageAtom);
 
   if (!imageData) {
@@ -398,9 +398,9 @@ export const nextImageAtom = atom(null, async (get, set) => {
  * 横0 | 横1 | (なし) | 横1
  */
 export const prevImageAtom = atom(null, async (get, set) => {
-  const imageList = get(imageNameListAtom);
-  const index = get(openImageIndexAtom);
-  const zipData = get(openZipDataAtom);
+  const imageList = get($imageNameListAtom);
+  const index = get($openingImageIndexAtom);
+  const zipData = get($openingZipDataAtom);
 
   if (!zipData) {
     return;
@@ -418,7 +418,7 @@ export const prevImageAtom = atom(null, async (get, set) => {
   await convertData(zipData, name0);
   await convertData(zipData, name1);
   await convertData(zipData, name2);
-  set(openZipDataAtom, zipData);
+  set($openingZipDataAtom, zipData);
 
   // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
   if (
@@ -441,8 +441,8 @@ export const prevImageAtom = atom(null, async (get, set) => {
  * export for testing
  */
 export const moveNextSingleImageAtom = atom(null, async (get, set) => {
-  const imageList = get(imageNameListAtom);
-  const index = get(openImageIndexAtom);
+  const imageList = get($imageNameListAtom);
+  const index = get($openingImageIndexAtom);
   const imageProperty = get(viewingImageAtom);
 
   if (!imageProperty) {
@@ -475,9 +475,9 @@ export const moveNextSingleImageAtom = atom(null, async (get, set) => {
  * - (最後の画像が縦で1枚のみ表示されているケースは、|縦 縦0| 開始と同じパターン)
  */
 const movePrevSingleImageAtom = atom(null, async (get, set) => {
-  const imageList = get(imageNameListAtom);
-  const index = get(openImageIndexAtom);
-  const zipData = get(openZipDataAtom);
+  const imageList = get($imageNameListAtom);
+  const index = get($openingImageIndexAtom);
+  const zipData = get($openingZipDataAtom);
 
   if (!zipData) {
     return;
@@ -494,7 +494,7 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
   await convertData(zipData, name0);
   await convertData(zipData, name1);
   await convertData(zipData, name2);
-  set(openZipDataAtom, zipData);
+  set($openingZipDataAtom, zipData);
 
   // 現在、横画像を表示していて、-1枚目と-2枚目が両方とも縦長のときは、2枚戻って見開き表示する
   if (
@@ -525,8 +525,8 @@ export const moveFirstImageAtom = atom(null, async (_, set) => {
  * 最後の2枚が縦画像だったら見開き表示する
  */
 const moveLastImageAtom = atom(null, async (get, set) => {
-  const imageList = get(imageNameListAtom);
-  const zipData = get(openZipDataAtom);
+  const imageList = get($imageNameListAtom);
+  const zipData = get($openingZipDataAtom);
 
   if (!zipData) {
     return;
@@ -543,7 +543,7 @@ const moveLastImageAtom = atom(null, async (get, set) => {
 
   await convertData(zipData, name1);
   await convertData(zipData, name2);
-  set(openZipDataAtom, zipData);
+  set($openingZipDataAtom, zipData);
 
   // 1枚目と2枚目の両方が縦長のときは、2枚とも表示する
   if (
@@ -562,7 +562,7 @@ const moveLastImageAtom = atom(null, async (get, set) => {
  * 開いているアーカイブファイルをリネームする atom
  */
 export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
-  const beforePath = get(openArchivePathAtom);
+  const beforePath = get($openingArchivePathAtom);
 
   if (!beforePath) {
     return;
@@ -575,7 +575,7 @@ export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
 
   // リネームして、変更後のファイル名を開いていることにする
   rename(beforePath, newPath);
-  set(openArchivePathAtom, newPath);
+  set($openingArchivePathAtom, newPath);
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
@@ -596,7 +596,7 @@ const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
   // ロケールを考慮してソートし、Finder のファイル名の並び順と同じにする
   fileList.sort((a, b) => a.localeCompare(b, [], { numeric: true }));
 
-  set(archivePathListAtom, fileList);
+  set($archivePathListAtom, fileList);
 });
 
 /**
@@ -619,7 +619,7 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
  * 現在開いているファイルに対して、ファイル名の先頭にビックリマークを付与してリネームする
  */
 const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
-  const path = get(openArchivePathAtom);
+  const path = get($openingArchivePathAtom);
 
   // ファイルを開いていないときは何もしない
   if (!path) {
@@ -631,7 +631,7 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
 
   // リネームして、変更後のファイル名を開いていることにする
   rename(path, newPath);
-  set(openArchivePathAtom, newPath);
+  set($openingArchivePathAtom, newPath);
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
@@ -643,8 +643,8 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
  */
 const lastOpenIndexAtom = atom(
   (get) => {
-    const array = get(_lastIndexArrayAtom);
-    const path = get(openArchivePathAtom);
+    const array = get($lastIndexArrayAtom);
+    const path = get($openingArchivePathAtom);
     if (!path) {
       return 0;
     }
@@ -656,16 +656,16 @@ const lastOpenIndexAtom = atom(
     return 0;
   },
   (get, set, path: string, index: number) => {
-    const array = get(_lastIndexArrayAtom);
+    const array = get($lastIndexArrayAtom);
     for (const v of array) {
       if (v.path === path) {
         v.index = index;
-        set(_lastIndexArrayAtom, array);
+        set($lastIndexArrayAtom, array);
         return;
       }
     }
     array.push({ path, index });
-    set(_lastIndexArrayAtom, array);
+    set($lastIndexArrayAtom, array);
   }
 );
 

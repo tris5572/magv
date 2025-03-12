@@ -110,7 +110,7 @@ export const openZipAtom = atom(
 
     // フォルダ内のアーカイブファイルのリストを更新
     await set(updateArchiveListAtom, path);
-    set($openingArchivePathAtom, path);
+    set(setOpeningArchivePathAtom, path);
 
     // アーカイブのファイル名をウィンドウのタイトルに設定
     const zipName = path.split("/").pop();
@@ -158,6 +158,29 @@ export const openZipAtom = atom(
     set(moveIndexAtom, { index });
   }
 );
+
+/**
+ * 現在開いているアーカイブのパスをセットする atom
+ *
+ * 開いているアーカイブのファイル名を変更したときに呼び出す
+ *
+ * 実行時に行うこと
+ * - 保持しているパス情報の更新
+ * - ウィンドウのタイトルの更新
+ *
+ * 実行時に行わないこと
+ * - アーカイブのデータ更新
+ * - 前後アーカイブパスの更新
+ */
+export const setOpeningArchivePathAtom = atom(null, (_, set, path: string) => {
+  set($openingArchivePathAtom, path);
+
+  // アーカイブのファイル名をウィンドウのタイトルに設定
+  const zipName = path.split("/").pop();
+  if (zipName) {
+    getCurrentWindow().setTitle(zipName);
+  }
+});
 
 /**
  * アーカイブ内の画像のパスの一覧を取得する atom
@@ -575,7 +598,7 @@ export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
 
   // リネームして、変更後のファイル名を開いていることにする
   rename(beforePath, newPath);
-  set($openingArchivePathAtom, newPath);
+  set(setOpeningArchivePathAtom, newPath);
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
@@ -631,7 +654,7 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
 
   // リネームして、変更後のファイル名を開いていることにする
   rename(path, newPath);
-  set($openingArchivePathAtom, newPath);
+  set(setOpeningArchivePathAtom, newPath);
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

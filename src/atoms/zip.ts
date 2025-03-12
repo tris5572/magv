@@ -185,6 +185,28 @@ export const openingArchivePathWithoutExtension = atom((get) => {
 });
 
 /**
+ * 前のアーカイブファイル名（拡張子なし）を取得する atom
+ */
+export const prevArchiveNameWithoutExtensionAtom = atom((get) => {
+  const path = get($prevArchivePathAtom);
+  if (!path) {
+    return "";
+  }
+  return getFileNameRemovedExtension(path);
+});
+
+/**
+ * 次のアーカイブファイル名（拡張子なし）を取得する atom
+ */
+export const nextArchiveNameWithoutExtensionAtom = atom((get) => {
+  const path = get($nextArchivePathAtom);
+  if (!path) {
+    return "";
+  }
+  return getFileNameRemovedExtension(path);
+});
+
+/**
  * 操作イベントを処理する atom
  */
 export const handleAppEvent = atom(

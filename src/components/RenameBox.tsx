@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import {
   handleAppEvent,
+  nextArchiveNameWithoutExtensionAtom,
   openingArchivePathWithoutExtension,
+  prevArchiveNameWithoutExtensionAtom,
 } from "../atoms/zip";
 import { AppEvent } from "../types/event";
 
@@ -15,6 +17,8 @@ export function RenameBox() {
   const [, setIsOpeningView] = useAtom(isOpeningRenameViewAtom);
   const inputRef = useRef<HTMLInputElement>(null);
   const [defaultValue] = useAtom(openingArchivePathWithoutExtension);
+  const [prevFileName] = useAtom(prevArchiveNameWithoutExtensionAtom);
+  const [nextFileName] = useAtom(nextArchiveNameWithoutExtensionAtom);
   const [, handleZip] = useAtom(handleAppEvent);
 
   // 表示したとき、テキストボックスにフォーカスを当てて中身を選択する
@@ -46,8 +50,9 @@ export function RenameBox() {
   }
 
   return (
-    <div className="absolute bottom-8 left-1/2 transform-[translateX(-50%)] bg-neutral-50/20 text-neutral-700 p-4 rounded-md">
+    <div className="absolute bottom-8 left-1/2 transform-[translateX(-50%)] bg-neutral-50/60 text-neutral-700 p-4 rounded-md">
       <div>
+        <div className="pl-1 text-neutral-500">{prevFileName}</div>
         <input
           type="text"
           size={100}
@@ -62,6 +67,7 @@ export function RenameBox() {
           }}
         />
       </div>
+      <div className="pl-1 text-neutral-500">{nextFileName}</div>
       {/* <div className="mt-2 flex justify-end gap-2">
         <button
           type="button"

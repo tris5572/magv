@@ -68,20 +68,6 @@ export function RenameBox() {
         />
       </div>
       <div className="pl-1 text-neutral-500">{nextFileName}</div>
-      {/* <div className="mt-2 flex justify-end gap-2">
-        <button
-          type="button"
-          className="bg-neutral-100 border border-neutral-300 rounded-md px-2 py-0.5"
-        >
-          キャンセル
-        </button>
-        <button
-          type="submit"
-          className="bg-neutral-300 border border-neutral-400 rounded-md px-4 py-1"
-        >
-          変更確定
-        </button>
-      </div> */}
     </div>
   );
 }

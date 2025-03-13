@@ -3,7 +3,7 @@ import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
-import { viewingImageAtom } from "./app";
+import { isOpeningRenameViewAtom, viewingImageAtom } from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 
@@ -144,6 +144,11 @@ export const openZipAtom = atom(
       set($prevArchivePathAtom, prevPath);
       set($nextArchivePathAtom, nextPath);
     }
+
+    // リネームビューを閉じる
+    // リネームビューを開いている状態で、テキストフィールドからフォーカスを外してアーカイブ移動（カーソル上下）したとき、
+    // テキストフィールドの内容と実際のファイルとの紐付けがゴチャゴチャになるので、一旦閉じる
+    set(isOpeningRenameViewAtom, false);
 
     // 当該アーカイブを最後に開いていたときのインデックスを取得
     // 初めて開く場合は 0

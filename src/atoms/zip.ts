@@ -112,12 +112,7 @@ export const openZipAtom = atom(
     await set(updateArchiveListAtom, path);
     set(setOpeningArchivePathAtom, path);
 
-    // アーカイブのファイル名をウィンドウのタイトルに設定
-    const zipName = path.split("/").pop();
-    if (zipName) {
-      getCurrentWindow().setTitle(zipName);
-    }
-
+    // ウィンドウを前面に出す
     getCurrentWindow().setFocus();
 
     // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む

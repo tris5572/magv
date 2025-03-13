@@ -1,4 +1,4 @@
-import { useAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import {
@@ -14,12 +14,12 @@ import { AppEvent } from "../types/event";
  */
 export function RenameBox() {
   const [isComposing, setIsComposing] = useState(false); // 変換中かどうか
-  const [, setIsOpeningView] = useAtom(isOpeningRenameViewAtom);
+  const setIsOpeningView = useSetAtom(isOpeningRenameViewAtom);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [defaultValue] = useAtom(openingArchivePathWithoutExtension);
-  const [prevFileName] = useAtom(prevArchiveNameWithoutExtensionAtom);
-  const [nextFileName] = useAtom(nextArchiveNameWithoutExtensionAtom);
-  const [, handleZip] = useAtom(handleAppEvent);
+  const defaultValue = useAtomValue(openingArchivePathWithoutExtension);
+  const prevFileName = useAtomValue(prevArchiveNameWithoutExtensionAtom);
+  const nextFileName = useAtomValue(nextArchiveNameWithoutExtensionAtom);
+  const handleZip = useSetAtom(handleAppEvent);
 
   // 表示したとき、テキストボックスにフォーカスを当てて中身を選択する
   useEffect(() => {

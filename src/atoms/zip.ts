@@ -6,27 +6,7 @@ import { exists, rename } from "@tauri-apps/plugin-fs";
 import { isOpeningRenameViewAtom, viewingImageAtom } from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
-
-/**
- * 解凍したアーカイブのデータ
- */
-type ZipData = {
-  /**
-   * キーは画像ファイル名
-   */
-  [name: string]: {
-    /**
-     * Blob に変換した画像データ
-     */
-    blob: Blob;
-    /**
-     * 画像の向き
-     *
-     * 向きを未取得または取得できなかった場合は `undefined`
-     */
-    orientation?: "portrait" | "landscape";
-  };
-};
+import { ZipData } from "../types/data";
 
 type LastIndex = {
   path: string;

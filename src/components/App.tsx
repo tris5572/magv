@@ -13,6 +13,7 @@ import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
 import { RenameBox } from "./RenameBox";
 import { isOpeningRenameViewAtom } from "../atoms/app";
+import { TopMenu } from "./TopMenu";
 
 export function App() {
   const [, openZip] = useAtom(openZipAtom);
@@ -96,6 +97,7 @@ export function App() {
   return (
     <main className="h-dvh grid grid-rows-[1fr_32px]">
       <ImageView />
+      <TopMenu />
       <Indicator />
       {isOpeningRenameView && <RenameBox />}
       <Log />

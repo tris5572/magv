@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAtom } from "jotai";
+import { singleOrDoubleAtom } from "../atoms/app";
 
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント
@@ -20,10 +22,33 @@ export function TopMenu() {
     >
       {isVisible && (
         <div className="flex flex-row justify-center">
-          <IconButton src="/page-view-1.svg" label="単体" />
-          <IconButton src="/page-view-2.svg" label="見開き" selected />
+          <SingleDoubleSwitcher />
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * 見開き表示を切り替えるコンポーネント
+ */
+function SingleDoubleSwitcher() {
+  const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
+
+  return (
+    <div className="flex flex-row justify-center">
+      <IconButton
+        src="/page-view-1.svg"
+        label="単体"
+        onClick={() => setSingleOrDouble("single")}
+        selected={singleOrDouble === "single"}
+      />
+      <IconButton
+        src="/page-view-2.svg"
+        label="見開き"
+        onClick={() => setSingleOrDouble("double")}
+        selected={singleOrDouble === "double"}
+      />
     </div>
   );
 }
@@ -35,17 +60,19 @@ function IconButton({
   src,
   label,
   selected = false,
+  onClick,
 }: {
   src: string;
   label?: string;
   selected?: boolean;
+  onClick: () => void;
 }) {
   const buttonClass = selected
     ? "bg-white/80 flex flex-col items-center justify-center rounded-md px-1 py-0.5 w-[3rem] inset-ring-3 inset-ring-blue-500/50"
-    : "bg-white/30 flex flex-col items-center justify-center rounded-md px-1 py-0.5 w-[3rem]";
+    : "bg-white/30 flex flex-col items-center justify-center rounded-md px-1 py-0.5 w-[3rem] cursor-pointer";
 
   return (
-    <button className={buttonClass}>
+    <button className={buttonClass} onClick={onClick}>
       <div>
         <img src={src} />
       </div>

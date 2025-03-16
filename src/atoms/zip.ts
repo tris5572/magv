@@ -3,7 +3,11 @@ import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
-import { isOpeningRenameViewAtom, viewingImageAtom } from "./app";
+import {
+  isOpeningRenameViewAtom,
+  singleOrDoubleAtom,
+  viewingImageAtom,
+} from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
@@ -219,6 +223,8 @@ export const handleAppEvent = atom(
     set,
     event: AppEvent | { event: AppEvent; payload: number | string }
   ) => {
+    const singleOrDouble = get(singleOrDoubleAtom);
+
     if (typeof event === "object") {
       if (event.event === AppEvent.RENAME_ARCHIVE) {
         set(renameArchiveAtom, String(event.payload));
@@ -228,10 +234,18 @@ export const handleAppEvent = atom(
 
     switch (event) {
       case AppEvent.MOVE_NEXT_PAGE: {
+        if (singleOrDouble === "single") {
+          set(moveNextSingleImageAtom);
+          break;
+        }
         set(nextImageAtom);
         break;
       }
       case AppEvent.MOVE_PREV_PAGE: {
+        if (singleOrDouble === "single") {
+          set(movePrevSingleImageAtom);
+          break;
+        }
         set(prevImageAtom);
         break;
       }
@@ -265,6 +279,11 @@ export const handleAppEvent = atom(
       }
       case AppEvent.SEARCH_FILE_NAME: {
         searchAtBrowser(get(openingArchivePathWithoutExtension));
+        break;
+      }
+      case AppEvent.UPDATE_PAGE: {
+        set(updatePageAtom);
+        break;
       }
     }
   }
@@ -294,6 +313,7 @@ export const moveIndexAtom = atom(
   ) => {
     const imageList = get($imageNameListAtom);
     const zipData = get($openingZipDataAtom);
+    const singleOrDouble = get(singleOrDoubleAtom);
 
     if (!zipData) {
       return;
@@ -316,13 +336,14 @@ export const moveIndexAtom = atom(
     }
 
     // 強制的に1枚のみを表示する
-    if (forceSingle) {
+    if (forceSingle || singleOrDouble === "single") {
       await convertData(zipData, name1);
       set($openingZipDataAtom, zipData);
       set(viewingImageAtom, {
         type: "single",
         source: zipData[name1].blob,
       });
+      return;
     }
 
     await convertData(zipData, name1);
@@ -579,6 +600,16 @@ export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
   // リネームして、変更後のファイル名を開いていることにする
   rename(beforePath, newPath);
   set(setOpeningArchivePathAtom, newPath);
+});
+
+/**
+ * 現在のページの表示を更新する atom
+ *
+ * 表示モードを切り替えたときなどに呼び出す
+ */
+const updatePageAtom = atom(null, async (get, set) => {
+  const index = get($openingImageIndexAtom);
+  set(moveIndexAtom, { index });
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

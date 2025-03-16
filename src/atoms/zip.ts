@@ -279,6 +279,11 @@ export const handleAppEvent = atom(
       }
       case AppEvent.SEARCH_FILE_NAME: {
         searchAtBrowser(get(openingArchivePathWithoutExtension));
+        break;
+      }
+      case AppEvent.UPDATE_PAGE: {
+        set(updatePageAtom);
+        break;
       }
     }
   }
@@ -595,6 +600,16 @@ export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
   // リネームして、変更後のファイル名を開いていることにする
   rename(beforePath, newPath);
   set(setOpeningArchivePathAtom, newPath);
+});
+
+/**
+ * 現在のページの表示を更新する atom
+ *
+ * 表示モードを切り替えたときなどに呼び出す
+ */
+const updatePageAtom = atom(null, async (get, set) => {
+  const index = get($openingImageIndexAtom);
+  set(moveIndexAtom, { index });
 });
 
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -

@@ -25,6 +25,8 @@ export const AppEvent = {
   RENAME_ARCHIVE: "RENAME_ARCHIVE",
   /** ファイル名で検索する */
   SEARCH_FILE_NAME: "SEARCH_FILE_NAME",
+  /** 現在のページの表示を更新する（ページを切り替えない） */
+  UPDATE_PAGE: "UPDATE_PAGE",
 } as const;
 
 /**

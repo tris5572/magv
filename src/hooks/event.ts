@@ -18,7 +18,7 @@ export function useHandleEvent() {
   // TODO: アプリの動作モードによりイベント送信先と挙動を切り替える
 
   const handleEvent = (
-    event: KeyboardEvent | WheelEvent
+    event: KeyboardEvent | WheelEvent | AppEvent
     //payload?: number | string
   ) => {
     if (event instanceof KeyboardEvent) {
@@ -37,6 +37,9 @@ export function useHandleEvent() {
       } else if (event.deltaY < 0) {
         handleZip(AppEvent.MOVE_PREV_PAGE);
       }
+    } else {
+      // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する
+      handleZip(event);
     }
   };
 

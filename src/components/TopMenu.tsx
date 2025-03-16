@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAtom } from "jotai";
 import { singleOrDoubleAtom } from "../atoms/app";
+import { useHandleEvent } from "../hooks/event";
+import { AppEvent } from "../types/event";
 
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント
@@ -34,19 +36,26 @@ export function TopMenu() {
  */
 function SingleDoubleSwitcher() {
   const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
+  const handleEvent = useHandleEvent();
 
   return (
     <div className="flex flex-row justify-center">
       <IconButton
         src="/page-view-1.svg"
         label="単体"
-        onClick={() => setSingleOrDouble("single")}
+        onClick={() => {
+          setSingleOrDouble("single");
+          handleEvent(AppEvent.UPDATE_PAGE);
+        }}
         selected={singleOrDouble === "single"}
       />
       <IconButton
         src="/page-view-2.svg"
         label="見開き"
-        onClick={() => setSingleOrDouble("double")}
+        onClick={() => {
+          setSingleOrDouble("double");
+          handleEvent(AppEvent.UPDATE_PAGE);
+        }}
         selected={singleOrDouble === "double"}
       />
     </div>

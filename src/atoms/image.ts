@@ -1,7 +1,8 @@
 import { atom, useAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { getImageOrientation } from "../utils/utils";
-import { viewingImageAtom } from "./app";
+import { singleOrDoubleAtom, viewingImageAtom } from "./app";
+import { AppEvent } from "../types/event";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -24,7 +25,7 @@ const imagePathsAtom = atom<string[]>([]);
  *
  * パスが画像のときはそのまま表示し、フォルダだったりした場合は戦闘の画像を表示する
  */
-export const openPathAtom = atom(null, async (_, set, path: string) => {
+export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   // 画像ファイルの一覧を取得する
   const fileList = (await invoke("get_image_file_list", {
     path,
@@ -49,90 +50,146 @@ export const openPathAtom = atom(null, async (_, set, path: string) => {
 // イベント系
 
 /**
- * キーボードイベントを処理する関数を返す
+ * 操作イベントを処理する atom
  */
-export function useKeyboardEvent(): (event: KeyboardEvent) => void {
-  const [, nextImage] = useAtom(nextImageAtom);
-  const [, prevImage] = useAtom(prevImageAtom);
+export const handleAppEvent = atom(
+  null,
+  async (get, set, event: AppEvent | { event: AppEvent; payload: number | string }) => {
+    const singleOrDouble = get(singleOrDoubleAtom);
 
-  return (event: KeyboardEvent) => {
-    if (event.key === "ArrowRight") {
-      nextImage();
-    } else if (event.key === "ArrowLeft") {
-      prevImage();
-    }
-  };
-}
+    // if (typeof event === "object") {
+    //   if (event.event === AppEvent.RENAME_ARCHIVE) {
+    //     set(renameArchiveAtom, String(event.payload));
+    //   }
+    //   return;
+    // }
+
+    // switch (event) {
+    //   case AppEvent.MOVE_NEXT_PAGE: {
+    //     if (singleOrDouble === "single") {
+    //       set(moveNextSingleImageAtom);
+    //       break;
+    //     }
+    //     set(nextImageAtom);
+    //     break;
+    //   }
+    //   case AppEvent.MOVE_PREV_PAGE: {
+    //     if (singleOrDouble === "single") {
+    //       set(movePrevSingleImageAtom);
+    //       break;
+    //     }
+    //     set(prevImageAtom);
+    //     break;
+    //   }
+    //   case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+    //     set(moveNextSingleImageAtom);
+    //     break;
+    //   }
+    //   case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+    //     set(movePrevSingleImageAtom);
+    //     break;
+    //   }
+    //   case AppEvent.MOVE_FIRST_PAGE: {
+    //     set(moveFirstImageAtom);
+    //     break;
+    //   }
+    //   case AppEvent.MOVE_LAST_PAGE: {
+    //     set(moveLastImageAtom);
+    //     break;
+    //   }
+    //   case AppEvent.SWITCH_NEXT_ARCHIVE: {
+    //     set(openNextArchiveAtom);
+    //     break;
+    //   }
+    //   case AppEvent.SWITCH_PREV_ARCHIVE: {
+    //     set(openPrevArchiveAtom);
+    //     break;
+    //   }
+    //   case AppEvent.ADD_EXCLAMATION_MARK: {
+    //     set(renameAddExclamationMarkAtom);
+    //     break;
+    //   }
+    //   case AppEvent.SEARCH_FILE_NAME: {
+    //     searchAtBrowser(get(openingArchivePathWithoutExtension));
+    //     break;
+    //   }
+    //   case AppEvent.UPDATE_PAGE: {
+    //     set(updatePageAtom);
+    //     break;
+    //   }
+    // }
+  }
+);
 
 /**
  * 次の画像を表示する atom
  */
-const nextImageAtom = atom(null, async (get, set) => {
-  const imagePaths = get(imagePathsAtom);
-  const currentImagePath = get(viewingImageAtom);
+// const nextImageAtom = atom(null, async (get, set) => {
+//   const imagePaths = get(imagePathsAtom);
+//   const currentImagePath = get(viewingImageAtom);
 
-  // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
-  const path =
-    currentImagePath?.type === "single" ? currentImagePath?.source : currentImagePath?.source2;
+//   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
+//   const path =
+//     currentImagePath?.type === "single" ? currentImagePath?.source : currentImagePath?.source2;
 
-  const currentIndex = imagePaths.findIndex((p) => p === path);
+//   const currentIndex = imagePaths.findIndex((p) => p === path);
 
-  // 2つ先の画像までの縦横の向きを取得
-  const orientation1 = await getImageOrientation(imagePaths[currentIndex + 1] ?? "");
-  const orientation2 = await getImageOrientation(imagePaths[currentIndex + 2] ?? "");
+//   // 2つ先の画像までの縦横の向きを取得
+//   const orientation1 = await getImageOrientation(imagePaths[currentIndex + 1] ?? "");
+//   const orientation2 = await getImageOrientation(imagePaths[currentIndex + 2] ?? "");
 
-  // 1枚目がないときは何もしない
-  if (orientation1 === undefined) {
-    return;
-  }
-  // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
-  if (orientation1 === "landscape" || orientation2 === undefined || orientation2 === "landscape") {
-    set(viewingImageAtom, {
-      type: "single",
-      source: imagePaths[currentIndex + 1],
-    });
-    return;
-  }
-  // 2枚とも縦長の画像だったときは、2枚表示にする
-  set(viewingImageAtom, {
-    type: "double",
-    source1: imagePaths[currentIndex + 1],
-    source2: imagePaths[currentIndex + 2],
-  });
-});
+//   // 1枚目がないときは何もしない
+//   if (orientation1 === undefined) {
+//     return;
+//   }
+//   // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
+//   if (orientation1 === "landscape" || orientation2 === undefined || orientation2 === "landscape") {
+//     set(viewingImageAtom, {
+//       type: "single",
+//       source: imagePaths[currentIndex + 1],
+//     });
+//     return;
+//   }
+//   // 2枚とも縦長の画像だったときは、2枚表示にする
+//   set(viewingImageAtom, {
+//     type: "double",
+//     source1: imagePaths[currentIndex + 1],
+//     source2: imagePaths[currentIndex + 2],
+//   });
+// });
 
 /**
  * 前の画像を表示する atom
  */
-export const prevImageAtom = atom(null, async (get, set) => {
-  const imagePaths = get(imagePathsAtom);
-  const currentImagePath = get(viewingImageAtom);
+// export const prevImageAtom = atom(null, async (get, set) => {
+//   const imagePaths = get(imagePathsAtom);
+//   const currentImagePath = get(viewingImageAtom);
 
-  // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時も1枚目の画像にする
-  const path =
-    currentImagePath?.type === "single" ? currentImagePath?.source : currentImagePath?.source1;
-  const currentIndex = imagePaths.findIndex((p) => p === path);
+//   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時も1枚目の画像にする
+//   const path =
+//     currentImagePath?.type === "single" ? currentImagePath?.source : currentImagePath?.source1;
+//   const currentIndex = imagePaths.findIndex((p) => p === path);
 
-  // 2つ前の画像までの縦横の向きを取得
-  const orientation1 = await getImageOrientation(imagePaths[currentIndex - 1] ?? "");
-  const orientation2 = await getImageOrientation(imagePaths[currentIndex - 2] ?? "");
+//   // 2つ前の画像までの縦横の向きを取得
+//   const orientation1 = await getImageOrientation(imagePaths[currentIndex - 1] ?? "");
+//   const orientation2 = await getImageOrientation(imagePaths[currentIndex - 2] ?? "");
 
-  // 1枚目がないときは何もしない
-  if (orientation1 === undefined) {
-    return;
-  }
-  // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
-  if (orientation1 === "landscape" || orientation2 === undefined || orientation2 === "landscape") {
-    set(viewingImageAtom, {
-      type: "single",
-      source: imagePaths[currentIndex - 1],
-    });
-    return;
-  }
-  // 2枚とも縦長の画像だったときは、2枚表示にする
-  set(viewingImageAtom, {
-    type: "double",
-    source1: imagePaths[currentIndex - 2], // 2つ前の画像が1枚目
-    source2: imagePaths[currentIndex - 1],
-  });
-});
+//   // 1枚目がないときは何もしない
+//   if (orientation1 === undefined) {
+//     return;
+//   }
+//   // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
+//   if (orientation1 === "landscape" || orientation2 === undefined || orientation2 === "landscape") {
+//     set(viewingImageAtom, {
+//       type: "single",
+//       source: imagePaths[currentIndex - 1],
+//     });
+//     return;
+//   }
+//   // 2枚とも縦長の画像だったときは、2枚表示にする
+//   set(viewingImageAtom, {
+//     type: "double",
+//     source1: imagePaths[currentIndex - 2], // 2つ前の画像が1枚目
+//     source2: imagePaths[currentIndex - 1],
+//   });
+// });

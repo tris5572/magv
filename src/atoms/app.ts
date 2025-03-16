@@ -6,6 +6,13 @@ import { ViewImageMode } from "../types/image";
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /**
+ * アプリの動作モードを保持する atom
+ *
+ * 主にイベントをどの atom に対して発行するかを制御する
+ */
+export const appModeAtom = atom<"zip" | "image">("zip");
+
+/**
  * 表示する画像の情報を保持する atom
  *
  * 見開きかどうかと、表示している画像の情報を持つ

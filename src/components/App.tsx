@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
@@ -10,9 +10,12 @@ import { useHandleEvent } from "../hooks/event";
 import { RenameBox } from "./RenameBox";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import { TopMenu } from "./TopMenu";
+import { getPathKind } from "../utils/files";
+import { openImagePathAtom } from "../atoms/image";
 
 export function App() {
   const [, openZip] = useAtom(openZipAtom);
+  const openImage = useSetAtom(openImagePathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreConfig();
   const handleEvent = useHandleEvent();
@@ -23,9 +26,14 @@ export function App() {
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
     async (path: string) => {
-      openZip(path);
+      const kind = await getPathKind(path);
+      if (kind === "zip") {
+        openZip(path);
+      } else if (kind === "image" || kind === "directory") {
+        openImage(path);
+      }
     },
-    [openZip]
+    [openImage, openZip]
   );
 
   // ファイルをドロップしたときのイベントを設定

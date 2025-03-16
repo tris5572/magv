@@ -211,5 +211,37 @@ describe("Utilities", () => {
         )
       ).toBe("/a/b/変更後___.txt");
     });
+
+    test("元がピリオド付きのファイル名だった場合、リネームされたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValue(Promise.resolve(false));
+      expect(
+        await createRenamedPathToExcludeExtensionName(
+          "/a/b/ピリオドの前.と後.txt",
+          "変更後"
+        )
+      ).toBe("/a/b/変更後.txt");
+    });
+
+    test("元がピリオド付きのファイル名で、変更後のファイルが存在している場合、アンダースコアが付与されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValue(Promise.resolve(false));
+      expect(
+        await createRenamedPathToExcludeExtensionName(
+          "/a/b/ピリオドの前.と後.txt",
+          "変更後"
+        )
+      ).toBe("/a/b/変更後_.txt");
+    });
+
+    test("ピリオド付きのファイル名が指定されて、変更後のファイルが存在している場合、アンダースコアが付与されたパスが返されること", async () => {
+      vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
+      vi.mocked(exists).mockReturnValue(Promise.resolve(false));
+      expect(
+        await createRenamedPathToExcludeExtensionName(
+          "/a/b/元の名前.txt",
+          "ピリオドの前.と後"
+        )
+      ).toBe("/a/b/ピリオドの前.と後_.txt");
+    });
   });
 });

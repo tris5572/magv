@@ -591,11 +591,13 @@ export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
   if (!beforePath) {
     return;
   }
+  console.log(name);
 
   const newPath = await createRenamedPathToExcludeExtensionName(
     beforePath,
     name
   );
+  console.log(newPath);
 
   // リネームして、変更後のファイル名を開いていることにする
   rename(beforePath, newPath);
@@ -801,7 +803,7 @@ export function getFileNameRemovedExtension(path: string): string {
 /**
  * パス `path` のファイルを `name` へリネームしたパスを返す
  *
- * `name` は拡張子を除いた部分を指定する
+ * `name` は拡張子を除いた部分を指定する（元の拡張子をこの処理の中で付与するため）
  *
  * 変更後のファイル名がすでに存在している場合、存在しなくなるまで末尾に `_` を付与してからリネームする
  */
@@ -813,13 +815,14 @@ export async function createRenamedPathToExcludeExtensionName(
   const beforeName = buf.pop() ?? ""; // 元のファイル名を取り除きつつ、取得
   const ext = beforeName.split(".").pop(); // 拡張子を取得
 
-  let newName = ext ? `${name}.${ext}` : name;
+  let newBody = name; // 新しいファイル名の拡張子を除いた部分
+  let newName = ext ? `${name}.${ext}` : name; // 新しいファイル名の拡張子を含んだ部分
   let newPath = [...buf, newName].join("/");
 
   // 変更後のファイル名がすでに存在している場合、ファイル名と拡張子に分割し、ファイル名の末尾に `_` を付与してから結合して戻す
   while (await exists(newPath)) {
-    const [n] = newName.split(".");
-    newName = ext ? `${n}_.${ext}` : `${n}_`; // 拡張子の有無で生成するファイル名を切り替える
+    newBody = `${newBody}_`;
+    newName = ext ? `${newBody}.${ext}` : `${newBody}`; // 元のパスの拡張子の有無で生成するファイル名を切り替える
     newPath = [...buf, newName].join("/");
   }
 

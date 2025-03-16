@@ -26,3 +26,8 @@ export const isOpeningRenameViewAtom = atom<boolean>(false);
  * - "double": 見開き表示可能な場合(縦画像が2枚連続)は見開き表示
  */
 export const singleOrDoubleAtom = atom<"single" | "double">("double");
+
+/**
+ * ルーペ機能のオンオフを切り替える atom
+ */
+export const isMagnifierEnabledAtom = atom<boolean>(false);

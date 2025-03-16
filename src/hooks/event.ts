@@ -3,7 +3,7 @@ import { AppEvent } from "../types/event";
 import { handleAppEvent } from "../atoms/zip";
 import { keyboardConfigAtom } from "../atoms/config";
 import { KeyboardConfig } from "../types/config";
-import { isOpeningRenameViewAtom } from "../atoms/app";
+import { isMagnifierEnabledAtom, isOpeningRenameViewAtom } from "../atoms/app";
 
 /**
  * ユーザー操作等により発生したイベントによりアプリ操作を行うカスタムフック
@@ -14,11 +14,14 @@ export function useHandleEvent() {
   const [openingRenameView, setOpeningRenameView] = useAtom(
     isOpeningRenameViewAtom
   );
+  const [isMagnifierEnabled, setIsMagnifierEnabled] = useAtom(
+    isMagnifierEnabledAtom
+  );
 
   // TODO: アプリの動作モードによりイベント送信先と挙動を切り替える
 
   const handleEvent = (
-    event: KeyboardEvent | WheelEvent | AppEvent
+    event: KeyboardEvent | MouseEvent | WheelEvent | AppEvent
     //payload?: number | string
   ) => {
     if (event instanceof KeyboardEvent) {
@@ -36,6 +39,11 @@ export function useHandleEvent() {
         handleZip(AppEvent.MOVE_NEXT_PAGE);
       } else if (event.deltaY < 0) {
         handleZip(AppEvent.MOVE_PREV_PAGE);
+      }
+    } else if (event instanceof MouseEvent) {
+      // ホイールがクリックされたときは、ルーペの有効/無効を切り替える
+      if (event.button === 1) {
+        setIsMagnifierEnabled(!isMagnifierEnabled);
       }
     } else {
       // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する

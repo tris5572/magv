@@ -11,7 +11,7 @@ export function ImageView() {
   return (
     <>
       {openImagePath && openImagePath?.type === "double" ? (
-        <div className="h-[calc(100dvh-32px)] flex flex-row-reverse justify-center items-center">
+        <div className="h-[calc(100dvh-32px)] flex flex-row-reverse justify-center items-center overflow-hidden">
           <SingleImageView
             source={openImagePath?.source1}
             isHalf
@@ -24,7 +24,7 @@ export function ImageView() {
           />
         </div>
       ) : (
-        <div className="h-[calc(100dvh-32px)]">
+        <div className="h-[calc(100dvh-32px)] overflow-hidden">
           <SingleImageView source={openImagePath?.source} />
         </div>
       )}

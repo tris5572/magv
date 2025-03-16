@@ -93,6 +93,13 @@ export function App() {
       document.removeEventListener("wheel", handleEvent);
     };
   }, [handleEvent]);
+  // マウスイベントのイベントリスナーを設定
+  useEffect(() => {
+    document.addEventListener("mousedown", handleEvent);
+    return () => {
+      document.removeEventListener("mousedown", handleEvent);
+    };
+  }, [handleEvent]);
 
   return (
     <main className="h-dvh grid grid-rows-[1fr_32px]">

@@ -1,4 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { useAtomValue } from "jotai";
+import { useState } from "react";
+import { isMagnifierEnabledAtom } from "../atoms/app";
 
 type Props = {
   /**
@@ -31,6 +34,39 @@ type Props = {
  * 画像のローカルなパスを渡すことで表示する
  */
 export function SingleImageView({ source, isHalf, justify }: Props) {
+  // TODO: ルーペの表示位置がずれるので対処する。ただ表示位置を CSS に任せているので自前で制御するのは難度が高い
+
+  // ルーペのフラグ類
+  const [showMagnifier, setShowMagnifier] = useState(false);
+  const [[imgWidth, imgHeight], setSize] = useState([0, 0]);
+  const [[x, y], setXY] = useState([0, 0]);
+  const isMagnifierEnabled = useAtomValue(isMagnifierEnabledAtom);
+
+  // ルーペの定数
+  const magnifierHeight = 300;
+  const magnifierWidth = 300;
+  const zoomLevel = 4;
+
+  const mouseEnter = (e: React.MouseEvent) => {
+    const el = e.currentTarget;
+    const { width, height } = el.getBoundingClientRect();
+    setSize([width, height]);
+    setShowMagnifier(true);
+  };
+
+  const mouseLeave = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowMagnifier(false);
+  };
+
+  const mouseMove = (e: React.MouseEvent) => {
+    const el = e.currentTarget;
+    const { top, left } = el.getBoundingClientRect();
+    const x = e.pageX - left - window.scrollX;
+    const y = e.pageY - top - window.scrollY;
+    setXY([x, y]);
+  };
+
   if (!source) {
     return (
       <div className="h-full bg-stone900 flex items-center justify-center select-none text-stone-200">
@@ -48,15 +84,43 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
 
   const className = isHalf
     ? justify === "left"
-      ? "h-full bg-stone900 flex items-center justify-start select-none w-1/2"
+      ? "h-full relative bg-stone900 flex items-center justify-start select-none w-1/2"
       : justify === "right"
-      ? "h-full bg-stone900 flex items-center justify-end select-none w-1/2"
-      : "h-full bg-stone900 flex items-center justify-center select-none w-1/2"
-    : "h-full bg-stone900 flex items-center justify-center select-none";
+      ? "h-full relative bg-stone900 flex items-center justify-end select-none w-1/2"
+      : "h-full relative bg-stone900 flex items-center justify-center select-none w-1/2"
+    : "h-full relative bg-stone900 flex items-center justify-center select-none";
 
   return (
     <div className={className}>
-      {<img className="h-full object-contain" src={src} />}
+      <img
+        className="h-full object-contain"
+        src={src}
+        onMouseEnter={(e) => mouseEnter(e)}
+        onMouseLeave={(e) => mouseLeave(e)}
+        onMouseMove={(e) => mouseMove(e)}
+      />
+      <div
+        style={{
+          display: isMagnifierEnabled && showMagnifier ? "" : "none",
+          position: "absolute",
+          pointerEvents: "none",
+          height: `${magnifierHeight}px`,
+          width: `${magnifierWidth}px`,
+          opacity: "1",
+          border: "1px solid lightgrey",
+          backgroundColor: "white",
+          borderRadius: "5px",
+          backgroundImage: `url('${src}')`,
+          backgroundRepeat: "no-repeat",
+          top: `${y - magnifierHeight / 2}px`,
+          left: `${x - magnifierWidth / 2}px`,
+          backgroundSize: `${imgWidth * zoomLevel}px ${
+            imgHeight * zoomLevel
+          }px`,
+          backgroundPositionX: `${-x * zoomLevel + magnifierWidth / 2}px`,
+          backgroundPositionY: `${-y * zoomLevel + magnifierHeight / 2}px`,
+        }}
+      />
     </div>
   );
 }

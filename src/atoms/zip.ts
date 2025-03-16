@@ -3,11 +3,7 @@ import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
-import {
-  isOpeningRenameViewAtom,
-  singleOrDoubleAtom,
-  viewingImageAtom,
-} from "./app";
+import { isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
@@ -80,68 +76,65 @@ const $lastIndexArrayAtom = atom<LastIndex[]>([]);
 /**
  * アーカイブ（zip ファイル）を開く atom
  */
-export const openZipAtom = atom(
-  null,
-  async (get, set, path: string | undefined) => {
-    // パスがない場合は何もしない
-    if (!path) {
-      return;
-    }
-
-    const response = await fetch(convertFileSrc(path));
-    const arrayBuffer = await response.arrayBuffer();
-    const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
-
-    // フォルダ内のアーカイブファイルのリストを更新
-    await set(updateArchiveListAtom, path);
-    set(setOpeningArchivePathAtom, path);
-
-    // ウィンドウを前面に出す
-    getCurrentWindow().setFocus();
-
-    // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
-    const fileNames = Object.keys(unzipped)
-      .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く
-      .filter((name) => !name.endsWith("/")) // ディレクトリを除く
-      .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
-      .sort();
-    set($imageNameListAtom, fileNames);
-
-    // 生データを Blob に変換
-    const bufData = fileNames.reduce<ZipData>((acc, name) => {
-      const blob = new Blob([unzipped[name]]);
-      acc[name] = { blob };
-      return acc;
-    }, {});
-
-    // 初期化したデータを保持
-    set($openingZipDataAtom, bufData);
-
-    // 前後のアーカイブファイルのパスを更新して保持する
-    const archiveList = get($archivePathListAtom);
-    const archiveIndex = archiveList.findIndex((p) => p === path); // 現在のアーカイブのインデックスを探す
-    if (archiveIndex !== -1) {
-      // 現在のアーカイブが見付かったときのみ保持する（基本的に見付かるはず）
-      // 前後のファイルが存在しないときは、自動的に undefined が入るので気にしない
-      const prevPath = archiveList[archiveIndex - 1];
-      const nextPath = archiveList[archiveIndex + 1];
-      set($prevArchivePathAtom, prevPath);
-      set($nextArchivePathAtom, nextPath);
-    }
-
-    // リネームビューを閉じる
-    // リネームビューを開いている状態で、テキストフィールドからフォーカスを外してアーカイブ移動（カーソル上下）したとき、
-    // テキストフィールドの内容と実際のファイルとの紐付けがゴチャゴチャになるので、一旦閉じる
-    set(isOpeningRenameViewAtom, false);
-
-    // 当該アーカイブを最後に開いていたときのインデックスを取得
-    // 初めて開く場合は 0
-    const index = get(lastOpenIndexAtom);
-
-    // ページを表示
-    set(moveIndexAtom, { index });
+export const openZipAtom = atom(null, async (get, set, path: string | undefined) => {
+  // パスがない場合は何もしない
+  if (!path) {
+    return;
   }
-);
+
+  const response = await fetch(convertFileSrc(path));
+  const arrayBuffer = await response.arrayBuffer();
+  const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
+
+  // フォルダ内のアーカイブファイルのリストを更新
+  await set(updateArchiveListAtom, path);
+  set(setOpeningArchivePathAtom, path);
+
+  // ウィンドウを前面に出す
+  getCurrentWindow().setFocus();
+
+  // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
+  const fileNames = Object.keys(unzipped)
+    .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く
+    .filter((name) => !name.endsWith("/")) // ディレクトリを除く
+    .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
+    .sort();
+  set($imageNameListAtom, fileNames);
+
+  // 生データを Blob に変換
+  const bufData = fileNames.reduce<ZipData>((acc, name) => {
+    const blob = new Blob([unzipped[name]]);
+    acc[name] = { blob };
+    return acc;
+  }, {});
+
+  // 初期化したデータを保持
+  set($openingZipDataAtom, bufData);
+
+  // 前後のアーカイブファイルのパスを更新して保持する
+  const archiveList = get($archivePathListAtom);
+  const archiveIndex = archiveList.findIndex((p) => p === path); // 現在のアーカイブのインデックスを探す
+  if (archiveIndex !== -1) {
+    // 現在のアーカイブが見付かったときのみ保持する（基本的に見付かるはず）
+    // 前後のファイルが存在しないときは、自動的に undefined が入るので気にしない
+    const prevPath = archiveList[archiveIndex - 1];
+    const nextPath = archiveList[archiveIndex + 1];
+    set($prevArchivePathAtom, prevPath);
+    set($nextArchivePathAtom, nextPath);
+  }
+
+  // リネームビューを閉じる
+  // リネームビューを開いている状態で、テキストフィールドからフォーカスを外してアーカイブ移動（カーソル上下）したとき、
+  // テキストフィールドの内容と実際のファイルとの紐付けがゴチャゴチャになるので、一旦閉じる
+  set(isOpeningRenameViewAtom, false);
+
+  // 当該アーカイブを最後に開いていたときのインデックスを取得
+  // 初めて開く場合は 0
+  const index = get(lastOpenIndexAtom);
+
+  // ページを表示
+  set(moveIndexAtom, { index });
+});
 
 /**
  * 現在開いているアーカイブのパスをセットする atom
@@ -218,11 +211,7 @@ export const nextArchiveNameWithoutExtensionAtom = atom((get) => {
  */
 export const handleAppEvent = atom(
   null,
-  async (
-    get,
-    set,
-    event: AppEvent | { event: AppEvent; payload: number | string }
-  ) => {
+  async (get, set, event: AppEvent | { event: AppEvent; payload: number | string }) => {
     const singleOrDouble = get(singleOrDoubleAtom);
 
     if (typeof event === "object") {
@@ -360,10 +349,7 @@ export const moveIndexAtom = atom(
     }
 
     // 1枚目と2枚目が両方とも縦長のときは、2枚とも表示する
-    if (
-      zipData[name1].orientation === "portrait" &&
-      zipData[name2].orientation === "portrait"
-    ) {
+    if (zipData[name1].orientation === "portrait" && zipData[name2].orientation === "portrait") {
       set(viewingImageAtom, {
         type: "double",
         source1: zipData[name1].blob,
@@ -570,10 +556,7 @@ const moveLastImageAtom = atom(null, async (get, set) => {
   set($openingZipDataAtom, zipData);
 
   // 1枚目と2枚目の両方が縦長のときは、2枚とも表示する
-  if (
-    zipData[name1].orientation === "portrait" &&
-    zipData[name2].orientation === "portrait"
-  ) {
+  if (zipData[name1].orientation === "portrait" && zipData[name2].orientation === "portrait") {
     set(moveIndexAtom, { index: lastIndex - 1 });
     return;
   }
@@ -593,10 +576,7 @@ export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
   }
   console.log(name);
 
-  const newPath = await createRenamedPathToExcludeExtensionName(
-    beforePath,
-    name
-  );
+  const newPath = await createRenamedPathToExcludeExtensionName(beforePath, name);
   console.log(newPath);
 
   // リネームして、変更後のファイル名を開いていることにする
@@ -748,9 +728,7 @@ export const base64FromBlob = async (file: File | Blob): Promise<string> => {
  *
  * 変更後の名前のファイルがすでに存在している場合、存在しなくなるまで末尾に `_` を付与する
  */
-export async function createExclamationAddedPath(
-  path: string
-): Promise<string> {
+export async function createExclamationAddedPath(path: string): Promise<string> {
   const buf = path.split("/"); // TODO: どの文字で区切るかを環境に基づいて判定する
   const name = buf.pop();
 

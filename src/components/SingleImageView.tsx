@@ -114,9 +114,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
           backgroundRepeat: "no-repeat",
           top: `${y - magnifierHeight / 2}px`,
           left: `${x - magnifierWidth / 2}px`,
-          backgroundSize: `${imgWidth * zoomLevel}px ${
-            imgHeight * zoomLevel
-          }px`,
+          backgroundSize: `${imgWidth * zoomLevel}px ${imgHeight * zoomLevel}px`,
           backgroundPositionX: `${-x * zoomLevel + magnifierWidth / 2}px`,
           backgroundPositionY: `${-y * zoomLevel + magnifierHeight / 2}px`,
         }}

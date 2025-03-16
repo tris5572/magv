@@ -120,16 +120,12 @@ const DEFAULT_KEYBOARD_CONFIG = [
 /**
  * ウィンドウサイズを保持する atom
  */
-const $windowSizeAtom = atom<{ width: number; height: number } | undefined>(
-  undefined
-);
+const $windowSizeAtom = atom<{ width: number; height: number } | undefined>(undefined);
 
 /**
  * ウィンドウ位置を保持する atom
  */
-const $windowPositionAtom = atom<{ x: number; y: number } | undefined>(
-  undefined
-);
+const $windowPositionAtom = atom<{ x: number; y: number } | undefined>(undefined);
 
 const $keyboardConfigAtom = atom<KeyboardConfig[]>(DEFAULT_KEYBOARD_CONFIG);
 
@@ -173,17 +169,14 @@ export const configDataAtom = atom((get) => {
 /**
  * 設定ファイルから設定を読み取って初期化する atom
  */
-export const initializeConfigAtom = atom(
-  null,
-  (_, set, config: Config | undefined) => {
-    if (config?.window?.size) {
-      set($windowSizeAtom, config?.window.size);
-    }
-    if (config?.window?.position) {
-      set($windowPositionAtom, config?.window.position);
-    }
+export const initializeConfigAtom = atom(null, (_, set, config: Config | undefined) => {
+  if (config?.window?.size) {
+    set($windowSizeAtom, config?.window.size);
   }
-);
+  if (config?.window?.position) {
+    set($windowPositionAtom, config?.window.position);
+  }
+});
 
 /**
  * キーボード操作の設定内容を取得する atom

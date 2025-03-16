@@ -73,30 +73,20 @@ const nextImageAtom = atom(null, async (get, set) => {
 
   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時は2枚目の画像にする
   const path =
-    currentImagePath?.type === "single"
-      ? currentImagePath?.source
-      : currentImagePath?.source2;
+    currentImagePath?.type === "single" ? currentImagePath?.source : currentImagePath?.source2;
 
   const currentIndex = imagePaths.findIndex((p) => p === path);
 
   // 2つ先の画像までの縦横の向きを取得
-  const orientation1 = await getImageOrientation(
-    imagePaths[currentIndex + 1] ?? ""
-  );
-  const orientation2 = await getImageOrientation(
-    imagePaths[currentIndex + 2] ?? ""
-  );
+  const orientation1 = await getImageOrientation(imagePaths[currentIndex + 1] ?? "");
+  const orientation2 = await getImageOrientation(imagePaths[currentIndex + 2] ?? "");
 
   // 1枚目がないときは何もしない
   if (orientation1 === undefined) {
     return;
   }
   // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
-  if (
-    orientation1 === "landscape" ||
-    orientation2 === undefined ||
-    orientation2 === "landscape"
-  ) {
+  if (orientation1 === "landscape" || orientation2 === undefined || orientation2 === "landscape") {
     set(viewingImageAtom, {
       type: "single",
       source: imagePaths[currentIndex + 1],
@@ -120,29 +110,19 @@ export const prevImageAtom = atom(null, async (get, set) => {
 
   // インデックス検索の対象として、1枚表示時は現在表示している画像に、2枚表示時も1枚目の画像にする
   const path =
-    currentImagePath?.type === "single"
-      ? currentImagePath?.source
-      : currentImagePath?.source1;
+    currentImagePath?.type === "single" ? currentImagePath?.source : currentImagePath?.source1;
   const currentIndex = imagePaths.findIndex((p) => p === path);
 
   // 2つ前の画像までの縦横の向きを取得
-  const orientation1 = await getImageOrientation(
-    imagePaths[currentIndex - 1] ?? ""
-  );
-  const orientation2 = await getImageOrientation(
-    imagePaths[currentIndex - 2] ?? ""
-  );
+  const orientation1 = await getImageOrientation(imagePaths[currentIndex - 1] ?? "");
+  const orientation2 = await getImageOrientation(imagePaths[currentIndex - 2] ?? "");
 
   // 1枚目がないときは何もしない
   if (orientation1 === undefined) {
     return;
   }
   // 1枚目が縦長のとき、2枚目がないとき、あるいは2枚目が横長のときは、1枚目のみを表示する
-  if (
-    orientation1 === "landscape" ||
-    orientation2 === undefined ||
-    orientation2 === "landscape"
-  ) {
+  if (orientation1 === "landscape" || orientation2 === undefined || orientation2 === "landscape") {
     set(viewingImageAtom, {
       type: "single",
       source: imagePaths[currentIndex - 1],

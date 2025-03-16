@@ -1,9 +1,5 @@
 import { useAtom } from "jotai";
-import {
-  imageListAtom,
-  moveIndexAtom,
-  openingImageIndexAtom,
-} from "../atoms/zip";
+import { imageListAtom, moveIndexAtom, openingImageIndexAtom } from "../atoms/zip";
 import { useCallback, useRef } from "react";
 
 /**

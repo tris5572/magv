@@ -3,11 +3,7 @@ import { useAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
-import {
-  useRestoreConfig,
-  useStoreConfig,
-  useWindowEvent,
-} from "../hooks/config";
+import { useRestoreConfig, useStoreConfig, useWindowEvent } from "../hooks/config";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
@@ -34,12 +30,9 @@ export function App() {
 
   // ファイルをドロップしたときのイベントを設定
   useEffect(() => {
-    const unlisten = listen<{ paths: string[] }>(
-      "tauri://drag-drop",
-      (event) => {
-        handleDrop(event.payload.paths[0]);
-      }
-    );
+    const unlisten = listen<{ paths: string[] }>("tauri://drag-drop", (event) => {
+      handleDrop(event.payload.paths[0]);
+    });
     return () => {
       unlisten.then((f) => f());
     };
@@ -47,23 +40,17 @@ export function App() {
 
   // ウィンドウの移動とリサイズのイベントを設定
   useEffect(() => {
-    const unlistenResize = listen<{ width: number; height: number }>(
-      "tauri://resize",
-      (event) => {
-        windowResized(event.payload);
-      }
-    );
+    const unlistenResize = listen<{ width: number; height: number }>("tauri://resize", (event) => {
+      windowResized(event.payload);
+    });
     return () => {
       unlistenResize.then((f) => f());
     };
   }, [windowResized]);
   useEffect(() => {
-    const unlistenMove = listen<{ x: number; y: number }>(
-      "tauri://move",
-      (event) => {
-        windowMoved(event.payload);
-      }
-    );
+    const unlistenMove = listen<{ x: number; y: number }>("tauri://move", (event) => {
+      windowMoved(event.payload);
+    });
     return () => {
       unlistenMove.then((f) => f());
     };

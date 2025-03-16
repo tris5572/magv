@@ -11,12 +11,8 @@ import { isMagnifierEnabledAtom, isOpeningRenameViewAtom } from "../atoms/app";
 export function useHandleEvent() {
   const [keyboardConfig] = useAtom(keyboardConfigAtom);
   const [, handleZip] = useAtom(handleAppEvent);
-  const [openingRenameView, setOpeningRenameView] = useAtom(
-    isOpeningRenameViewAtom
-  );
-  const [isMagnifierEnabled, setIsMagnifierEnabled] = useAtom(
-    isMagnifierEnabledAtom
-  );
+  const [openingRenameView, setOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
+  const [isMagnifierEnabled, setIsMagnifierEnabled] = useAtom(isMagnifierEnabledAtom);
 
   // TODO: アプリの動作モードによりイベント送信先と挙動を切り替える
 

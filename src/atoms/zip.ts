@@ -93,7 +93,7 @@ export const openZipAtom = atom(null, async (get, set, path: string | undefined)
   // ウィンドウを前面に出す
   getCurrentWindow().setFocus();
 
-  set(appModeAtom, "image");
+  set(appModeAtom, "zip");
 
   // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
   const fileNames = Object.keys(unzipped)

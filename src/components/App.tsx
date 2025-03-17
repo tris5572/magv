@@ -11,11 +11,12 @@ import { RenameBox } from "./RenameBox";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
-import { openImagePathAtom } from "../atoms/image";
+import { openDirectoryPathAtom, openImagePathAtom } from "../atoms/image";
 
 export function App() {
   const [, openZip] = useAtom(openZipAtom);
   const openImage = useSetAtom(openImagePathAtom);
+  const openDirectory = useSetAtom(openDirectoryPathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreConfig();
   const handleEvent = useHandleEvent();
@@ -29,11 +30,13 @@ export function App() {
       const kind = await getPathKind(path);
       if (kind === "zip") {
         openZip(path);
-      } else if (kind === "image" || kind === "directory") {
+      } else if (kind === "image") {
         openImage(path);
+      } else if (kind === "directory") {
+        openDirectory(path);
       }
     },
-    [openImage, openZip]
+    [openDirectory, openImage, openZip]
   );
 
   // ファイルをドロップしたときのイベントを設定

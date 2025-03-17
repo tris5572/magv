@@ -1,4 +1,4 @@
-import { atom, useAtom } from "jotai";
+import { atom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { getImageOrientation } from "../utils/utils";
 import { singleOrDoubleAtom, viewingImageAtom } from "./app";
@@ -13,17 +13,22 @@ import { AppEvent } from "../types/event";
 // 現在開いているディレクトリのパス
 // const openDirPathAtom = atom<string | undefined>(undefined);
 
-// 現在開いているディレクトリ内にある画像ファイルのパスのリスト
-const imagePathsAtom = atom<string[]>([]);
+/** 対象のディレクトリ内にある画像ファイルのパスのリストの atom */
+const $imagePathListAtom = atom<string[]>([]);
+
+/** 開いている画像のインデックスを示す atom */
+const $openingIndexAtom = atom<number>(0);
 
 // =============================================================================
 // 外部公開 atom
 // =============================================================================
 
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+// #region 開く系
+// -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+
 /**
- * 開くパスを指定する
- *
- * パスが画像のときはそのまま表示し、フォルダだったりした場合は戦闘の画像を表示する
+ * パスとして指定された画像ファイルを開く
  */
 export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   // 画像ファイルの一覧を取得する
@@ -31,19 +36,41 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
     path,
   })) as string[];
 
-  if (fileList.find((file) => file === path)) {
-    // ドロップされたファイルが画像だったときは、そのまま表示する
-    // TODO: 縦横判定を行う
-    set(viewingImageAtom, { type: "single", source: path });
-    set(imagePathsAtom, fileList);
-  } else {
-    // 画像以外がドロップされたときは、当該フォルダの中の先頭の画像を表示する
-    // 画像ファイルがない場合は何もしない
-    if (fileList.length > 0) {
-      set(viewingImageAtom, { type: "single", source: fileList[0] });
-      set(imagePathsAtom, fileList);
-    }
+  // ディレクトリ内に画像ファイルがない場合は何もしない
+  if (fileList.length === 0) {
+    return;
   }
+
+  set($imagePathListAtom, fileList);
+
+  const index = fileList.findIndex((file) => file === path);
+
+  // パスで指定された画像ファイルが見付かった場合はそれを、見付からなかった場合はディレクトリ内の先頭の画像を表示する
+  if (index !== -1) {
+    set(openIndexAtom, { index });
+  } else {
+    set(openIndexAtom, { index: 0 });
+  }
+});
+
+/**
+ * パスとして指定されたディレクトリの先頭画像を表示する
+ *
+ * ディレクトリ内に画像ファイルがない場合は何もしない
+ */
+export const openDirectoryPathAtom = atom(null, async (_, set, path: string) => {
+  // ディレクトリ内の画像ファイルの一覧を取得する
+  const fileList = (await invoke("get_image_file_list", {
+    path,
+  })) as string[];
+
+  // ディレクトリ内に画像ファイルがない場合は何もしない
+  if (fileList.length === 0) {
+    return;
+  }
+
+  set($imagePathListAtom, fileList);
+  set(openIndexAtom, { index: 0 });
 });
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
@@ -120,6 +147,25 @@ export const handleAppEvent = atom(
     // }
   }
 );
+
+/**
+ * 指定したインデックスの画像を開く atom
+ */
+const openIndexAtom = atom(null, async (get, set, { index }: { index: number }) => {
+  const fileList = get($imagePathListAtom);
+  const path1 = fileList[index];
+
+  if (!path1) {
+    return;
+  }
+
+  // TODO: forceSingle への対応
+
+  // TODO: 縦横判定
+
+  set($openingIndexAtom, index);
+  set(viewingImageAtom, { type: "single", source: path1 });
+});
 
 /**
  * 次の画像を表示する atom

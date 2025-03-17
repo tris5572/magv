@@ -48,9 +48,9 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
 
   // パスで指定された画像ファイルが見付かった場合はそれを、見付からなかった場合はディレクトリ内の先頭の画像を表示する
   if (index !== -1) {
-    set(openIndexAtom, { index });
+    set(moveIndexAtom, { index });
   } else {
-    set(openIndexAtom, { index: 0 });
+    set(moveIndexAtom, { index: 0 });
   }
 });
 
@@ -72,7 +72,7 @@ export const openDirectoryPathAtom = atom(null, async (_, set, path: string) => 
 
   set(appModeAtom, "image");
   set($imagePathListAtom, fileList);
-  set(openIndexAtom, { index: 0 });
+  set(moveIndexAtom, { index: 0 });
 });
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
@@ -151,13 +151,13 @@ export const handleAppEvent = atom(
 );
 
 /**
- * 指定したインデックスの画像を開く atom
+ * 指定したインデックスへ移動する atom
  *
  * 指定インデックスと次の画像が両方とも縦のときは見開き表示する
  *
  * ただし `forceSingle` が `true` のときは強制的に1枚のみ表示する
  */
-const openIndexAtom = atom(
+const moveIndexAtom = atom(
   null,
   async (get, set, { index, forceSingle }: { index: number; forceSingle?: boolean }) => {
     const fileList = get($imagePathListAtom);
@@ -213,7 +213,7 @@ const moveNextPageAtom = atom(null, async (get, set) => {
 
   const index = openingIndex + (viewingImage.type === "single" ? 1 : 2);
 
-  set(openIndexAtom, { index });
+  set(moveIndexAtom, { index });
 });
 
 /**
@@ -254,12 +254,12 @@ const movePrevPageAtom = atom(null, async (get, set) => {
 
   // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
   if (orientation1 === "landscape" || !path2 || orientation2 === "landscape") {
-    set(openIndexAtom, { index: index - 1, forceSingle: true });
+    set(moveIndexAtom, { index: index - 1, forceSingle: true });
     return;
   }
 
   // -1枚目と-2枚目が両方とも縦長なので、見開き表示する
-  set(openIndexAtom, { index: index - 2 });
+  set(moveIndexAtom, { index: index - 2 });
 });
 
 /**
@@ -268,7 +268,7 @@ const movePrevPageAtom = atom(null, async (get, set) => {
 const moveNextSingleImageAtom = atom(null, async (get, set) => {
   const openingIndex = get($openingIndexAtom);
 
-  set(openIndexAtom, { index: openingIndex + 1 });
+  set(moveIndexAtom, { index: openingIndex + 1 });
 });
 
 /**
@@ -307,12 +307,12 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
     orientation1 === "portrait" &&
     orientation2 === "portrait"
   ) {
-    set(openIndexAtom, { index: index - 2 });
+    set(moveIndexAtom, { index: index - 2 });
     return;
   }
 
   // それ以外のときは、-1枚目のみを基準に表示する (見開き判定は表示処理で実施)
-  set(openIndexAtom, { index: index - 1 });
+  set(moveIndexAtom, { index: index - 1 });
 });
 
 /**

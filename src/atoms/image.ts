@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { getImageOrientation } from "../utils/utils";
-import { singleOrDoubleAtom, viewingImageAtom } from "./app";
+import { appModeAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { AppEvent } from "../types/event";
 
 // 画像ファイルを開いたときの状態を管理する
@@ -42,6 +42,7 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   }
 
   set($imagePathListAtom, fileList);
+  set(appModeAtom, "image");
 
   const index = fileList.findIndex((file) => file === path);
 
@@ -69,6 +70,7 @@ export const openDirectoryPathAtom = atom(null, async (_, set, path: string) => 
     return;
   }
 
+  set(appModeAtom, "image");
   set($imagePathListAtom, fileList);
   set(openIndexAtom, { index: 0 });
 });

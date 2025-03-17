@@ -3,7 +3,7 @@ import * as fflate from "fflate";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
-import { isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
+import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
@@ -92,6 +92,8 @@ export const openZipAtom = atom(null, async (get, set, path: string | undefined)
 
   // ウィンドウを前面に出す
   getCurrentWindow().setFocus();
+
+  set(appModeAtom, "image");
 
   // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
   const fileNames = Object.keys(unzipped)

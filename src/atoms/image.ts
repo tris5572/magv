@@ -93,80 +93,136 @@ export const handleAppEvent = atom(
     //   return;
     // }
 
-    // switch (event) {
-    //   case AppEvent.MOVE_NEXT_PAGE: {
-    //     if (singleOrDouble === "single") {
-    //       set(moveNextSingleImageAtom);
-    //       break;
-    //     }
-    //     set(nextImageAtom);
-    //     break;
-    //   }
-    //   case AppEvent.MOVE_PREV_PAGE: {
-    //     if (singleOrDouble === "single") {
-    //       set(movePrevSingleImageAtom);
-    //       break;
-    //     }
-    //     set(prevImageAtom);
-    //     break;
-    //   }
-    //   case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
-    //     set(moveNextSingleImageAtom);
-    //     break;
-    //   }
-    //   case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
-    //     set(movePrevSingleImageAtom);
-    //     break;
-    //   }
-    //   case AppEvent.MOVE_FIRST_PAGE: {
-    //     set(moveFirstImageAtom);
-    //     break;
-    //   }
-    //   case AppEvent.MOVE_LAST_PAGE: {
-    //     set(moveLastImageAtom);
-    //     break;
-    //   }
-    //   case AppEvent.SWITCH_NEXT_ARCHIVE: {
-    //     set(openNextArchiveAtom);
-    //     break;
-    //   }
-    //   case AppEvent.SWITCH_PREV_ARCHIVE: {
-    //     set(openPrevArchiveAtom);
-    //     break;
-    //   }
-    //   case AppEvent.ADD_EXCLAMATION_MARK: {
-    //     set(renameAddExclamationMarkAtom);
-    //     break;
-    //   }
-    //   case AppEvent.SEARCH_FILE_NAME: {
-    //     searchAtBrowser(get(openingArchivePathWithoutExtension));
-    //     break;
-    //   }
-    //   case AppEvent.UPDATE_PAGE: {
-    //     set(updatePageAtom);
-    //     break;
-    //   }
-    // }
+    switch (event) {
+      case AppEvent.MOVE_NEXT_PAGE: {
+        if (singleOrDouble === "single") {
+          set(moveNextSingleImageAtom);
+          break;
+        }
+        set(moveNextPageAtom);
+        break;
+      }
+      //   case AppEvent.MOVE_PREV_PAGE: {
+      //     if (singleOrDouble === "single") {
+      //       set(movePrevSingleImageAtom);
+      //       break;
+      //     }
+      //     set(prevImageAtom);
+      //     break;
+      //   }
+      //   case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+      //     set(moveNextSingleImageAtom);
+      //     break;
+      //   }
+      //   case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+      //     set(movePrevSingleImageAtom);
+      //     break;
+      //   }
+      //   case AppEvent.MOVE_FIRST_PAGE: {
+      //     set(moveFirstImageAtom);
+      //     break;
+      //   }
+      //   case AppEvent.MOVE_LAST_PAGE: {
+      //     set(moveLastImageAtom);
+      //     break;
+      //   }
+      //   case AppEvent.SWITCH_NEXT_ARCHIVE: {
+      //     set(openNextArchiveAtom);
+      //     break;
+      //   }
+      //   case AppEvent.SWITCH_PREV_ARCHIVE: {
+      //     set(openPrevArchiveAtom);
+      //     break;
+      //   }
+      //   case AppEvent.ADD_EXCLAMATION_MARK: {
+      //     set(renameAddExclamationMarkAtom);
+      //     break;
+      //   }
+      //   case AppEvent.SEARCH_FILE_NAME: {
+      //     searchAtBrowser(get(openingArchivePathWithoutExtension));
+      //     break;
+      //   }
+      //   case AppEvent.UPDATE_PAGE: {
+      //     set(updatePageAtom);
+      //     break;
+      //   }
+    }
   }
 );
 
 /**
  * 指定したインデックスの画像を開く atom
+ *
+ * 指定インデックスと次の画像が両方とも縦のときは見開き表示する
+ *
+ * ただし `forceSingle` が `true` のときは強制的に1枚のみ表示する
  */
-const openIndexAtom = atom(null, async (get, set, { index }: { index: number }) => {
-  const fileList = get($imagePathListAtom);
-  const path1 = fileList[index];
+const openIndexAtom = atom(
+  null,
+  async (get, set, { index, forceSingle }: { index: number; forceSingle?: boolean }) => {
+    const fileList = get($imagePathListAtom);
+    const singleOrDouble = get(singleOrDoubleAtom);
 
-  if (!path1) {
+    const path1 = fileList[index];
+    const path2 = fileList[index + 1];
+
+    if (!path1) {
+      return;
+    }
+
+    set($openingIndexAtom, index);
+
+    if (forceSingle || singleOrDouble === "single") {
+      set(viewingImageAtom, { type: "single", source: path1 });
+      return;
+    }
+
+    const orientation1 = await getImageOrientation(path1);
+
+    if (orientation1 === "landscape" || !path2) {
+      set(viewingImageAtom, { type: "single", source: path1 });
+      return;
+    }
+
+    const orientation2 = await getImageOrientation(path2);
+
+    if (orientation2 === "portrait") {
+      set(viewingImageAtom, {
+        type: "double",
+        source1: path1,
+        source2: path2,
+      });
+      return;
+    }
+
+    set($openingIndexAtom, index);
+    set(viewingImageAtom, { type: "single", source: path1 });
+  }
+);
+
+/**
+ * 次のページへ移動する atom
+ */
+const moveNextPageAtom = atom(null, async (get, set) => {
+  const viewingImage = get(viewingImageAtom);
+  const openingIndex = get($openingIndexAtom);
+
+  if (!viewingImage) {
     return;
   }
 
-  // TODO: forceSingle への対応
+  const index = openingIndex + (viewingImage.type === "single" ? 1 : 2);
 
-  // TODO: 縦横判定
+  set(openIndexAtom, { index });
+});
 
-  set($openingIndexAtom, index);
-  set(viewingImageAtom, { type: "single", source: path1 });
+/**
+ * 1枚だけ次の画像へ移動する atom
+ */
+const moveNextSingleImageAtom = atom(null, async (get, set) => {
+  const openingIndex = get($openingIndexAtom);
+
+  set(openIndexAtom, { index: openingIndex + 1 });
 });
 
 /**

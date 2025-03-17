@@ -102,22 +102,22 @@ export const handleAppEvent = atom(
         set(moveNextPageAtom);
         break;
       }
-      //   case AppEvent.MOVE_PREV_PAGE: {
-      //     if (singleOrDouble === "single") {
-      //       set(movePrevSingleImageAtom);
-      //       break;
-      //     }
-      //     set(prevImageAtom);
-      //     break;
-      //   }
-      //   case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
-      //     set(moveNextSingleImageAtom);
-      //     break;
-      //   }
-      //   case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
-      //     set(movePrevSingleImageAtom);
-      //     break;
-      //   }
+      case AppEvent.MOVE_PREV_PAGE: {
+        if (singleOrDouble === "single") {
+          set(movePrevSingleImageAtom);
+          break;
+        }
+        set(movePrevPageAtom);
+        break;
+      }
+      case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+        set(moveNextSingleImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+        set(movePrevSingleImageAtom);
+        break;
+      }
       //   case AppEvent.MOVE_FIRST_PAGE: {
       //     set(moveFirstImageAtom);
       //     break;
@@ -217,12 +217,102 @@ const moveNextPageAtom = atom(null, async (get, set) => {
 });
 
 /**
+ * 前のページへ移動する atom
+ *
+ * 前のページに相当する画像の縦横を元に、表示する枚数を判定する
+ *
+ * 現在表示している画像は重複して表示しないのが基本。したがって縦画像が1枚だけ表示されるケースもあり得る。
+ *
+ * 右開きで右に戻るときの動作は以下の表の通り。「0枚目」は表示中の若い方を指す。
+ *
+ * 0枚目 | -1枚目 | -2枚目 | 表示
+ * :--: | :--: | :--: | :--:
+ * 縦0 | 縦1 | 縦2 | 縦1 縦2
+ * 縦0 | 縦1 | 横2 | 縦1
+ * 横0 | 縦1 | 縦2 | 縦1 縦2
+ * 横0 | 縦1 | 横2 | 縦1
+ * 縦0 | 縦1 | (なし) | 縦1
+ * 縦0 | 横1 | (なし) | 横1
+ * 横0 | 縦1 | (なし) | 縦1
+ * 横0 | 横1 | (なし) | 横1
+ */
+const movePrevPageAtom = atom(null, async (get, set) => {
+  const fileList = get($imagePathListAtom);
+  const index = get($openingIndexAtom);
+
+  const path0 = fileList[index];
+  const path1 = fileList[index - 1];
+  const path2 = fileList[index - 2];
+
+  // 現在のページと前のページが存在しない場合は何もしない
+  if (!path0 || !path1) {
+    return;
+  }
+
+  const orientation1 = await getImageOrientation(path1);
+  const orientation2 = await getImageOrientation(path2);
+
+  // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
+  if (orientation1 === "landscape" || !path2 || orientation2 === "landscape") {
+    set(openIndexAtom, { index: index - 1, forceSingle: true });
+    return;
+  }
+
+  // -1枚目と-2枚目が両方とも縦長なので、見開き表示する
+  set(openIndexAtom, { index: index - 2 });
+});
+
+/**
  * 1枚だけ次の画像へ移動する atom
  */
 const moveNextSingleImageAtom = atom(null, async (get, set) => {
   const openingIndex = get($openingIndexAtom);
 
   set(openIndexAtom, { index: openingIndex + 1 });
+});
+
+/**
+ * 1枚だけ前の画像へ移動する atom
+ *
+ * 右開き（右が若い）で挙動を示すと以下の通り。（表示が「|」の中）
+ * - |縦 縦0| 縦1 縦2 → 縦 |縦0 縦1| 縦2
+ * - |縦 縦0| 縦1 横2 → 縦 |縦0 縦1| 横2
+ * - |縦 縦0| 横1 → 縦 縦0 |横1|
+ * - |横0| 縦1 縦2 → 横0 |縦1 縦2|
+ * - |横0| 縦1 横2 → 横0 |縦1| 横2
+ * - |横0| 横1 縦2 → 横0 |横1| 縦2
+ * - (最後の画像が縦で1枚のみ表示されているケースは、|縦 縦0| 開始と同じパターン)
+ */
+const movePrevSingleImageAtom = atom(null, async (get, set) => {
+  const fileList = get($imagePathListAtom);
+  const index = get($openingIndexAtom);
+
+  const path0 = fileList[index];
+  const path1 = fileList[index - 1];
+  const path2 = fileList[index - 2];
+
+  // 現在のページと前のページが存在しない場合は何もしない
+  if (!path0 || !path1) {
+    return;
+  }
+
+  const orientation0 = await getImageOrientation(path0);
+  const orientation1 = await getImageOrientation(path1);
+  const orientation2 = await getImageOrientation(path2);
+
+  // 現在、横画像を表示していて、-1枚目と-2枚目が両方とも縦のときは、2枚戻って見開き表示する
+  if (
+    orientation0 === "landscape" &&
+    path2 &&
+    orientation1 === "portrait" &&
+    orientation2 === "portrait"
+  ) {
+    set(openIndexAtom, { index: index - 2 });
+    return;
+  }
+
+  // それ以外のときは、-1枚目のみを基準に表示する (見開き判定は表示処理で実施)
+  set(openIndexAtom, { index: index - 1 });
 });
 
 /**

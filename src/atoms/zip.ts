@@ -516,6 +516,7 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
     zipData[name2].orientation === "portrait"
   ) {
     set(moveIndexAtom, { index: index - 2 });
+    return;
   }
 
   // それ以外のときは、-1枚目のみを基準に表示する (見開き判定は表示処理で実施)

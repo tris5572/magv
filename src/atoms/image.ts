@@ -118,14 +118,14 @@ export const handleAppEvent = atom(
         set(movePrevSingleImageAtom);
         break;
       }
-      //   case AppEvent.MOVE_FIRST_PAGE: {
-      //     set(moveFirstImageAtom);
-      //     break;
-      //   }
-      //   case AppEvent.MOVE_LAST_PAGE: {
-      //     set(moveLastImageAtom);
-      //     break;
-      //   }
+      case AppEvent.MOVE_FIRST_PAGE: {
+        set(moveFirstPageAtom);
+        break;
+      }
+      case AppEvent.MOVE_LAST_PAGE: {
+        set(moveLastPageAtom);
+        break;
+      }
       //   case AppEvent.SWITCH_NEXT_ARCHIVE: {
       //     set(openNextArchiveAtom);
       //     break;
@@ -313,6 +313,37 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 
   // それ以外のときは、-1枚目のみを基準に表示する (見開き判定は表示処理で実施)
   set(moveIndexAtom, { index: index - 1 });
+});
+
+/**
+ * 最初のページへ移動する atom
+ */
+const moveFirstPageAtom = atom(null, async (get, set) => {
+  set(moveIndexAtom, { index: 0 });
+});
+
+/**
+ * 最後のページへ移動する atom
+ *
+ * 最後の2枚が縦画像だったら見開き表示する
+ */
+const moveLastPageAtom = atom(null, async (get, set) => {
+  const fileList = get($imagePathListAtom);
+  const lastIndex = fileList.length - 1;
+  const path1 = fileList[lastIndex - 1]; // 最後の1つ手前
+  const path2 = fileList[lastIndex]; // 最後
+
+  const orientation1 = await getImageOrientation(path1);
+  const orientation2 = await getImageOrientation(path2);
+
+  // 1枚目と2枚目の両方が縦長のときは、2枚とも表示する
+  if (orientation1 === "portrait" && orientation2 === "portrait") {
+    set(moveIndexAtom, { index: lastIndex - 1 });
+    return;
+  }
+
+  // その他のときは最後の画像のみを表示する
+  set(moveIndexAtom, { index: lastIndex });
 });
 
 /**

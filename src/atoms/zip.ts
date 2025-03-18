@@ -550,7 +550,7 @@ const moveLastImageAtom = atom(null, async (get, set) => {
   const name1 = imageList[lastIndex - 1];
   const name2 = imageList[lastIndex];
 
-  if (!name1) {
+  if (!name2) {
     return;
   }
 

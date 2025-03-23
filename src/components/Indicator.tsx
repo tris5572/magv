@@ -1,15 +1,18 @@
 import { useAtom } from "jotai";
-import { imageListAtom, moveIndexAtom, openingImageIndexAtom } from "../atoms/zip";
+import { moveIndexAtom } from "../atoms/zip";
 import { useCallback, useRef } from "react";
+import { useImageData } from "../hooks/images";
 
 /**
  * 画像のページ位置を表示するインジケーターコンポーネント
  */
 export function Indicator() {
-  const [list] = useAtom(imageListAtom);
-  const [index] = useAtom(openingImageIndexAtom);
+  const imageData = useImageData();
   const [, moveIndex] = useAtom(moveIndexAtom);
   const elementRef = useRef<HTMLDivElement>(null);
+
+  const index = imageData.index;
+  const list = imageData.list;
 
   // TODO: 見開き方法を変えられるようになったときは変更に対応する
   const direction = "left";

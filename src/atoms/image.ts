@@ -418,3 +418,17 @@ const moveLastPageAtom = atom(null, async (get, set) => {
 //     source2: imagePaths[currentIndex - 1],
 //   });
 // });
+
+/**
+ * 現在開いている画像のフォルダ内でのインデックスを返す atom
+ */
+export const openingImageIndexAtom = atom((get) => {
+  return get($openingIndexAtom);
+});
+
+/**
+ * 現在開いているフォルダ内の画像ファイルのリストを返す atom
+ */
+export const imageListAtom = atom((get) => {
+  return get($imagePathListAtom);
+});

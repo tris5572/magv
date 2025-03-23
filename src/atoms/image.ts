@@ -318,7 +318,7 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 /**
  * 最初のページへ移動する atom
  */
-const moveFirstPageAtom = atom(null, async (get, set) => {
+const moveFirstPageAtom = atom(null, async (_, set) => {
   set(moveIndexAtom, { index: 0 });
 });
 

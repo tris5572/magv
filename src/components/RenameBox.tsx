@@ -11,6 +11,8 @@ import { AppEvent } from "../types/event";
 
 /**
  * ファイルのリネーム情報を入力するビュー
+ *
+ * テキストボックスにフォーカスを当てる useEffect をビューの表示時に発火させるため、外部で表示/非表示を切り替える
  */
 export function RenameBox() {
   const [isComposing, setIsComposing] = useState(false); // 変換中かどうか

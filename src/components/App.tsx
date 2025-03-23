@@ -104,7 +104,10 @@ export function App() {
       <ImageView />
       <TopMenu />
       <Indicator />
-      {isOpeningRenameView && <RenameBox />}
+      {
+        // 表示時にテキストボックスへフォーカスを当てるために、外部で表示/非表示を切り替えている
+        isOpeningRenameView && <RenameBox />
+      }
       <Log />
     </main>
   );

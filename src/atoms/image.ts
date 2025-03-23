@@ -157,7 +157,7 @@ export const handleAppEvent = atom(
  *
  * ただし `forceSingle` が `true` のときは強制的に1枚のみ表示する
  */
-const moveIndexAtom = atom(
+export const moveIndexAtom = atom(
   null,
   async (get, set, { index, forceSingle }: { index: number; forceSingle?: boolean }) => {
     const fileList = get($imagePathListAtom);

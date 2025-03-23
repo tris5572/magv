@@ -1,5 +1,3 @@
-import { useAtom } from "jotai";
-import { moveIndexAtom } from "../atoms/zip";
 import { useCallback, useRef } from "react";
 import { useImageData } from "../hooks/images";
 
@@ -8,11 +6,11 @@ import { useImageData } from "../hooks/images";
  */
 export function Indicator() {
   const imageData = useImageData();
-  const [, moveIndex] = useAtom(moveIndexAtom);
   const elementRef = useRef<HTMLDivElement>(null);
 
   const index = imageData.index;
   const list = imageData.list;
+  const moveIndex = imageData.moveIndex;
 
   // TODO: 見開き方法を変えられるようになったときは変更に対応する
   const direction = "left";

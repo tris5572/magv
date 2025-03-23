@@ -7,6 +7,7 @@ import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageA
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
+import { getFileNameRemovedExtension } from "../utils/files";
 
 type LastIndex = {
   path: string;
@@ -750,35 +751,6 @@ export async function createExclamationAddedPath(path: string): Promise<string> 
   }
 
   return newPath;
-}
-
-/**
- * パスから拡張子を取り除いたファイル名を返す
- */
-export function getFileNameRemovedExtension(path: string): string {
-  const name = path.split("/").pop(); // TODO: どの文字で区切るかを環境に基づいて判定する
-
-  // ディレクトリのときなどは空文字列を返す
-  if (!name) {
-    return "";
-  }
-
-  const buf = name.split(".");
-
-  // ファイル名がないとき(空文字列のとき)はそのまま返す
-  if (buf.length === 0) {
-    return name;
-  }
-
-  const ext = buf[buf.length - 1];
-
-  // 拡張子部分が長い場合はそのまま返す（ピリオドが拡張子の区切りを表すものではないと判断）
-  if (5 <= ext.length) {
-    return name;
-  }
-
-  // 拡張子部分を除いて返す
-  return name.split(".").slice(0, -1).join(".");
 }
 
 /**

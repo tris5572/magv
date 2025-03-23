@@ -27,7 +27,8 @@ export function useHandleEvent() {
     if (event instanceof KeyboardEvent) {
       const ev = convertKeyboardEvent(event, keyboardConfig);
       if (ev) {
-        if (ev === AppEvent.OPEN_RENAME_VIEW) {
+        if (ev === AppEvent.OPEN_RENAME_VIEW && appMode === "zip") {
+          // 画像表示モードのときはリネームビューを表示しない
           setOpeningRenameView(!openingRenameView);
         } else {
           eventHandler(ev);

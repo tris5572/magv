@@ -14,15 +14,35 @@ import { getPathKind } from "../utils/files";
 import { openDirectoryPathAtom, openImagePathAtom } from "../atoms/image";
 
 export function App() {
+  const [isOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
+
+  useRestoreConfig();
+  useEventListener();
+
+  return (
+    <main className="h-dvh grid grid-rows-[1fr_32px]">
+      <ImageView />
+      <TopMenu />
+      <Indicator />
+      {
+        // 表示時にテキストボックスへフォーカスを当てるために、外部で表示/非表示を切り替えている
+        isOpeningRenameView && <RenameBox />
+      }
+      <Log />
+    </main>
+  );
+}
+
+/**
+ * App コンポーネントのイベントリスナーを登録するカスタムフック
+ */
+function useEventListener() {
   const [, openZip] = useAtom(openZipAtom);
   const openImage = useSetAtom(openImagePathAtom);
   const openDirectory = useSetAtom(openDirectoryPathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreConfig();
   const handleEvent = useHandleEvent();
-  const [isOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
-
-  useRestoreConfig();
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
@@ -39,7 +59,7 @@ export function App() {
     [openDirectory, openImage, openZip]
   );
 
-  // ファイルをドロップしたときのイベントを設定
+  // ファイルをドロップしたときのリスナーを設定
   useEffect(() => {
     const unlisten = listen<{ paths: string[] }>("tauri://drag-drop", (event) => {
       handleDrop(event.payload.paths[0]);
@@ -49,7 +69,7 @@ export function App() {
     };
   }, [handleDrop]);
 
-  // ウィンドウの移動とリサイズのイベントを設定
+  // ウィンドウ移動のリスナーを設定
   useEffect(() => {
     const unlistenResize = listen<{ width: number; height: number }>("tauri://resize", (event) => {
       windowResized(event.payload);
@@ -58,6 +78,8 @@ export function App() {
       unlistenResize.then((f) => f());
     };
   }, [windowResized]);
+
+  // ウィンドウリサイズのリスナーを設定
   useEffect(() => {
     const unlistenMove = listen<{ x: number; y: number }>("tauri://move", (event) => {
       windowMoved(event.payload);
@@ -84,6 +106,7 @@ export function App() {
       document.removeEventListener("keydown", handleEvent);
     };
   }, [handleEvent]);
+
   // マウスホイール操作のイベントリスナーを設定
   useEffect(() => {
     document.addEventListener("wheel", handleEvent);
@@ -91,24 +114,12 @@ export function App() {
       document.removeEventListener("wheel", handleEvent);
     };
   }, [handleEvent]);
-  // マウスイベントのイベントリスナーを設定
+
+  // マウスクリックのイベントリスナーを設定
   useEffect(() => {
     document.addEventListener("mousedown", handleEvent);
     return () => {
       document.removeEventListener("mousedown", handleEvent);
     };
   }, [handleEvent]);
-
-  return (
-    <main className="h-dvh grid grid-rows-[1fr_32px]">
-      <ImageView />
-      <TopMenu />
-      <Indicator />
-      {
-        // 表示時にテキストボックスへフォーカスを当てるために、外部で表示/非表示を切り替えている
-        isOpeningRenameView && <RenameBox />
-      }
-      <Log />
-    </main>
-  );
 }

@@ -7,7 +7,7 @@ import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageA
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
-import { getFileNameRemovedExtension, getZipFileList } from "../utils/files";
+import { getFileNameRemovedExtension, getFileList } from "../utils/files";
 
 type LastIndex = {
   path: string;
@@ -608,7 +608,7 @@ const updatePageAtom = atom(null, async (get, set) => {
  * ファイルの一覧を文字列の配列で取得し、ロケールを考慮してソートして Mac (Finder) の並びと同じにしてからセットする
  */
 const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
-  const fileList = await getZipFileList(path);
+  const fileList = await getFileList(path, "zip");
 
   // Rust 実装を使う場合は下記のコードで実行し、ソートを TS 側で行う
   // const fileList = (await invoke("get_archive_file_list", {

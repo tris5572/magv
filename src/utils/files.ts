@@ -58,13 +58,13 @@ export function getFileNameRemovedExtension(path: string): string {
 }
 
 /**
- * 指定されたパスを元に、zip ファイルのリストを返す
+ * 指定された path を元に、kind の種類のファイルのリストを返す
  *
  * path がファイルの場合は、そのディレクトリ内のリストを返す
  *
  * 再帰的な読み込みは行わない
  */
-export async function getZipFileList(path: string): Promise<string[]> {
+export async function getFileList(path: string, kind: "zip" | "image"): Promise<string[]> {
   const dir = await dirFromPath(path);
 
   // zip ファイルのみを抽出する
@@ -77,9 +77,9 @@ export async function getZipFileList(path: string): Promise<string[]> {
     }
     const name = source.name;
     const target = dir + "/" + name; //ここで @tauri-apps/api/path の join(dir, name) を使うととても遅い
-    const kind = await getPathKind(target);
-    // TODO: zip だけではなく image も統一的に扱えるようにする
-    if (kind === "zip") {
+    const k = await getPathKind(target);
+
+    if (k === kind) {
       array.push(target);
     }
   }

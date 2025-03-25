@@ -1,8 +1,8 @@
 import { atom } from "jotai";
-import { invoke } from "@tauri-apps/api/core";
 import { getImageOrientation } from "../utils/utils";
 import { appModeAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { AppEvent } from "../types/event";
+import { getFileList } from "../utils/files";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -32,9 +32,7 @@ const $openingIndexAtom = atom<number>(0);
  */
 export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   // 画像ファイルの一覧を取得する
-  const fileList = (await invoke("get_image_file_list", {
-    path,
-  })) as string[];
+  const fileList = await getFileList(path, "image");
 
   // ディレクトリ内に画像ファイルがない場合は何もしない
   if (fileList.length === 0) {
@@ -61,9 +59,7 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
  */
 export const openDirectoryPathAtom = atom(null, async (_, set, path: string) => {
   // ディレクトリ内の画像ファイルの一覧を取得する
-  const fileList = (await invoke("get_image_file_list", {
-    path,
-  })) as string[];
+  const fileList = await getFileList(path, "image");
 
   // ディレクトリ内に画像ファイルがない場合は何もしない
   if (fileList.length === 0) {

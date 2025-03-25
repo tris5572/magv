@@ -1,13 +1,13 @@
 import { atom } from "jotai";
 import * as fflate from "fflate";
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
 import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
-import { getFileNameRemovedExtension } from "../utils/files";
+import { getFileNameRemovedExtension, getZipFileList } from "../utils/files";
 
 type LastIndex = {
   path: string;
@@ -605,16 +605,18 @@ const updatePageAtom = atom(null, async (get, set) => {
 /**
  * 渡されたパスに存在するアーカイブファイルのリストを更新する
  *
- * Rust 側からファイルの一覧を文字列の配列で取得し、
- * ロケールを考慮してソートして Mac (Finder) の並びと同じにしてからセットする
+ * ファイルの一覧を文字列の配列で取得し、ロケールを考慮してソートして Mac (Finder) の並びと同じにしてからセットする
  */
 const updateArchiveListAtom = atom(null, async (_, set, path: string) => {
-  const fileList = (await invoke("get_archive_file_list", {
-    path,
-  })) as string[];
+  const fileList = await getZipFileList(path);
 
-  // ロケールを考慮してソートし、Finder のファイル名の並び順と同じにする
-  fileList.sort((a, b) => a.localeCompare(b, [], { numeric: true }));
+  // Rust 実装を使う場合は下記のコードで実行し、ソートを TS 側で行う
+  // const fileList = (await invoke("get_archive_file_list", {
+  //   path,
+  // })) as string[];
+
+  // // ロケールを考慮してソートし、Finder のファイル名の並び順と同じにする
+  // fileList.sort((a, b) => a.localeCompare(b, [], { numeric: true }));
 
   set($archivePathListAtom, fileList);
 });

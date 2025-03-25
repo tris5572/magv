@@ -1,4 +1,4 @@
-import { lstat } from "@tauri-apps/plugin-fs";
+import { lstat, readDir, stat } from "@tauri-apps/plugin-fs";
 
 /**
  * 渡されたパスのファイル種別を判別する
@@ -8,12 +8,12 @@ import { lstat } from "@tauri-apps/plugin-fs";
 export async function getPathKind(
   path: string
 ): Promise<"image" | "zip" | "directory" | undefined> {
-  if (/\.(jpe?g|png|gif|bmp|webp)$/i.test(path)) {
-    return "image";
-  }
-
   if (path.toLowerCase().endsWith(".zip")) {
     return "zip";
+  }
+
+  if (/\.(jpe?g|png|gif|bmp|webp)$/i.test(path)) {
+    return "image";
   }
 
   // ディレクトリの判定は、`/` で終わるとき(あまりないはず)と、実際にディレクトリの場合がある
@@ -55,4 +55,50 @@ export function getFileNameRemovedExtension(path: string): string {
 
   // 拡張子部分を除いて返す
   return name.split(".").slice(0, -1).join(".");
+}
+
+/**
+ * 指定されたパスを元に、zip ファイルのリストを返す
+ *
+ * path がファイルの場合は、そのディレクトリ内のリストを返す
+ *
+ * 再帰的な読み込みは行わない
+ */
+export async function getZipFileList(path: string): Promise<string[]> {
+  const dir = await dirFromPath(path);
+
+  // zip ファイルのみを抽出する
+  const sourceList = await readDir(dir);
+  const array = [];
+  for (const source of sourceList) {
+    // ファイルではないときと、ピリオドから始まる特殊ファイル(.DS_Store 等)のときはスキップする
+    if (!source.isFile || source.name.startsWith(".")) {
+      continue;
+    }
+    const name = source.name;
+    const target = dir + "/" + name; //ここで @tauri-apps/api/path の join(dir, name) を使うととても遅い
+    const kind = await getPathKind(target);
+    // TODO: zip だけではなく image も統一的に扱えるようにする
+    if (kind === "zip") {
+      array.push(target);
+    }
+  }
+
+  // ロケールを考慮してソートし、Finder のファイル名の並び順と同じにする
+  array.sort((a, b) => a.localeCompare(b, [], { numeric: true }));
+
+  return array;
+}
+
+/**
+ * パスが存在するディレクトリを返す
+ */
+export async function dirFromPath(path: string): Promise<string> {
+  const st = await stat(path);
+
+  if (st.isDirectory) {
+    return path;
+  }
+
+  return path.split("/").slice(0, -1).join("/");
 }

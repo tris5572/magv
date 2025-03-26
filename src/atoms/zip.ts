@@ -709,26 +709,6 @@ async function convertData(target: ZipData, fileName: string | undefined) {
 }
 
 /**
- * Blob を Base64 に変換する
- */
-export async function base64FromBlob(file: File | Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result instanceof ArrayBuffer || reader.result == null) {
-        reject(new Error("FileReader result is not an string"));
-      } else {
-        resolve(reader.result);
-      }
-    };
-    reader.onerror = (e) => {
-      reject(e);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-/**
  * ビックリマークを付与したファイル名を生成する
  *
  * 変更後の名前のファイルがすでに存在している場合、存在しなくなるまで末尾に `_` を付与する

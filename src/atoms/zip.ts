@@ -712,7 +712,7 @@ async function convertData(target: ZipData, fileName: string | undefined) {
 /**
  * Blob を Base64 に変換する
  */
-export const base64FromBlob = async (file: File | Blob): Promise<string> => {
+export async function base64FromBlob(file: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -727,7 +727,7 @@ export const base64FromBlob = async (file: File | Blob): Promise<string> => {
     };
     reader.readAsDataURL(file);
   });
-};
+}
 
 /**
  * ビックリマークを付与したファイル名を生成する

@@ -704,8 +704,7 @@ const lastOpenIndexAtom = atom(
  */
 async function convertData(target: ZipData, fileName: string | undefined) {
   if (fileName && !target[fileName].orientation) {
-    const base64 = await base64FromBlob(target[fileName].blob);
-    target[fileName].orientation = await getImageOrientation(base64);
+    target[fileName].orientation = await getImageOrientation(target[fileName].blob);
   }
 }
 

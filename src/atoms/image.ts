@@ -3,6 +3,7 @@ import { getImageOrientation } from "../utils/utils";
 import { appModeAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { AppEvent } from "../types/event";
 import { getFileList } from "../utils/files";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 // 画像ファイルを開いたときの状態を管理する
 
@@ -38,6 +39,9 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   if (fileList.length === 0) {
     return;
   }
+
+  // ウィンドウを前面に出す
+  getCurrentWindow().setFocus();
 
   set($imagePathListAtom, fileList);
   set(appModeAtom, "image");

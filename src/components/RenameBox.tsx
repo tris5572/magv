@@ -52,9 +52,9 @@ export function RenameBox() {
   }
 
   return (
-    <div className="absolute bottom-8 left-1/2 transform-[translateX(-50%)] bg-neutral-50/60 text-neutral-700 p-4 rounded-md">
+    <div className="absolute bottom-8 left-1/2 transform-[translateX(-50%)] bg-neutral-50/60 text-neutral-700 backdrop-blur-sm p-4 rounded-md">
       <div>
-        <div className="pl-1 text-neutral-500">{prevFileName}</div>
+        <div className="pl-1 text-neutral-700">{prevFileName}</div>
         <input
           type="text"
           size={100}
@@ -69,7 +69,7 @@ export function RenameBox() {
           }}
         />
       </div>
-      <div className="pl-1 text-neutral-500">{nextFileName}</div>
+      <div className="pl-1 text-neutral-700">{nextFileName}</div>
     </div>
   );
 }

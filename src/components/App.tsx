@@ -89,9 +89,10 @@ function useEventListener() {
     };
   }, [windowMoved]);
 
-  // ウィンドウが閉じる直前に設定を保存するコールバックを設定する
+  // ウィンドウの位置とサイズを保存するコールバックを設定
   useEffect(() => {
-    const unlisten = listen("tauri://close-requested", () => {
+    // 終了時の `tauri://close-requested` では保存完了まで終了を待てないため、ウィンドウのフォーカスが外れたときに保存する
+    const unlisten = listen("tauri://blur", () => {
       storeConfig();
     });
     return () => {

@@ -89,18 +89,30 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
       ? source // Base64 はそのまま
       : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
 
-  const className = isHalf
-    ? justify === "left"
-      ? "h-full relative bg-stone900 flex items-center justify-start select-none w-1/2"
-      : justify === "right"
-      ? "h-full relative bg-stone900 flex items-center justify-end select-none w-1/2"
-      : "h-full relative bg-stone900 flex items-center justify-center select-none w-1/2"
-    : "h-full relative bg-stone900 flex items-center justify-center select-none";
+  /** 表示画像のコンテナーのスタイル */
+  const containerStyle: React.CSSProperties = {
+    height: "100%",
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    userSelect: "none",
+    width: "50%",
+  };
+  if (isHalf) {
+    if (justify === "left") {
+      containerStyle.justifyContent = "start";
+    } else if (justify === "right") {
+      containerStyle.justifyContent = "end";
+    }
+  } else {
+    containerStyle.width = undefined;
+  }
 
   return (
-    <div className={className}>
+    <div style={containerStyle}>
       <img
-        className="h-full object-contain"
+        style={{ height: "100%", objectFit: "contain" }}
         src={src}
         onMouseEnter={(e) => mouseEnter(e)}
         onMouseLeave={(e) => mouseLeave(e)}

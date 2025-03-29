@@ -28,6 +28,17 @@ type Props = {
   justify?: "left" | "center" | "right";
 };
 
+const PLACEHOLDER_STYLE = {
+  height: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  userSelect: "none",
+  "-webkit-user-select": "none",
+  background: "var(--black-color)",
+  color: "var(--white-color)",
+} as React.CSSProperties; // TODO: satisfies に書き換える。ベンダープレフィックスに対応するため as にしているが、Safari が user-select に対応したら satisfies にする
+
 /**
  * 1枚の画像を表示するコンポーネント
  *
@@ -68,11 +79,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   };
 
   if (!source) {
-    return (
-      <div className="h-full bg-stone900 flex items-center justify-center select-none text-stone-200">
-        画像ファイルまたはフォルダをドロップしてください
-      </div>
-    );
+    return <div style={PLACEHOLDER_STYLE}>画像ファイルまたはフォルダをドロップしてください</div>;
   }
 
   const src =

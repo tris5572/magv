@@ -76,6 +76,10 @@ const $lastIndexArrayAtom = atom<LastIndex[]>([]);
 
 /**
  * アーカイブ（zip ファイル）を開く atom
+ *
+ * 渡されたパス(ローカル)の zip ファイルを解凍し、画像ファイルのデータ (Blob) を取得する
+ *
+ * 過去に開いた履歴があれば最後に開いていたページを、そうでなければ最初のページを表示する
  */
 export const openZipAtom = atom(null, async (get, set, path: string | undefined) => {
   // パスがない場合は何もしない
@@ -661,7 +665,14 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
 // -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -
 
 /**
- * 各アーカイブファイルで最後に開いた画像のインデックスを取得・更新する atom
+ * 各アーカイブファイルで、最後に開いた画像のインデックスを取得・更新する atom
+ *
+ * `get` では、現在開いているアーカイブ `$openingArchivePathAtom` で、最後に記録されているインデックスを返す。
+ * 過去の履歴がない場合は `0` を返す。
+ * 呼び出すのはアーカイブファイルを開いて `$openingArchivePathAtom` をセットした後のみを想定した作り。
+ *
+ * `set` では、現在開いているアーカイブ `$openingArchivePathAtom` で、保持している履歴がある場合はインデックスを更新し、ない場合は新たに追加する。
+ * ページを切り替えたときに呼び出す想定。
  */
 const lastOpenIndexAtom = atom(
   (get) => {
@@ -672,20 +683,24 @@ const lastOpenIndexAtom = atom(
     }
     for (const v of array) {
       if (v.path === path) {
+        // 過去に開いていた場合はそのインデックスを返す
         return v.index;
       }
     }
+    // 初めて開く場合は最初のページを表示するために `0` を返す
     return 0;
   },
   (get, set, path: string, index: number) => {
     const array = get($lastIndexArrayAtom);
     for (const v of array) {
       if (v.path === path) {
+        // 当該パスの過去の履歴がある場合はインデックスを更新してセットする
         v.index = index;
         set($lastIndexArrayAtom, array);
         return;
       }
     }
+    // 当該パスの過去の履歴がない場合は新たに追加する
     array.push({ path, index });
     set($lastIndexArrayAtom, array);
   }

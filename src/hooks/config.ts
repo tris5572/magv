@@ -1,16 +1,9 @@
-import {
-  getCurrentWindow,
-  LogicalPosition,
-  LogicalSize,
-} from "@tauri-apps/api/window";
+import { getCurrentWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  configDataAtom,
-  windowPositionAtom,
-  windowSizeAtom,
-} from "../atoms/config";
+import { configDataAtom, windowPositionAtom, windowSizeAtom } from "../atoms/config";
 import { readConfigFile, storeConfigFile } from "../utils/utils";
+import { CONFIG_FILE_NAME } from "../types/config";
 
 /**
  * ウィンドウ操作のイベント（移動とリサイズ）を扱う関数を返すカスタムフック
@@ -61,7 +54,7 @@ export function useWindowEvent() {
 export function useStoreConfig() {
   const [configData] = useAtom(configDataAtom);
 
-  const f = useCallback(() => storeConfigFile(configData), [configData]);
+  const f = useCallback(() => storeConfigFile(configData, CONFIG_FILE_NAME), [configData]);
   return f;
 }
 
@@ -70,7 +63,7 @@ export function useStoreConfig() {
  */
 export function useRestoreConfig() {
   useEffect(() => {
-    readConfigFile().then((config) => {
+    readConfigFile(CONFIG_FILE_NAME).then((config) => {
       if (!config) {
         return;
       }

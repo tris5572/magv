@@ -3,7 +3,7 @@ import { AppEvent } from "./event";
 /**
  * 設定ファイルのファイル名
  */
-export const CONFIG_FILE_NAME = "config.json";
+export const CONFIG_FILE_NAME = "window.json";
 
 /**
  * 設定ファイルの型

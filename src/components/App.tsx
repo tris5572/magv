@@ -3,7 +3,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
-import { useRestoreConfig, useStoreConfig, useWindowEvent } from "../hooks/config";
+import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
@@ -16,7 +16,7 @@ import { openImagePathAtom } from "../atoms/image";
 export function App() {
   const [isOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
 
-  useRestoreConfig();
+  useRestoreWindowConfig();
   useEventListener();
 
   return (
@@ -40,7 +40,7 @@ function useEventListener() {
   const [, openZip] = useAtom(openZipAtom);
   const openImage = useSetAtom(openImagePathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
-  const storeConfig = useStoreConfig();
+  const storeConfig = useStoreWindowConfig();
   const handleEvent = useHandleEvent();
 
   // ファイルがドロップされたときの処理

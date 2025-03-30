@@ -47,11 +47,11 @@ export function useWindowEvent() {
 }
 
 /**
- * 設定ファイルを保存する関数を返すカスタムフック
+ * ウィンドウの位置とサイズを設定ファイルに保存する関数を返すカスタムフック
  *
- * アプリの終了前などに呼び出す
+ * 保存する適切なタイミング（アプリの終了時など）に呼び出す
  */
-export function useStoreConfig() {
+export function useStoreWindowConfig() {
   const [configData] = useAtom(configDataAtom);
 
   const f = useCallback(() => storeConfigFile(configData, WINDOW_CONFIG_FILE_NAME), [configData]);
@@ -61,7 +61,7 @@ export function useStoreConfig() {
 /**
  * 設定ファイルの値からウィンドウの位置とサイズを復元するカスタムフック
  */
-export function useRestoreConfig() {
+export function useRestoreWindowConfig() {
   useEffect(() => {
     readConfigFile(WINDOW_CONFIG_FILE_NAME).then((config) => {
       if (!config) {

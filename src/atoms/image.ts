@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import { getImageOrientation } from "../utils/utils";
 import { appModeAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { AppEvent } from "../types/event";
-import { getFileList } from "../utils/files";
+import { dirFromPath, getFileList } from "../utils/files";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 // 画像ファイルを開いたときの状態を管理する
@@ -47,6 +47,13 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   set(appModeAtom, "image");
 
   const index = fileList.findIndex((file) => file === path);
+
+  // ディレクトリ名をウィンドウのタイトルに設定
+  const dirPath = await dirFromPath(path);
+  const dirName = dirPath.split("/").pop();
+  if (dirName) {
+    getCurrentWindow().setTitle(dirName);
+  }
 
   // パスで指定された画像ファイルが見付かった場合はそれを、見付からなかった場合はディレクトリ内の先頭の画像を表示する
   if (index !== -1) {

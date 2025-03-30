@@ -6,9 +6,9 @@ import { AppEvent } from "./event";
 export const CONFIG_FILE_NAME = "window.json";
 
 /**
- * 設定ファイルの型
+ * ウィンドウの位置とサイズを保存する設定ファイルの型
  */
-export type Config = {
+export type WindowConfig = {
   window?: {
     position?: {
       x: number;

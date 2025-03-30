@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { Config, KeyboardConfig } from "../types/config";
+import { WindowConfig, KeyboardConfig } from "../types/config";
 import { AppEvent } from "../types/event";
 
 /**
@@ -163,13 +163,13 @@ export const windowPositionAtom = atom(
 export const configDataAtom = atom((get) => {
   return {
     window: { size: get($windowSizeAtom), position: get($windowPositionAtom) },
-  } satisfies Config;
+  } satisfies WindowConfig;
 });
 
 /**
  * 設定ファイルから設定を読み取って初期化する atom
  */
-export const initializeConfigAtom = atom(null, (_, set, config: Config | undefined) => {
+export const initializeConfigAtom = atom(null, (_, set, config: WindowConfig | undefined) => {
   if (config?.window?.size) {
     set($windowSizeAtom, config?.window.size);
   }

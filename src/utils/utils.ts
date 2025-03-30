@@ -1,5 +1,5 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { Config } from "../types/config";
+import { WindowConfig } from "../types/config";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -63,7 +63,7 @@ export async function getImageOrientation(source: string | Blob) {
 /**
  * 設定ファイルを指定された名前で保存する
  */
-export async function storeConfigFile(config: Config, name: string) {
+export async function storeConfigFile(config: WindowConfig, name: string) {
   const json = JSON.stringify(config);
   const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
   const path = await join(dir, name);
@@ -84,7 +84,7 @@ export async function storeConfigFile(config: Config, name: string) {
  *
  * 設定が存在しない等で読み込めなかった場合は undefined を返す
  */
-export async function readConfigFile(name: string): Promise<Config | undefined> {
+export async function readConfigFile(name: string): Promise<WindowConfig | undefined> {
   const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
   const path = await join(dir, name);
 
@@ -95,7 +95,7 @@ export async function readConfigFile(name: string): Promise<Config | undefined> 
 
   // ファイルを読み込む
   const text = await readTextFile(path);
-  const json = JSON.parse(text) as Config;
+  const json = JSON.parse(text) as WindowConfig;
   return json;
 }
 

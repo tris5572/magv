@@ -97,6 +97,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
     alignItems: "center",
     justifyContent: "center",
     userSelect: "none",
+    "-webkit-user-select": "none",
     width: "50%",
   };
   if (isHalf) {

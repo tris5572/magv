@@ -28,7 +28,7 @@ type Props = {
   justify?: "left" | "center" | "right";
 };
 
-const PLACEHOLDER_STYLE = {
+const PLACEHOLDER_STYLE: React.CSSProperties = {
   height: "100%",
   display: "flex",
   alignItems: "center",
@@ -37,7 +37,7 @@ const PLACEHOLDER_STYLE = {
   "-webkit-user-select": "none",
   background: "var(--black-color)",
   color: "var(--white-color)",
-} as React.CSSProperties; // TODO: satisfies に書き換える。ベンダープレフィックスに対応するため as にしているが、Safari が user-select に対応したら satisfies にする
+};
 
 /**
  * 1枚の画像を表示するコンポーネント

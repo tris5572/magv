@@ -11,7 +11,7 @@ import { RenameBox } from "./RenameBox";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
-import { openDirectoryPathAtom, openImagePathAtom } from "../atoms/image";
+import { openImagePathAtom } from "../atoms/image";
 
 export function App() {
   const [isOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
@@ -39,7 +39,6 @@ export function App() {
 function useEventListener() {
   const [, openZip] = useAtom(openZipAtom);
   const openImage = useSetAtom(openImagePathAtom);
-  const openDirectory = useSetAtom(openDirectoryPathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreConfig();
   const handleEvent = useHandleEvent();
@@ -53,10 +52,10 @@ function useEventListener() {
       } else if (kind === "image") {
         openImage(path);
       } else if (kind === "directory") {
-        openDirectory(path);
+        openImage(path);
       }
     },
-    [openDirectory, openImage, openZip]
+    [openImage, openZip]
   );
 
   // ファイルをドロップしたときのリスナーを設定

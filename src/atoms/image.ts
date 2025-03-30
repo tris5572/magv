@@ -29,7 +29,11 @@ const $openingIndexAtom = atom<number>(0);
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 
 /**
- * パスとして指定された画像ファイルを開く
+ * パスとして指定されたディレクトリまたは画像ファイルを開く
+ *
+ * 渡された種類により以下のような挙動となる
+ * - 画像ファイルが指定されたときはその画像を表示
+ * - ディレクトリが指定されたときはディレクトリ内の先頭の画像を表示
  */
 export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   // 画像ファイルの一覧を取得する
@@ -40,13 +44,8 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
     return;
   }
 
-  // ウィンドウを前面に出す
-  getCurrentWindow().setFocus();
-
   set($imagePathListAtom, fileList);
   set(appModeAtom, "image");
-
-  const index = fileList.findIndex((file) => file === path);
 
   // ディレクトリ名をウィンドウのタイトルに設定
   const dirPath = await dirFromPath(path);
@@ -55,31 +54,16 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
     getCurrentWindow().setTitle(dirName);
   }
 
-  // パスで指定された画像ファイルが見付かった場合はそれを、見付からなかった場合はディレクトリ内の先頭の画像を表示する
-  if (index !== -1) {
-    set(moveIndexAtom, { index });
-  } else {
+  // ウィンドウを前面に出す
+  getCurrentWindow().setFocus();
+
+  // パスで指定された画像ファイルの有無により表示画像を変える
+  const index = fileList.findIndex((file) => file === path);
+  if (dirPath === path || index === -1) {
     set(moveIndexAtom, { index: 0 });
+  } else {
+    set(moveIndexAtom, { index });
   }
-});
-
-/**
- * パスとして指定されたディレクトリの先頭画像を表示する
- *
- * ディレクトリ内に画像ファイルがない場合は何もしない
- */
-export const openDirectoryPathAtom = atom(null, async (_, set, path: string) => {
-  // ディレクトリ内の画像ファイルの一覧を取得する
-  const fileList = await getFileList(path, "image");
-
-  // ディレクトリ内に画像ファイルがない場合は何もしない
-  if (fileList.length === 0) {
-    return;
-  }
-
-  set(appModeAtom, "image");
-  set($imagePathListAtom, fileList);
-  set(moveIndexAtom, { index: 0 });
 });
 
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -

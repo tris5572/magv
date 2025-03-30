@@ -28,17 +28,6 @@ type Props = {
   justify?: "left" | "center" | "right";
 };
 
-const PLACEHOLDER_STYLE: React.CSSProperties = {
-  height: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  userSelect: "none",
-  "-webkit-user-select": "none",
-  background: "var(--black-color)",
-  color: "var(--white-color)",
-};
-
 /**
  * 1枚の画像を表示するコンポーネント
  *
@@ -142,6 +131,18 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
     </div>
   );
 }
+
+/** 画像未表示時のスタイル */
+const PLACEHOLDER_STYLE: React.CSSProperties = {
+  height: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  userSelect: "none",
+  "-webkit-user-select": "none",
+  background: "var(--black-color)",
+  color: "var(--white-color)",
+};
 
 /** 1枚の画像 img のスタイル */
 const IMAGE_STYLE: React.CSSProperties = { height: "100%", objectFit: "contain" };

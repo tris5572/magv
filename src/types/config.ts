@@ -1,9 +1,9 @@
 import { AppEvent } from "./event";
 
 /**
- * 設定ファイルのファイル名
+ * ウィンドウの位置と保存する設定ファイルのファイル名
  */
-export const CONFIG_FILE_NAME = "window.json";
+export const WINDOW_CONFIG_FILE_NAME = "window.json";
 
 /**
  * ウィンドウの位置とサイズを保存する設定ファイルの型

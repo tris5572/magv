@@ -78,29 +78,22 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
       ? source // Base64 はそのまま
       : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
 
-  /** 表示画像のコンテナーのスタイル */
-  const containerStyle: React.CSSProperties = {
-    height: "100%",
-    position: "relative",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    userSelect: "none",
-    "-webkit-user-select": "none",
-    width: "50%",
-  };
+  // 表示の大きさ(幅)と位置(寄せる方向)を props に応じて調整
+  let containerWidth = undefined;
+  let containerJustifyContent = "center";
   if (isHalf) {
+    containerWidth = "50%";
     if (justify === "left") {
-      containerStyle.justifyContent = "start";
+      containerJustifyContent = "start";
     } else if (justify === "right") {
-      containerStyle.justifyContent = "end";
+      containerJustifyContent = "end";
     }
-  } else {
-    containerStyle.width = undefined;
   }
 
   return (
-    <div style={containerStyle}>
+    <div
+      style={{ ...CONTAINER_STYLE, width: containerWidth, justifyContent: containerJustifyContent }}
+    >
       <img
         style={IMAGE_STYLE}
         src={src}
@@ -146,3 +139,15 @@ const PLACEHOLDER_STYLE: React.CSSProperties = {
 
 /** 1枚の画像 img のスタイル */
 const IMAGE_STYLE: React.CSSProperties = { height: "100%", objectFit: "contain" };
+
+/** 表示画像のコンテナーのスタイル */
+const CONTAINER_STYLE: React.CSSProperties = {
+  height: "100%",
+  // width は props により可変
+  position: "relative",
+  display: "flex",
+  alignItems: "center",
+  // justifyContent は props により可変
+  userSelect: "none",
+  "-webkit-user-select": "none",
+};

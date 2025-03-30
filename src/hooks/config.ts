@@ -1,7 +1,7 @@
 import { getCurrentWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { configDataAtom, windowPositionAtom, windowSizeAtom } from "../atoms/config";
+import { windowConfigDataAtom, windowPositionAtom, windowSizeAtom } from "../atoms/config";
 import { readConfigFile, storeConfigFile } from "../utils/utils";
 import { WINDOW_CONFIG_FILE_NAME } from "../types/config";
 
@@ -52,7 +52,7 @@ export function useWindowEvent() {
  * 保存する適切なタイミング（アプリの終了時など）に呼び出す
  */
 export function useStoreWindowConfig() {
-  const [configData] = useAtom(configDataAtom);
+  const [configData] = useAtom(windowConfigDataAtom);
 
   const f = useCallback(() => storeConfigFile(configData, WINDOW_CONFIG_FILE_NAME), [configData]);
   return f;

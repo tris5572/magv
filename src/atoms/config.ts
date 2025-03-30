@@ -158,9 +158,9 @@ export const windowPositionAtom = atom(
 );
 
 /**
- * 保存するコンフィグデータを返す atom
+ * 保存するウィンドウの位置とサイズの設定データを返す atom
  */
-export const configDataAtom = atom((get) => {
+export const windowConfigDataAtom = atom((get) => {
   return {
     window: { size: get($windowSizeAtom), position: get($windowPositionAtom) },
   } satisfies WindowConfig;
@@ -169,7 +169,7 @@ export const configDataAtom = atom((get) => {
 /**
  * 設定ファイルから設定を読み取って初期化する atom
  */
-export const initializeConfigAtom = atom(null, (_, set, config: WindowConfig | undefined) => {
+export const initializeWindowConfigAtom = atom(null, (_, set, config: WindowConfig | undefined) => {
   if (config?.window?.size) {
     set($windowSizeAtom, config?.window.size);
   }

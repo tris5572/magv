@@ -113,7 +113,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   return (
     <div style={containerStyle}>
       <img
-        style={{ height: "100%", objectFit: "contain" }}
+        style={IMAGE_STYLE}
         src={src}
         onMouseEnter={(e) => mouseEnter(e)}
         onMouseLeave={(e) => mouseLeave(e)}
@@ -142,3 +142,6 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
     </div>
   );
 }
+
+/** 1枚の画像 img のスタイル */
+const IMAGE_STYLE: React.CSSProperties = { height: "100%", objectFit: "contain" };

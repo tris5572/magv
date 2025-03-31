@@ -43,9 +43,9 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   const isMagnifierEnabled = useAtomValue(isMagnifierEnabledAtom);
 
   // ルーペの定数
-  const magnifierHeight = 300;
-  const magnifierWidth = 300;
-  const zoomLevel = 4;
+  const magnifierHeight = 600;
+  const magnifierWidth = 600;
+  const zoomLevel = 8;
 
   const mouseEnter = (e: React.MouseEvent) => {
     const el = e.currentTarget;

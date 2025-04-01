@@ -11,6 +11,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: false,
     shift: false,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_NEXT_PAGE,
   },
   {
@@ -18,6 +19,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: false,
     shift: false,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_PREV_PAGE,
   },
   {
@@ -25,6 +27,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: false,
     shift: true,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_NEXT_SINGLE_IMAGE,
   },
   {
@@ -32,6 +35,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: false,
     shift: true,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_PREV_SINGLE_IMAGE,
   },
   {
@@ -53,6 +57,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: false,
     shift: false,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_LAST_PAGE,
   },
   {
@@ -60,6 +65,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: true,
     shift: false,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_LAST_PAGE,
   },
   {
@@ -67,6 +73,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: false,
     shift: false,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_FIRST_PAGE,
   },
   {
@@ -74,6 +81,7 @@ const DEFAULT_KEYBOARD_CONFIG = [
     ctrl: false,
     meta: true,
     shift: false,
+    isHorizontalSwitch: true,
     event: AppEvent.MOVE_FIRST_PAGE,
   },
   {

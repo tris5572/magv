@@ -52,4 +52,10 @@ export type KeyboardConfig = {
    * 操作時に実行するイベント
    */
   event: AppEvent;
+  /**
+   * 開き方向に応じて左右操作の挙動が切り替わるかどうかのフラグ
+   *
+   * 一部のイベントに対してのみ有効
+   */
+  isHorizontalSwitch?: boolean;
 };

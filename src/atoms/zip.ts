@@ -234,7 +234,7 @@ export const handleAppEvent = atom(
           set(moveNextSingleImageAtom);
           break;
         }
-        set(nextImageAtom);
+        set(moveNextPageAtom);
         break;
       }
       case AppEvent.MOVE_PREV_PAGE: {
@@ -242,7 +242,7 @@ export const handleAppEvent = atom(
           set(movePrevSingleImageAtom);
           break;
         }
-        set(prevImageAtom);
+        set(movePrevPageAtom);
         break;
       }
       case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
@@ -380,7 +380,7 @@ export const moveIndexAtom = atom(
  *
  * 縦画像が1枚だけ表示されるケースもあり得る
  */
-export const nextImageAtom = atom(null, async (get, set) => {
+export const moveNextPageAtom = atom(null, async (get, set) => {
   const openIndex = get($openingImageIndexAtom);
   const imageData = get(viewingImageAtom);
 
@@ -414,7 +414,7 @@ export const nextImageAtom = atom(null, async (get, set) => {
  * 横0 | 縦1 | (なし) | 縦1
  * 横0 | 横1 | (なし) | 横1
  */
-export const prevImageAtom = atom(null, async (get, set) => {
+export const movePrevPageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const zipData = get($openingZipDataAtom);

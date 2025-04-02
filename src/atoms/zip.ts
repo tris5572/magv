@@ -156,7 +156,7 @@ export const openZipAtom = atom(null, async (get, set, path: string | undefined)
  * - アーカイブのデータ更新
  * - 前後アーカイブパスの更新
  */
-export const setOpeningArchivePathAtom = atom(null, (_, set, path: string) => {
+const setOpeningArchivePathAtom = atom(null, (_, set, path: string) => {
   set($openingArchivePathAtom, path);
 
   // アーカイブのファイル名をウィンドウのタイトルに設定
@@ -380,7 +380,7 @@ export const moveIndexAtom = atom(
  *
  * 縦画像が1枚だけ表示されるケースもあり得る
  */
-export const moveNextPageAtom = atom(null, async (get, set) => {
+const moveNextPageAtom = atom(null, async (get, set) => {
   const openIndex = get($openingImageIndexAtom);
   const imageData = get(viewingImageAtom);
 
@@ -414,7 +414,7 @@ export const moveNextPageAtom = atom(null, async (get, set) => {
  * 横0 | 縦1 | (なし) | 縦1
  * 横0 | 横1 | (なし) | 横1
  */
-export const movePrevPageAtom = atom(null, async (get, set) => {
+const movePrevPageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const zipData = get($openingZipDataAtom);
@@ -576,7 +576,7 @@ const moveLastImageAtom = atom(null, async (get, set) => {
 /**
  * 開いているアーカイブファイルをリネームする atom
  */
-export const renameArchiveAtom = atom(null, async (get, set, name: string) => {
+const renameArchiveAtom = atom(null, async (get, set, name: string) => {
   const beforePath = get($openingArchivePathAtom);
 
   if (!beforePath) {

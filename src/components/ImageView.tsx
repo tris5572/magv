@@ -9,20 +9,29 @@ export function ImageView() {
   const [openImagePath] = useAtom(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
 
-  const style =
-    pageDirection === "left"
-      ? "h-[calc(100dvh-32px)] flex flex-row-reverse justify-center items-center overflow-hidden"
-      : "h-[calc(100dvh-32px)] flex flex-row justify-center items-center overflow-hidden";
+  const doubleStyle: React.CSSProperties = {
+    height: "calc(100dvh - 32px)",
+    display: "flex",
+    flexDirection: pageDirection === "left" ? "row-reverse" : "row",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  };
+
+  const singleStyle: React.CSSProperties = {
+    height: "calc(100dvh - 32px)",
+    overflow: "hidden",
+  };
 
   return (
     <>
       {openImagePath && openImagePath?.type === "double" ? (
-        <div className={style}>
+        <div style={doubleStyle}>
           <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
           <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
         </div>
       ) : (
-        <div className="h-[calc(100dvh-32px)] overflow-hidden">
+        <div style={singleStyle}>
           <SingleImageView source={openImagePath?.source} />
         </div>
       )}

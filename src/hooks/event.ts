@@ -4,7 +4,13 @@ import { handleAppEvent as handleEventZip } from "../atoms/zip";
 import { handleAppEvent as handleEventImage } from "../atoms/image";
 import { keyboardConfigAtom } from "../atoms/config";
 import { KeyboardConfig } from "../types/config";
-import { appModeAtom, isMagnifierEnabledAtom, isOpeningRenameViewAtom } from "../atoms/app";
+import {
+  appModeAtom,
+  isMagnifierEnabledAtom,
+  isOpeningRenameViewAtom,
+  pageDirectionAtom,
+} from "../atoms/app";
+import { getHorizontalSwitchEvent } from "../utils/event";
 
 /**
  * ユーザー操作等により発生したイベントによりアプリ操作を行うカスタムフック
@@ -16,6 +22,7 @@ export function useHandleEvent() {
   const [openingRenameView, setOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
   const [isMagnifierEnabled, setIsMagnifierEnabled] = useAtom(isMagnifierEnabledAtom);
   const appMode = useAtomValue(appModeAtom);
+  const pageDirection = useAtomValue(pageDirectionAtom);
 
   // アプリの動作モードによりイベント送信先を切り替える
   const eventHandler = appMode === "zip" ? handleZip : handleImage;
@@ -25,7 +32,7 @@ export function useHandleEvent() {
     //payload?: number | string
   ) => {
     if (event instanceof KeyboardEvent) {
-      const ev = convertKeyboardEvent(event, keyboardConfig);
+      const ev = convertKeyboardEvent(event, keyboardConfig, pageDirection);
       if (ev) {
         if (ev === AppEvent.OPEN_RENAME_VIEW && appMode === "zip") {
           // 画像表示モードのときはリネームビューを表示しない
@@ -62,7 +69,8 @@ export function useHandleEvent() {
  */
 function convertKeyboardEvent(
   input: KeyboardEvent,
-  config: KeyboardConfig[]
+  config: KeyboardConfig[],
+  pageDirection: "left" | "right"
 ): AppEvent | undefined {
   for (const c of config) {
     if (
@@ -71,7 +79,13 @@ function convertKeyboardEvent(
       input.shiftKey === c.shift &&
       input.metaKey === c.meta
     ) {
-      return c.event;
+      const ev = c.event;
+      // 左右反転
+      if (pageDirection === "right" && c.isHorizontalSwitch) {
+        return getHorizontalSwitchEvent(ev);
+      } else {
+        return ev;
+      }
     }
   }
   return undefined;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAtom } from "jotai";
-import { singleOrDoubleAtom } from "../atoms/app";
+import { pageDirectionAtom, singleOrDoubleAtom } from "../atoms/app";
 import { useHandleEvent } from "../hooks/event";
 import { AppEvent } from "../types/event";
 
@@ -23,8 +23,9 @@ export function TopMenu() {
       onMouseLeave={() => setIsVisible(false)}
     >
       {isVisible && (
-        <div className="flex flex-row justify-center">
+        <div className="flex flex-row justify-center gap-2">
           <SingleDoubleSwitcher />
+          <PageDirectionSwitcher />
         </div>
       )}
     </div>
@@ -57,6 +58,37 @@ function SingleDoubleSwitcher() {
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
         selected={singleOrDouble === "double"}
+      />
+    </div>
+  );
+}
+
+/**
+ * ページの方向を切り替えるコンポーネント
+ */
+function PageDirectionSwitcher() {
+  const [pageDirection, setPageDirection] = useAtom(pageDirectionAtom);
+  const handleEvent = useHandleEvent();
+
+  return (
+    <div className="flex flex-row justify-center">
+      <IconButton
+        src="/page-direction-left.svg"
+        label="右開き"
+        onClick={() => {
+          setPageDirection("left");
+          handleEvent(AppEvent.UPDATE_PAGE);
+        }}
+        selected={pageDirection === "left"}
+      />
+      <IconButton
+        src="/page-direction-right.svg"
+        label="左開き"
+        onClick={() => {
+          setPageDirection("right");
+          handleEvent(AppEvent.UPDATE_PAGE);
+        }}
+        selected={pageDirection === "right"}
       />
     </div>
   );

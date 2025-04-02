@@ -1,11 +1,11 @@
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { logMessageAtom } from "../atoms/log";
 
 /**
  * ログのメッセージを表示するコンポーネント
  */
 export function Log() {
-  const [message] = useAtom(logMessageAtom);
+  const message = useAtomValue(logMessageAtom);
 
   // メッセージの改行コードを br タグに変換する
   // const outputMessage = message.replace(/\n/g, "<br />");

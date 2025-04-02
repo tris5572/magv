@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
@@ -14,7 +14,7 @@ import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
 
 export function App() {
-  const [isOpeningRenameView] = useAtom(isOpeningRenameViewAtom);
+  const isOpeningRenameView = useAtomValue(isOpeningRenameViewAtom);
 
   useRestoreWindowConfig();
   useEventListener();
@@ -37,7 +37,7 @@ export function App() {
  * App コンポーネントのイベントリスナーを登録するカスタムフック
  */
 function useEventListener() {
-  const [, openZip] = useAtom(openZipAtom);
+  const openZip = useSetAtom(openZipAtom);
   const openImage = useSetAtom(openImagePathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreWindowConfig();

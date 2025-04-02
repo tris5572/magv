@@ -1,4 +1,4 @@
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import { pageDirectionAtom, viewingImageAtom } from "../atoms/app";
 import { SingleImageView } from "./SingleImageView";
 
@@ -6,7 +6,7 @@ import { SingleImageView } from "./SingleImageView";
  * 画像を表示するコンポーネント
  */
 export function ImageView() {
-  const [openImagePath] = useAtom(viewingImageAtom);
+  const openImagePath = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
 
   const doubleStyle: React.CSSProperties = {

@@ -38,3 +38,10 @@ export const singleOrDoubleAtom = atom<"single" | "double">("double");
  * ルーペ機能のオンオフを切り替える atom
  */
 export const isMagnifierEnabledAtom = atom<boolean>(false);
+
+/**
+ * 見開き方向を切り替える atom
+ *
+ * デフォルトでは左に進む（右開き）で `"left"`
+ */
+export const pageDirectionAtom = atom<"right" | "left">("left");

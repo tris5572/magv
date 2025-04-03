@@ -41,8 +41,8 @@ export function Indicator() {
   const moveIndex = imageData.moveIndex;
 
   const last = list.length;
-  const width = last === 0 ? 0 : (index / (last - 1)) * 100;
   const pageStr = last === 0 ? "- / -" : `${index + 1} / ${last}`;
+  const barWidth = last === 0 ? 0 : (index / (last - 1)) * 100;
 
   /** 進捗バーの色が付いた部分のスタイル */
   const barStyle: React.CSSProperties = {
@@ -50,7 +50,7 @@ export function Indicator() {
     top: 0,
     height: "32px",
     background: "hsl(200 10% 30%)",
-    width: `${width}%`,
+    width: `${barWidth}%`,
     right: direction === "left" ? 0 : undefined,
     left: direction === "right" ? 0 : undefined,
   };

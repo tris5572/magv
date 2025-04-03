@@ -62,14 +62,13 @@ export function Indicator() {
         const clickX = e.clientX;
         const width = elementRef.current.clientWidth;
 
-        // TODO: 開き方向を変えられるようになったときは処理を切り替え可能にする
-        const ratio = 1 - clickX / width;
+        const ratio = direction === "left" ? 1 - clickX / width : clickX / width;
         const idx = Math.floor(ratio * list.length);
 
         moveIndex({ index: idx });
       }
     },
-    [list.length, moveIndex]
+    [direction, list.length, moveIndex]
   );
 
   /** クリック時に呼び出されるコールバック */

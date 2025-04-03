@@ -1,5 +1,29 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useImageData } from "../hooks/images";
+
+/** コンポーネント全体のラッパーのスタイル */
+const CONTAINER_STYLE: React.CSSProperties = {
+  width: "100dvw",
+  backgroundColor: "transparent",
+  height: "32px",
+  cursor: "pointer",
+  position: "relative",
+  userSelect: "none",
+  "-webkit-user-select": "none",
+};
+
+/** ページ表記のスタイル */
+const PAGE_STRING_STYLE: React.CSSProperties = {
+  width: "100dvw",
+  height: "32px",
+  position: "absolute",
+  top: 0,
+  left: 0,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  color: "rgb(203 213 225)",
+};
 
 /**
  * 画像のページ位置を表示するインジケーターコンポーネント
@@ -91,7 +115,7 @@ export function Indicator() {
 
   return (
     <div
-      className="w-dvw bg-transparent h-8 cursor-pointer relative select-none"
+      style={CONTAINER_STYLE}
       ref={elementRef}
       onMouseDown={handleClick}
       onMouseMove={handleDrag}
@@ -100,9 +124,7 @@ export function Indicator() {
       }}
     >
       <div style={barStyle}></div>
-      <div className="w-dvw h-8 absolute top-0 left-0 flex justify-center items-center text-zinc-200">
-        {pageStr}
-      </div>
+      <div style={PAGE_STRING_STYLE}>{pageStr}</div>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useAtomValue } from "jotai";
 import { useImageData } from "../hooks/images";
+import { pageDirectionAtom } from "../atoms/app";
 
 /** コンポーネント全体のラッパーのスタイル */
 const CONTAINER_STYLE: React.CSSProperties = {
@@ -32,19 +34,17 @@ export function Indicator() {
   const imageData = useImageData();
   const elementRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const direction = useAtomValue(pageDirectionAtom);
 
   const index = imageData.index;
   const list = imageData.list;
   const moveIndex = imageData.moveIndex;
 
-  // TODO: 見開き方法を変えられるようになったときは変更に対応する
-  const direction = "left";
-
   const last = list.length;
   const width = last === 0 ? 0 : (index / (last - 1)) * 100;
   const pageStr = last === 0 ? "- / -" : `${index + 1} / ${last}`;
 
-  /** 進捗バーのスタイル。Tailwind では動的スタイルを利用できないため、自前でスタイルを生成する */
+  /** 進捗バーの色が付いた部分のスタイル */
   const barStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
@@ -52,7 +52,7 @@ export function Indicator() {
     background: "hsl(200 10% 30%)",
     width: `${width}%`,
     right: direction === "left" ? 0 : undefined,
-    // left: direction === "right" ? 0 : undefined,
+    left: direction === "right" ? 0 : undefined,
   };
 
   /** クリックまたはドラッグによるページ移動処理のために呼び出されるコールバック */

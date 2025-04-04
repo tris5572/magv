@@ -32,6 +32,12 @@ export function TopMenu() {
   );
 }
 
+/** 切替ボタンのグループのスタイル */
+const SWITCHER_STYLE: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "center",
+};
+
 /**
  * 見開き表示を切り替えるコンポーネント
  */
@@ -40,7 +46,7 @@ function SingleDoubleSwitcher() {
   const handleEvent = useHandleEvent();
 
   return (
-    <div className="flex flex-row justify-center">
+    <div style={SWITCHER_STYLE}>
       <IconButton
         src="/page-view-1.svg"
         label="単体"
@@ -71,7 +77,7 @@ function PageDirectionSwitcher() {
   const handleEvent = useHandleEvent();
 
   return (
-    <div className="flex flex-row justify-center">
+    <div style={SWITCHER_STYLE}>
       <IconButton
         src="/page-direction-left.svg"
         label="右開き"

@@ -1,7 +1,8 @@
-import { exists, FileInfo, lstat } from "@tauri-apps/plugin-fs";
+import { exists, FileInfo, lstat, stat } from "@tauri-apps/plugin-fs";
 import {
   createExclamationAddedPath,
   createRenamedPathToExcludeExtensionName,
+  dirFromPath,
   getFileNameRemovedExtension,
   getPathKind,
 } from "./files";
@@ -10,6 +11,7 @@ vi.mock("@tauri-apps/plugin-fs", () => {
   return {
     lstat: vi.fn(),
     exists: vi.fn(),
+    stat: vi.fn(),
   };
 });
 
@@ -52,6 +54,21 @@ describe("getPathKind", () => {
 
   test("不明な拡張子のとき、undefined が返ること", async () => {
     expect(await getPathKind("/a/b/c.txt")).toBeUndefined();
+  });
+});
+
+describe("dirFromPath", () => {
+  beforeEach(() => {
+    vi.mocked(stat).mockReturnValue(Promise.resolve({ isDirectory: false } as FileInfo));
+  });
+
+  test("ディレクトリが指定されたら、そのまま返すこと", async () => {
+    vi.mocked(stat).mockReturnValue(Promise.resolve({ isDirectory: true } as FileInfo));
+    expect(await dirFromPath("/a/b/c")).toBe("/a/b/c");
+  });
+
+  test("ファイルが指定されたら、その上位ディレクトリを返すこと", async () => {
+    expect(await dirFromPath("/a/b/c.txt")).toBe("/a/b");
   });
 });
 

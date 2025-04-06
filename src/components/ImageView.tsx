@@ -53,7 +53,7 @@ const PLACEHOLDER_STYLE: React.CSSProperties = {
   userSelect: "none",
   "-webkit-user-select": "none",
   background: "var(--black-color)",
-  color: "var(--white-color)",
+  color: "color-mix(in srgb, var(--white-color) 50%, transparent)",
 };
 
 /**

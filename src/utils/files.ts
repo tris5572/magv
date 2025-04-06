@@ -30,6 +30,8 @@ export async function getPathKind(
 
 /**
  * パスから拡張子を取り除いたファイル名を返す
+ *
+ * ディレクトリ(末尾が `/`)が渡されたときは空文字列を返す
  */
 export function getFileNameRemovedExtension(path: string): string {
   const name = path.split("/").pop(); // TODO: どの文字で区切るかを環境に基づいて判定する
@@ -92,6 +94,9 @@ export async function getFileList(path: string, kind: "zip" | "image"): Promise<
 
 /**
  * パスが存在するディレクトリを返す
+ *
+ * - path がディレクトリのときはそのまま
+ * - path がファイルのときは所属するディレクトリ
  */
 export async function dirFromPath(path: string): Promise<string> {
   const st = await stat(path);

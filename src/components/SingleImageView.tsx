@@ -68,7 +68,18 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   };
 
   if (!source) {
-    return <div style={PLACEHOLDER_STYLE}>画像ファイルまたはフォルダをドロップしてください</div>;
+    return (
+      <div style={PLACEHOLDER_STYLE}>
+        以下のものをドロップしてください
+        <br />
+        <br />
+        画像をまとめた zip ファイル
+        <br />
+        画像ファイル
+        <br />
+        画像が入ったフォルダ
+      </div>
+    );
   }
 
   const src =
@@ -131,6 +142,7 @@ const PLACEHOLDER_STYLE: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  textAlign: "center",
   userSelect: "none",
   "-webkit-user-select": "none",
   background: "var(--black-color)",

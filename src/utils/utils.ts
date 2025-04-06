@@ -3,19 +3,23 @@ import { WindowConfig } from "../types/config";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// #region 画像関連
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 /**
  * 画像のサイズを取得する
  *
- * 指定可能な画像ソースは以下のもの
- *
+ * 指定可能な画像ソースは以下の種類
  * - ローカルのパス (string)
- * - 画像の Base64 エンコード (string)
+ * - 画像を Base64 エンコードしたもの (string)
  * - 画像の Blob
  */
 export function getImageSize(
   source: string | Blob
 ): Promise<{ width: number; height: number } | undefined> {
-  // 何もしない Promise を返す
+  // ソースが存在しなかった場合(彼文字列も該当)は、何もしない Promise を返す
   if (!source) {
     return new Promise((resolve) => {
       resolve(undefined);
@@ -57,7 +61,7 @@ export async function getImageOrientation(source: string | Blob) {
 }
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-// #region 設定ファイル
+// #region 設定ファイル系
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**

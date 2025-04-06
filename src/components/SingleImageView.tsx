@@ -68,7 +68,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   };
 
   if (!source) {
-    return <div style={PLACEHOLDER_STYLE}>画像ファイルまたはフォルダをドロップしてください</div>;
+    return null;
   }
 
   const src =
@@ -124,18 +124,6 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
     </div>
   );
 }
-
-/** 画像未表示時のスタイル */
-const PLACEHOLDER_STYLE: React.CSSProperties = {
-  height: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  userSelect: "none",
-  "-webkit-user-select": "none",
-  background: "var(--black-color)",
-  color: "var(--white-color)",
-};
 
 /** 1枚の画像 img のスタイル */
 const IMAGE_STYLE: React.CSSProperties = { height: "100%", objectFit: "contain" };

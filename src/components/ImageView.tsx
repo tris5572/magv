@@ -23,18 +23,53 @@ export function ImageView() {
     overflow: "hidden",
   };
 
+  if (openImagePath && openImagePath?.type === "double") {
+    return (
+      <div style={doubleStyle}>
+        <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
+        <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
+      </div>
+    );
+  }
+
+  if (!openImagePath?.source) {
+    return <EmptyMessage />;
+  }
+
   return (
-    <>
-      {openImagePath && openImagePath?.type === "double" ? (
-        <div style={doubleStyle}>
-          <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
-          <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
-        </div>
-      ) : (
-        <div style={singleStyle}>
-          <SingleImageView source={openImagePath?.source} />
-        </div>
-      )}
-    </>
+    <div style={singleStyle}>
+      <SingleImageView source={openImagePath?.source} />
+    </div>
+  );
+}
+
+/** 空のメッセージのスタイル */
+const PLACEHOLDER_STYLE: React.CSSProperties = {
+  height: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  userSelect: "none",
+  "-webkit-user-select": "none",
+  background: "var(--black-color)",
+  color: "color-mix(in srgb, var(--white-color) 50%, transparent)",
+};
+
+/**
+ * 画像を表示していない空のときにメッセージを表示するコンポーネント
+ */
+function EmptyMessage() {
+  return (
+    <div style={PLACEHOLDER_STYLE}>
+      以下のものをドロップしてください
+      <br />
+      <br />
+      画像をまとめた zip ファイル
+      <br />
+      画像ファイル
+      <br />
+      画像が入ったフォルダ
+    </div>
   );
 }

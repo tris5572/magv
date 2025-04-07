@@ -13,6 +13,14 @@ const MENU_WRAPPER_STYLE: CSSProperties = {
   color: "hsl(180 10% 20%)",
 };
 
+/** 上部メニューの中身を並べるスタイル */
+const MENU_BODY_STYLE: CSSProperties = {
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "center",
+  gap: "8px",
+};
+
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント
  *
@@ -40,9 +48,7 @@ export function TopMenu() {
       onMouseLeave={() => setIsVisible(false)}
     >
       {isVisible && (
-        <div
-          style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}
-        >
+        <div style={MENU_BODY_STYLE}>
           <SingleDoubleSwitcher />
           <PageDirectionSwitcher />
         </div>

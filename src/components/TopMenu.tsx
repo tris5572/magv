@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useAtom } from "jotai";
 import { pageDirectionAtom, singleOrDoubleAtom } from "../atoms/app";
 import { useHandleEvent } from "../hooks/event";
 import { AppEvent } from "../types/event";
+
+/** 上部メニューに常に割り当てるスタイル */
+const MENU_WRAPPER_STYLE: CSSProperties = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100dvw",
+  color: "rgb(75 85 99)",
+};
 
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント
@@ -12,18 +21,28 @@ import { AppEvent } from "../types/event";
 export function TopMenu() {
   const [isVisible, setIsVisible] = useState(false);
 
-  const wrapperClass = isVisible
-    ? "absolute top-0 left-0 w-dvw bg-white/30 backdrop-blur-sm text-neutral-700 p-2"
-    : "absolute top-0 left-0 w-dvw bg-transparent h-8";
+  // 表示/非表示状態に応じてスタイルを切替
+  const visibleStyle: CSSProperties = isVisible
+    ? {
+        backgroundColor: "hsl(0 0% 100% / 30%)",
+        backdropFilter: "blur(8px)",
+        padding: "0.5rem",
+      }
+    : {
+        backgroundColor: "transparent",
+        height: "3rem",
+      };
 
   return (
     <div
-      className={wrapperClass}
+      style={{ ...MENU_WRAPPER_STYLE, ...visibleStyle }}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
       {isVisible && (
-        <div className="flex flex-row justify-center gap-2">
+        <div
+          style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}
+        >
           <SingleDoubleSwitcher />
           <PageDirectionSwitcher />
         </div>
@@ -100,6 +119,16 @@ function PageDirectionSwitcher() {
   );
 }
 
+const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "0.375rem",
+  padding: "0.125rem 0.25rem",
+  width: "3rem",
+};
+
 /**
  * アイコンが付いたボタンのコンポーネント
  */
@@ -113,17 +142,24 @@ function IconButton({
   label?: string;
   selected?: boolean;
   onClick: () => void;
+  style?: CSSProperties;
 }) {
-  const buttonClass = selected
-    ? "bg-white/80 flex flex-col items-center justify-center rounded-md px-1 py-0.5 w-[3rem] inset-ring-3 inset-ring-blue-500/50"
-    : "bg-white/30 flex flex-col items-center justify-center rounded-md px-1 py-0.5 w-[3rem] cursor-pointer";
+  const buttonStyle: CSSProperties = selected
+    ? {
+        backgroundColor: "rgba(255, 255, 255, 0.8)",
+        boxShadow: "inset 0 0 0 3px rgba(59, 130, 246, 0.5)",
+      }
+    : {
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
+        cursor: "pointer",
+      };
 
   return (
-    <button className={buttonClass} onClick={onClick}>
+    <button style={{ ...ICON_BUTTON_COMMON_STYLE, ...buttonStyle }} onClick={onClick}>
       <div>
         <img src={src} />
       </div>
-      {label && <div className="text-xs">{label}</div>}
+      {label && <div style={{ fontSize: "0.7rem" }}>{label}</div>}
     </button>
   );
 }

@@ -10,7 +10,7 @@ const MENU_WRAPPER_STYLE: CSSProperties = {
   top: 0,
   left: 0,
   width: "100dvw",
-  color: "rgb(75 85 99)",
+  color: "hsl(180 10% 20%)",
 };
 
 /**
@@ -146,11 +146,11 @@ function IconButton({
 }) {
   const buttonStyle: CSSProperties = selected
     ? {
-        backgroundColor: "rgba(255, 255, 255, 0.8)",
-        boxShadow: "inset 0 0 0 3px rgba(59, 130, 246, 0.5)",
+        backgroundColor: "hsl(0 0% 100% / 80%)",
+        boxShadow: "inset 0 0 0 3px hsl(180 80% 50% / 0.5)",
       }
     : {
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
+        backgroundColor: "hsl(0 0% 100% / 30%)",
         cursor: "pointer",
       };
 

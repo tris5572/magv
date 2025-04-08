@@ -137,6 +137,10 @@ const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
 
 const BUTTON_LABEL_STYLE: CSSProperties = {
   fontSize: "12px",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  letterSpacing: "-0.05rem",
+  fontFeatureSettings: "palt",
 };
 
 /**

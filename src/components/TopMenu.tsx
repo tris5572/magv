@@ -130,8 +130,8 @@ const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: "0.375rem",
-  padding: "0.125rem 0.25rem",
+  borderRadius: "8px",
+  padding: "2px 0 1px",
   width: "3rem",
 };
 
@@ -165,7 +165,7 @@ function IconButton({
       <div>
         <img src={src} />
       </div>
-      {label && <div style={{ fontSize: "0.7rem" }}>{label}</div>}
+      {label && <div style={{ fontSize: "12px" }}>{label}</div>}
     </button>
   );
 }

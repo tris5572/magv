@@ -135,6 +135,10 @@ const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
   width: "3rem",
 };
 
+const BUTTON_LABEL_STYLE: CSSProperties = {
+  fontSize: "12px",
+};
+
 /**
  * アイコンが付いたボタンのコンポーネント
  */
@@ -165,7 +169,7 @@ function IconButton({
       <div>
         <img src={src} />
       </div>
-      {label && <div style={{ fontSize: "12px" }}>{label}</div>}
+      {label && <div style={BUTTON_LABEL_STYLE}>{label}</div>}
     </button>
   );
 }

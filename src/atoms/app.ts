@@ -1,9 +1,17 @@
 import { atom } from "jotai";
 import { ViewImageMode } from "../types/image";
+import { AppViewMode } from "../types/app";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 アプリケーション全体の状態を管理する atom を集めたファイル
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/**
+ * アプリケーションの表示画面を保持する atom
+ *
+ * この値に応じて表示する画面を切り替える
+ */
+export const appViewMode = atom<AppViewMode>(AppViewMode.Image);
 
 /**
  * アプリの動作モードを保持する atom

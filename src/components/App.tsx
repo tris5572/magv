@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { CSSProperties, useCallback, useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { Log } from "./Log";
@@ -13,6 +13,15 @@ import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
 
+const APP_STYLE: CSSProperties = {
+  height: "100dvh",
+  display: "grid",
+  gridTemplateRows: "1fr 32px",
+};
+
+/**
+ * アプリのメインコンポーネント
+ */
 export function App() {
   const isOpeningRenameView = useAtomValue(isOpeningRenameViewAtom);
 
@@ -20,7 +29,7 @@ export function App() {
   useEventListener();
 
   return (
-    <main className="h-dvh grid grid-rows-[1fr_32px]">
+    <main style={APP_STYLE}>
       <ImageView />
       <TopMenu />
       <Indicator />

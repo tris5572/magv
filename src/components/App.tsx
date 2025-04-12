@@ -19,6 +19,9 @@ const APP_STYLE: CSSProperties = {
   gridTemplateRows: "1fr 32px",
 };
 
+/**
+ * アプリのメインコンポーネント
+ */
 export function App() {
   const isOpeningRenameView = useAtomValue(isOpeningRenameViewAtom);
 

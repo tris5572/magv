@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import {
   handleAppEvent,
@@ -8,6 +8,32 @@ import {
   prevArchiveNameWithoutExtensionAtom,
 } from "../atoms/zip";
 import { AppEvent } from "../types/event";
+
+/** リネームボックスのスタイル */
+const RENAME_BOX_STYLE: CSSProperties = {
+  position: "absolute",
+  bottom: "2rem",
+  left: "50%",
+  transform: "translateX(-50%)",
+  backgroundColor: "hsl(0 0% 100% / 0.6)",
+  color: "hsl(180 10% 5%)",
+  backdropFilter: "blur(8px)",
+  padding: "1rem",
+  borderRadius: "0.5rem",
+};
+
+/** ファイル名のスタイル */
+const FILE_NAME_STYLE: CSSProperties = {
+  paddingLeft: "0.25rem",
+};
+
+/** テキストボックスのスタイル */
+const TEXT_BOX_STYLE: CSSProperties = {
+  backgroundColor: "hsl(0 0% 100% / 0.6)",
+  borderRadius: "0.5rem",
+  padding: "0.25rem",
+  border: "1px solid hsl(180 10% 50%)",
+};
 
 /**
  * ファイルのリネーム情報を入力するビュー
@@ -52,24 +78,26 @@ export function RenameBox() {
   }
 
   return (
-    <div className="absolute bottom-8 left-1/2 transform-[translateX(-50%)] bg-neutral-50/60 text-neutral-700 backdrop-blur-sm p-4 rounded-md">
+    <div style={RENAME_BOX_STYLE}>
       <div>
-        <div className="pl-1 text-neutral-700">{prevFileName}</div>
-        <input
-          type="text"
-          size={100}
-          className="bg-neutral-100/60 rounded-md p-1 border border-neutral-300"
-          ref={inputRef}
-          defaultValue={defaultValue}
-          onKeyDown={handleKeyDown}
-          onCompositionStart={() => setIsComposing(true)}
-          onCompositionEnd={() => {
-            // 変換確定直後にフラグがオフになり、イベントハンドラでの Enter 押下処理（変換中判定）が正しく動かないため少し遅延させる
-            setTimeout(() => setIsComposing(false), 10);
-          }}
-        />
+        <div style={FILE_NAME_STYLE}>{prevFileName}</div>
+        <div>
+          <input
+            type="text"
+            size={100}
+            style={TEXT_BOX_STYLE}
+            ref={inputRef}
+            defaultValue={defaultValue}
+            onKeyDown={handleKeyDown}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={() => {
+              // 変換確定直後にフラグがオフになり、イベントハンドラでの Enter 押下処理（変換中判定）が正しく動かないため少し遅延させる
+              setTimeout(() => setIsComposing(false), 10);
+            }}
+          />
+        </div>
+        <div style={FILE_NAME_STYLE}>{nextFileName}</div>
       </div>
-      <div className="pl-1 text-neutral-700">{nextFileName}</div>
     </div>
   );
 }

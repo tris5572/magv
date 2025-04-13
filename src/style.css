@@ -1,8 +1,17 @@
-@import "tailwindcss";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 10px;
+}
 
 :root {
   color: #f6f6f6;
   background-color: #0f0f0f;
+  font-family: sans-serif;
   /* テーマカラーの定義 */
   --black-color: hsl(180 10% 5%);
   --white-color: hsl(180 10% 80%);

@@ -1,6 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useAtomValue } from "jotai";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isMagnifierEnabledAtom } from "../atoms/app";
 
 type Props = {
@@ -67,16 +67,22 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
     setXY([x, y]);
   };
 
+  /** img 要素の src に指定する文字列。ソース source の種類に応じて切替える */
+  const src = useMemo(() => {
+    if (!source) {
+      return undefined;
+    } else if (source instanceof Blob) {
+      return URL.createObjectURL(source); // Blob は URL を生成
+    } else if (source.startsWith("data:")) {
+      return source; // Base64 はそのまま
+    } else {
+      return convertFileSrc(source); // ローカルのパスは 表示用のパスに変換
+    }
+  }, [source]);
+
   if (!source) {
     return null;
   }
-
-  const src =
-    source instanceof Blob
-      ? URL.createObjectURL(source) // Blob は URL を生成
-      : source.startsWith("data:")
-      ? source // Base64 はそのまま
-      : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
 
   // 表示の大きさ(幅)と位置(寄せる方向)を props に応じて調整
   let containerWidth = undefined;

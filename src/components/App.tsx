@@ -15,6 +15,7 @@ import { openImagePathAtom } from "../atoms/image";
 
 const APP_STYLE: CSSProperties = {
   height: "100dvh",
+  width: "100dvw",
   display: "grid",
   gridTemplateRows: "1fr 32px",
 };

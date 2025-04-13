@@ -25,6 +25,7 @@ const PAGE_STRING_STYLE: React.CSSProperties = {
   justifyContent: "center",
   alignItems: "center",
   color: "rgb(203 213 225)",
+  fontSize: "1.6rem",
 };
 
 /**

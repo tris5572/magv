@@ -54,6 +54,7 @@ const PLACEHOLDER_STYLE: React.CSSProperties = {
   "-webkit-user-select": "none",
   background: "var(--black-color)",
   color: "color-mix(in srgb, var(--white-color) 50%, transparent)",
+  fontSize: "1.6rem",
 };
 
 /**
@@ -62,7 +63,7 @@ const PLACEHOLDER_STYLE: React.CSSProperties = {
 function EmptyMessage() {
   return (
     <div style={PLACEHOLDER_STYLE}>
-      以下のものをドロップしてください
+      ファイルをドロップしてください
       <br />
       <br />
       画像をまとめた zip ファイル

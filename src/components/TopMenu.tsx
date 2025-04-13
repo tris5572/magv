@@ -132,7 +132,7 @@ const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
   justifyContent: "center",
   borderRadius: "8px",
   padding: "2px 0 1px",
-  width: "3rem",
+  width: "5rem",
 };
 
 const BUTTON_LABEL_STYLE: CSSProperties = {
@@ -161,11 +161,12 @@ function IconButton({
   const buttonStyle: CSSProperties = selected
     ? {
         backgroundColor: "hsl(0 0% 100% / 80%)",
-        boxShadow: "inset 0 0 0 3px hsl(180 80% 50% / 0.5)",
+        border: "3px solid hsl(180 80% 50% / 0.5)",
       }
     : {
         backgroundColor: "hsl(0 0% 100% / 30%)",
         cursor: "pointer",
+        border: "none",
       };
 
   return (

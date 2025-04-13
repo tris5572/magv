@@ -63,7 +63,7 @@ const PLACEHOLDER_STYLE: React.CSSProperties = {
 function EmptyMessage() {
   return (
     <div style={PLACEHOLDER_STYLE}>
-      以下のものをドロップしてください
+      ファイルをドロップしてください
       <br />
       <br />
       画像をまとめた zip ファイル

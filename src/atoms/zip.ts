@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import * as fflate from "fflate";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { rename } from "@tauri-apps/plugin-fs";
+import { rename, exists } from "@tauri-apps/plugin-fs";
 import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
@@ -272,6 +272,10 @@ export const handleAppEvent = atom(
       }
       case AppEvent.SWITCH_PREV_ARCHIVE: {
         set(openPrevArchiveAtom);
+        break;
+      }
+      case AppEvent.SWITCH_RANDOM_ARCHIVE: {
+        set(openRandomArchiveAtom);
         break;
       }
       case AppEvent.ADD_EXCLAMATION_MARK: {
@@ -644,6 +648,36 @@ const openNextArchiveAtom = atom(null, async (get, set) => {
 const openPrevArchiveAtom = atom(null, async (get, set) => {
   const path = get($prevArchivePathAtom);
   set(openZipAtom, path);
+});
+
+/**
+ * 現在のフォルダ内にあるランダムなアーカイブファイルを開く
+ *
+ * - 現在開いているアーカイブと同じものは開かない
+ * - 稀に失敗することがある
+ *
+ *  TODO: リストから当該ファイルを除いてからランダムに選ぶ。現在の実装では低確率ではあるが失敗する可能性があるため
+ */
+const openRandomArchiveAtom = atom(null, async (get, set) => {
+  const archiveList = get($archivePathListAtom);
+  const currentPath = get($openingArchivePathAtom);
+  if (!currentPath) {
+    return;
+  }
+  // ランダムなファイル選択を規定回数行う
+  // ループしているのは、選んだファイルが移動・削除されている可能性があるため
+  // 回数を制限しているのは、全ファイルが削除されているような場合に無限ループになるのを防ぐため
+  let count = 0;
+  while (count < 100) {
+    count++;
+    const index = Math.floor(Math.random() * archiveList.length);
+    const path = archiveList[index];
+    if (path !== currentPath && (await exists(path))) {
+      set(openZipAtom, path);
+      return;
+    }
+  }
+  // TODO: 開けなかった場合にメッセージを表示する
 });
 
 /**

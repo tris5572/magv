@@ -53,6 +53,13 @@ const DEFAULT_KEYBOARD_CONFIG = [
     event: AppEvent.SWITCH_PREV_ARCHIVE,
   },
   {
+    key: "r",
+    ctrl: false,
+    meta: false,
+    shift: false,
+    event: AppEvent.SWITCH_RANDOM_ARCHIVE,
+  },
+  {
     key: "Home",
     ctrl: false,
     meta: false,

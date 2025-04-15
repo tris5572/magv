@@ -38,7 +38,7 @@ const TEXT_BOX_STYLE: CSSProperties = {
   padding: "0.5rem 0.25rem",
   margin: "0.25rem 0",
   border: "1px solid hsl(180 10% 50%)",
-  fontSize: "1.6rem",
+  fontSize: "1.8rem",
 };
 
 /**

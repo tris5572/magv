@@ -12,9 +12,11 @@ import { AppEvent } from "../types/event";
 /** リネームボックスのスタイル */
 const RENAME_BOX_STYLE: CSSProperties = {
   position: "absolute",
-  bottom: "2rem",
+  top: "50%",
   left: "50%",
-  transform: "translateX(-50%)",
+  transform: "translate(-50%, -50%)",
+  minWidth: "20%",
+  maxWidth: "30%",
   backgroundColor: "hsl(0 0% 100% / 0.6)",
   color: "hsl(180 10% 5%)",
   backdropFilter: "blur(8px)",
@@ -30,12 +32,13 @@ const FILE_NAME_STYLE: CSSProperties = {
 
 /** テキストボックスのスタイル */
 const TEXT_BOX_STYLE: CSSProperties = {
+  width: "100%",
   backgroundColor: "hsl(0 0% 100% / 0.6)",
   borderRadius: "0.5rem",
   padding: "0.5rem 0.25rem",
   margin: "0.25rem 0",
   border: "1px solid hsl(180 10% 50%)",
-  fontSize: "1.6rem",
+  fontSize: "1.8rem",
 };
 
 /**
@@ -87,7 +90,6 @@ export function RenameBox() {
         <div>
           <input
             type="text"
-            size={100}
             style={TEXT_BOX_STYLE}
             ref={inputRef}
             defaultValue={defaultValue}

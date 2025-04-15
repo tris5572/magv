@@ -12,9 +12,9 @@ import { AppEvent } from "../types/event";
 /** リネームボックスのスタイル */
 const RENAME_BOX_STYLE: CSSProperties = {
   position: "absolute",
-  bottom: "2rem",
+  top: "50%",
   left: "50%",
-  transform: "translateX(-50%)",
+  transform: "translate(-50%, -50%)",
   backgroundColor: "hsl(0 0% 100% / 0.6)",
   color: "hsl(180 10% 5%)",
   backdropFilter: "blur(8px)",

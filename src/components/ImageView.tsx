@@ -23,7 +23,7 @@ export function ImageView() {
     overflow: "hidden",
   };
 
-  if (openImagePath && openImagePath?.type === "double") {
+  if (openImagePath?.type === "double") {
     return (
       <div style={doubleStyle}>
         <SingleImageView source={openImagePath?.source1} isHalf justify="left" />

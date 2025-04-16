@@ -1,3 +1,4 @@
+import { CSSProperties } from "react";
 import { useAtomValue } from "jotai";
 import { pageDirectionAtom, viewingImageAtom } from "../atoms/app";
 import { SingleImageView } from "./SingleImageView";
@@ -9,7 +10,7 @@ export function ImageView() {
   const openImagePath = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
 
-  const doubleStyle: React.CSSProperties = {
+  const doubleStyle: CSSProperties = {
     height: "calc(100dvh - 32px)",
     display: "flex",
     flexDirection: pageDirection === "left" ? "row-reverse" : "row",
@@ -18,7 +19,7 @@ export function ImageView() {
     overflow: "hidden",
   };
 
-  const singleStyle: React.CSSProperties = {
+  const singleStyle: CSSProperties = {
     height: "calc(100dvh - 32px)",
     overflow: "hidden",
   };
@@ -44,7 +45,7 @@ export function ImageView() {
 }
 
 /** 空のメッセージのスタイル */
-const PLACEHOLDER_STYLE: React.CSSProperties = {
+const PLACEHOLDER_STYLE: CSSProperties = {
   height: "100%",
   display: "flex",
   alignItems: "center",

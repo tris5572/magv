@@ -655,8 +655,6 @@ const openPrevArchiveAtom = atom(null, async (get, set) => {
  *
  * - 現在開いているアーカイブと同じものは開かない
  * - 稀に失敗することがある
- *
- *  TODO: リストから当該ファイルを除いてからランダムに選ぶ。現在の実装では低確率ではあるが失敗する可能性があるため
  */
 const openRandomArchiveAtom = atom(null, async (get, set) => {
   const archiveList = get($archivePathListAtom);
@@ -664,14 +662,22 @@ const openRandomArchiveAtom = atom(null, async (get, set) => {
   if (!currentPath) {
     return;
   }
+
+  // アーカイブファイルのリストから、現在開いているファイルを取り除く
+  const list = archiveList.filter((path) => path !== currentPath);
+  if (list.length === 0) {
+    // ディレクトリ内が現在のアーカイブのみだった場合は何もしない
+    return;
+  }
+
   // ランダムなファイル選択を規定回数行う
   // ループしているのは、選んだファイルが移動・削除されている可能性があるため
   // 回数を制限しているのは、全ファイルが削除されているような場合に無限ループになるのを防ぐため
   let count = 0;
   while (count < 100) {
     count++;
-    const index = Math.floor(Math.random() * archiveList.length);
-    const path = archiveList[index];
+    const index = Math.floor(Math.random() * list.length);
+    const path = list[index];
     if (path !== currentPath && (await exists(path))) {
       set(openZipAtom, path);
       return;

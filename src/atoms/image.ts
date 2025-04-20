@@ -1,6 +1,12 @@
 import { atom } from "jotai";
 import { getImageOrientation } from "../utils/utils";
-import { appModeAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
+import {
+  appModeAtom,
+  resetSlideshowAtom,
+  singleOrDoubleAtom,
+  stopSlideshowAtom,
+  viewingImageAtom,
+} from "./app";
 import { AppEvent } from "../types/event";
 import { dirFromPath, getFileList } from "../utils/files";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -56,6 +62,9 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
 
   // ウィンドウを前面に出す
   getCurrentWindow().setFocus();
+
+  // スライドショーを停止する
+  set(stopSlideshowAtom);
 
   // パスで指定された画像ファイルの有無により表示画像を変える
   const index = fileList.findIndex((file) => file === path);
@@ -161,17 +170,31 @@ export const moveIndexAtom = atom(
       return;
     }
 
+    // ページ移動したため、スライドショーの経過時間をリセット
+    // 手動と自動(スライドショー)の区別なくリセットしても問題ない
+    set(resetSlideshowAtom);
+
     set($openingIndexAtom, index);
 
     if (forceSingle || singleOrDouble === "single") {
       set(viewingImageAtom, { type: "single", source: path1 });
+      // 最終ページに到達したときはスライドショーを停止
+      if (get($openingIndexAtom) === get($imagePathListAtom).length - 1) {
+        set(stopSlideshowAtom);
+      }
       return;
     }
 
     const orientation1 = await getImageOrientation(path1);
 
-    if (orientation1 === "landscape" || !path2) {
+    if (orientation1 === "landscape") {
       set(viewingImageAtom, { type: "single", source: path1 });
+      return;
+    }
+
+    if (!path2) {
+      set(viewingImageAtom, { type: "single", source: path1 });
+      set(stopSlideshowAtom); // 最終ページに到達したのでスライドショーを停止
       return;
     }
 
@@ -183,6 +206,11 @@ export const moveIndexAtom = atom(
         source1: path1,
         source2: path2,
       });
+      // 最終ページに到達したときはスライドショーを停止
+      if (get($imagePathListAtom).length - 2 <= get($openingIndexAtom)) {
+        set(stopSlideshowAtom);
+      }
+
       return;
     }
 

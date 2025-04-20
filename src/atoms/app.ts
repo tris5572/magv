@@ -98,6 +98,7 @@ export const stopSlideshowAtom = atom(null, (get, set) => {
   const intervalId = get(slideshowIntervalIdAtom);
   if (intervalId !== undefined) {
     clearInterval(intervalId);
+    set(slideshowCountAtom, 0);
     set(slideshowIntervalIdAtom, undefined);
   }
 });

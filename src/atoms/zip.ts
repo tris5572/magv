@@ -105,6 +105,9 @@ export const openZipAtom = atom(null, async (get, set, path: string | undefined)
 
   set(appModeAtom, "zip");
 
+  // スライドショーを停止する
+  set(stopSlideshowAtom);
+
   // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
   const fileNames = Object.keys(unzipped)
     .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く

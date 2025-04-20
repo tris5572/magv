@@ -80,7 +80,7 @@ function SingleDoubleSwitcher() {
           setSingleOrDouble("single");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={singleOrDouble === "single"}
+        variant={singleOrDouble === "single" ? "selected" : "unselected"}
       />
       <IconButton
         src="/page-view-2.svg"
@@ -89,7 +89,7 @@ function SingleDoubleSwitcher() {
           setSingleOrDouble("double");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={singleOrDouble === "double"}
+        variant={singleOrDouble === "double" ? "selected" : "unselected"}
       />
     </div>
   );
@@ -111,7 +111,7 @@ function PageDirectionSwitcher() {
           setPageDirection("left");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={pageDirection === "left"}
+        variant={pageDirection === "left" ? "selected" : "unselected"}
       />
       <IconButton
         src="/page-direction-right.svg"
@@ -120,7 +120,7 @@ function PageDirectionSwitcher() {
           setPageDirection("right");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={pageDirection === "right"}
+        variant={pageDirection === "right" ? "selected" : "unselected"}
       />
     </div>
   );
@@ -168,25 +168,47 @@ const BUTTON_LABEL_STYLE: CSSProperties = {
 function IconButton({
   src,
   label,
-  selected = false,
+  variant = "normal",
   onClick,
 }: {
   src: string;
   label?: string;
-  selected?: boolean;
-  onClick: () => void;
+  /**
+   * ボタンのバリエーション
+   * - `normal`: 常時押下可能な普通のボタン
+   * - `disabled`: 押下不能なボタン
+   * - `selected`: 選択されている、色の枠が付いたボタン
+   * - `unselected`: 選択されていない、薄いボタン
+   */
+  variant?: "normal" | "disabled" | "selected" | "unselected";
+  onClick?: () => void;
   style?: CSSProperties;
 }) {
-  const buttonStyle: CSSProperties = selected
-    ? {
-        backgroundColor: "hsl(0 0% 100% / 80%)",
-        border: "3px solid hsl(180 80% 50% / 0.5)",
-      }
-    : {
-        backgroundColor: "hsl(0 0% 100% / 30%)",
-        cursor: "pointer",
-        border: "none",
-      };
+  let buttonStyle: CSSProperties;
+  if (variant === "selected") {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 80%)",
+      border: "3px solid hsl(180 80% 50% / 0.5)",
+      cursor: "pointer",
+    };
+  } else if (variant === "unselected") {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 30%)",
+      border: "none",
+      cursor: "pointer",
+    };
+  } else if (variant === "disabled") {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 30%)",
+      border: "none",
+    };
+  } else {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 80%)",
+      border: "none",
+      cursor: "pointer",
+    };
+  }
 
   return (
     <button style={{ ...ICON_BUTTON_COMMON_STYLE, ...buttonStyle }} onClick={onClick}>

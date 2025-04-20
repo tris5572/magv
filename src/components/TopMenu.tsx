@@ -127,7 +127,7 @@ function PageDirectionSwitcher() {
 }
 
 /**
- * ページの方向を切り替えるコンポーネント
+ * スライドショーのコントローラーのコンポーネント
  */
 function SlideshowController() {
   const { start, stop } = useSlideshow();

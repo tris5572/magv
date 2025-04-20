@@ -3,7 +3,14 @@ import * as fflate from "fflate";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { rename, exists } from "@tauri-apps/plugin-fs";
-import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
+import {
+  appModeAtom,
+  isOpeningRenameViewAtom,
+  resetSlideshowAtom,
+  singleOrDoubleAtom,
+  stopSlideshowAtom,
+  viewingImageAtom,
+} from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
@@ -334,6 +341,10 @@ export const moveIndexAtom = atom(
     if (!name1) {
       return;
     }
+
+    // ページ移動したため、スライドショーの経過時間をリセット
+    // 手動と自動(スライドショー)の区別なくリセットしても問題ない
+    set(resetSlideshowAtom);
 
     set($openingImageIndexAtom, index);
 

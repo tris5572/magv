@@ -211,7 +211,10 @@ function IconButton({
   }
 
   return (
-    <button style={{ ...ICON_BUTTON_COMMON_STYLE, ...buttonStyle }} onClick={onClick}>
+    <button
+      style={{ ...ICON_BUTTON_COMMON_STYLE, ...buttonStyle }}
+      onClick={variant !== "disabled" ? onClick : undefined}
+    >
       <div>
         <img src={src} />
       </div>

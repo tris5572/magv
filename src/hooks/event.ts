@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AppEvent } from "../types/event";
 import { handleAppEvent as handleEventZip } from "../atoms/zip";
@@ -27,7 +28,8 @@ export function useHandleEvent() {
   // アプリの動作モードによりイベント送信先を切り替える
   const eventHandler = appMode === "zip" ? handleZip : handleImage;
 
-  const handleEvent = (
+  const handleEvent = useCallback(
+    (
     event: KeyboardEvent | MouseEvent | WheelEvent | AppEvent
     //payload?: number | string
   ) => {
@@ -57,7 +59,18 @@ export function useHandleEvent() {
       // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する
       eventHandler(event);
     }
-  };
+    },
+    [
+      appMode,
+      eventHandler,
+      isMagnifierEnabled,
+      keyboardConfig,
+      openingRenameView,
+      pageDirection,
+      setIsMagnifierEnabled,
+      setOpeningRenameView,
+    ]
+  );
 
   return handleEvent;
 }

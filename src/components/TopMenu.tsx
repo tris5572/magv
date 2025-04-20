@@ -137,7 +137,7 @@ function SlideshowController() {
     <div style={SWITCHER_STYLE}>
       <IconButton
         src={isSlideshowRunning ? "/player-stop.svg" : "/player-play.svg"}
-        label="開始"
+        label={isSlideshowRunning ? "再生停止" : "自動再生"}
         onClick={() => (isSlideshowRunning ? stop() : start())}
       />
     </div>

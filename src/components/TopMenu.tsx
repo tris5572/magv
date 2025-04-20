@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from "react";
-import { useAtom } from "jotai";
-import { pageDirectionAtom, singleOrDoubleAtom } from "../atoms/app";
-import { useHandleEvent } from "../hooks/event";
+import { useAtom, useAtomValue } from "jotai";
+import { isSlideshowRunningAtom, pageDirectionAtom, singleOrDoubleAtom } from "../atoms/app";
+import { useHandleEvent, useSlideshow } from "../hooks/event";
 import { AppEvent } from "../types/event";
 
 /** 上部メニューに常に割り当てるスタイル */
@@ -51,6 +51,7 @@ export function TopMenu() {
         <div style={MENU_BODY_STYLE}>
           <SingleDoubleSwitcher />
           <PageDirectionSwitcher />
+          <SlideshowController />
         </div>
       )}
     </div>
@@ -120,6 +121,24 @@ function PageDirectionSwitcher() {
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
         selected={pageDirection === "right"}
+      />
+    </div>
+  );
+}
+
+/**
+ * ページの方向を切り替えるコンポーネント
+ */
+function SlideshowController() {
+  const { start, stop } = useSlideshow();
+  const isSlideshowRunning = useAtomValue(isSlideshowRunningAtom);
+
+  return (
+    <div style={SWITCHER_STYLE}>
+      <IconButton
+        src={isSlideshowRunning ? "/player-stop.svg" : "/player-play.svg"}
+        label="開始"
+        onClick={() => (isSlideshowRunning ? stop() : start())}
       />
     </div>
   );

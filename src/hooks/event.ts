@@ -10,6 +10,10 @@ import {
   isMagnifierEnabledAtom,
   isOpeningRenameViewAtom,
   pageDirectionAtom,
+  resetSlideshowAtom,
+  slideshowCountAtom,
+  slideshowIntervalIdAtom,
+  stopSlideshowAtom,
 } from "../atoms/app";
 import { getHorizontalSwitchEvent } from "../utils/event";
 
@@ -30,35 +34,35 @@ export function useHandleEvent() {
 
   const handleEvent = useCallback(
     (
-    event: KeyboardEvent | MouseEvent | WheelEvent | AppEvent
-    //payload?: number | string
-  ) => {
-    if (event instanceof KeyboardEvent) {
-      const ev = convertKeyboardEvent(event, keyboardConfig, pageDirection);
-      if (ev) {
-        if (ev === AppEvent.OPEN_RENAME_VIEW && appMode === "zip") {
-          // 画像表示モードのときはリネームビューを表示しない
-          setOpeningRenameView(!openingRenameView);
-        } else {
-          eventHandler(ev);
+      event: KeyboardEvent | MouseEvent | WheelEvent | AppEvent
+      //payload?: number | string
+    ) => {
+      if (event instanceof KeyboardEvent) {
+        const ev = convertKeyboardEvent(event, keyboardConfig, pageDirection);
+        if (ev) {
+          if (ev === AppEvent.OPEN_RENAME_VIEW && appMode === "zip") {
+            // 画像表示モードのときはリネームビューを表示しない
+            setOpeningRenameView(!openingRenameView);
+          } else {
+            eventHandler(ev);
+          }
         }
+      } else if (event instanceof WheelEvent) {
+        // TODO: ホイールイベントはページ移動のみに決め打ちしているので、カスタマイズ可能にする
+        if (0 < event.deltaY) {
+          eventHandler(AppEvent.MOVE_NEXT_PAGE);
+        } else if (event.deltaY < 0) {
+          eventHandler(AppEvent.MOVE_PREV_PAGE);
+        }
+      } else if (event instanceof MouseEvent) {
+        // ホイールがクリックされたときは、ルーペの有効/無効を切り替える
+        if (event.button === 1) {
+          setIsMagnifierEnabled(!isMagnifierEnabled);
+        }
+      } else {
+        // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する
+        eventHandler(event);
       }
-    } else if (event instanceof WheelEvent) {
-      // TODO: ホイールイベントはページ移動のみに決め打ちしているので、カスタマイズ可能にする
-      if (0 < event.deltaY) {
-        eventHandler(AppEvent.MOVE_NEXT_PAGE);
-      } else if (event.deltaY < 0) {
-        eventHandler(AppEvent.MOVE_PREV_PAGE);
-      }
-    } else if (event instanceof MouseEvent) {
-      // ホイールがクリックされたときは、ルーペの有効/無効を切り替える
-      if (event.button === 1) {
-        setIsMagnifierEnabled(!isMagnifierEnabled);
-      }
-    } else {
-      // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する
-      eventHandler(event);
-    }
     },
     [
       appMode,
@@ -102,4 +106,53 @@ function convertKeyboardEvent(
     }
   }
   return undefined;
+}
+
+// =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
+// #region スライドショー関連
+// =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
+
+/**
+ * スライドショーを制御するカスタムフック
+ */
+export function useSlideshow() {
+  const setCount = useSetAtom(slideshowCountAtom);
+  const [intervalId, setIntervalId] = useAtom(slideshowIntervalIdAtom);
+  const handleEvent = useHandleEvent();
+  const stopSlideshow = useSetAtom(stopSlideshowAtom);
+  const resetSlideshow = useSetAtom(resetSlideshowAtom);
+
+  /**
+   * スライドショーを開始する
+   */
+  const start = useCallback(() => {
+    // 既にインターバルが動いていれば停止する
+    if (intervalId !== undefined) {
+      clearInterval(intervalId);
+    }
+    const id = setInterval(() => {
+      setCount((prevCount) => {
+        // 設定時間経過したらページ送りしてカウントをリセット
+        if (1000 <= prevCount) {
+          handleEvent(AppEvent.MOVE_NEXT_PAGE);
+          return 0;
+        } else {
+          return prevCount + 100;
+        }
+      });
+    }, 100);
+    setIntervalId(id);
+  }, [handleEvent, intervalId, setCount, setIntervalId]);
+
+  /**
+   * スライドショーを停止する
+   */
+  const stop = stopSlideshow;
+
+  /**
+   * スライドショーの経過時間をリセットする
+   */
+  const reset = resetSlideshow;
+
+  return { start, stop, reset };
 }

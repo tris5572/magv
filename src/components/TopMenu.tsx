@@ -1,6 +1,11 @@
 import { useState, type CSSProperties } from "react";
 import { useAtom, useAtomValue } from "jotai";
-import { isSlideshowRunningAtom, pageDirectionAtom, singleOrDoubleAtom } from "../atoms/app";
+import {
+  isSlideshowRunningAtom,
+  pageDirectionAtom,
+  singleOrDoubleAtom,
+  viewingImageAtom,
+} from "../atoms/app";
 import { useHandleEvent, useSlideshow } from "../hooks/event";
 import { AppEvent } from "../types/event";
 
@@ -132,6 +137,7 @@ function PageDirectionSwitcher() {
 function SlideshowController() {
   const { start, stop } = useSlideshow();
   const isSlideshowRunning = useAtomValue(isSlideshowRunningAtom);
+  const isImageViewing = !!useAtomValue(viewingImageAtom);
 
   return (
     <div style={SWITCHER_STYLE}>
@@ -139,6 +145,7 @@ function SlideshowController() {
         src={isSlideshowRunning ? "/player-stop.svg" : "/player-play.svg"}
         label={isSlideshowRunning ? "再生停止" : "自動再生"}
         onClick={() => (isSlideshowRunning ? stop() : start())}
+        variant={isImageViewing ? "normal" : "disabled"}
       />
     </div>
   );

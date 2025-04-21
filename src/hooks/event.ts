@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AppEvent } from "../types/event";
 import { handleAppEvent as handleEventZip } from "../atoms/zip";
@@ -12,6 +12,7 @@ import {
   pageDirectionAtom,
   resetSlideshowAtom,
   slideshowCountAtom,
+  slideshowIntervalAtom,
   slideshowIntervalIdAtom,
   stopSlideshowAtom,
 } from "../atoms/app";
@@ -121,6 +122,7 @@ export function useSlideshow() {
   const handleEvent = useHandleEvent();
   const stopSlideshow = useSetAtom(stopSlideshowAtom);
   const resetSlideshow = useSetAtom(resetSlideshowAtom);
+  const slideshowInterval = useAtomValue(slideshowIntervalAtom);
 
   /**
    * スライドショーを開始する
@@ -128,12 +130,12 @@ export function useSlideshow() {
   const start = useCallback(() => {
     // 既にインターバルが動いていれば停止する
     if (intervalId !== undefined) {
-      clearInterval(intervalId);
+      stopSlideshow();
     }
     const id = setInterval(() => {
       setCount((prevCount) => {
         // 設定時間経過したらページ送りしてカウントをリセット
-        if (1000 <= prevCount) {
+        if (slideshowInterval <= prevCount) {
           handleEvent(AppEvent.MOVE_NEXT_PAGE);
           return 0;
         } else {
@@ -142,17 +144,32 @@ export function useSlideshow() {
       });
     }, 100);
     setIntervalId(id);
-  }, [handleEvent, intervalId, setCount, setIntervalId]);
+  }, [handleEvent, intervalId, setCount, setIntervalId, slideshowInterval, stopSlideshow]);
 
   /**
    * スライドショーを停止する
    */
-  const stop = stopSlideshow;
+  const stop = useCallback(() => {
+    stopSlideshow();
+    resetSlideshow(); // 明示的な停止なのでカウントをリセット
+  }, [resetSlideshow, stopSlideshow]);
 
   /**
    * スライドショーの経過時間をリセットする
    */
   const reset = resetSlideshow;
+
+  /**
+   * スライドショーの更新間隔の変更を反映するための effect
+   *
+   * スライドショーが実行中のときのみ、スライドショーを再度開始して、更新間隔を反映させる
+   */
+  useEffect(() => {
+    if (intervalId !== undefined) {
+      start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 更新間隔が変更になったときのみ再度開始する
+  }, [slideshowInterval]);
 
   return { start, stop, reset };
 }

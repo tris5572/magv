@@ -76,6 +76,11 @@ export const pageDirectionAtom = atom<"right" | "left">("left");
 export const slideshowCountAtom = atom(0);
 
 /**
+ * スライドショーの切替間隔(ミリ秒)を保持する atom
+ */
+export const slideshowIntervalAtom = atom(500);
+
+/**
  * スライドショーの経過時間をカウントする setInterval の ID を保持する atom
  *
  * これが `undefined` のときはスライドショーが行われていないと判定可能だが、それは行わない
@@ -93,12 +98,13 @@ export const isSlideshowRunningAtom = atom((get) => {
 
 /**
  * スライドショーを停止する atom
+ *
+ * 停止のみを行い、累積カウントはリセットしない
  */
 export const stopSlideshowAtom = atom(null, (get, set) => {
   const intervalId = get(slideshowIntervalIdAtom);
   if (intervalId !== undefined) {
     clearInterval(intervalId);
-    set(slideshowCountAtom, 0);
     set(slideshowIntervalIdAtom, undefined);
   }
 });

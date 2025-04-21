@@ -4,6 +4,7 @@ import {
   isSlideshowRunningAtom,
   pageDirectionAtom,
   singleOrDoubleAtom,
+  slideshowIntervalAtom,
   viewingImageAtom,
 } from "../atoms/app";
 import { useHandleEvent, useSlideshow } from "../hooks/event";
@@ -32,7 +33,7 @@ const MENU_BODY_STYLE: CSSProperties = {
  * 上部端にマウスを当てることで表示される
  */
 export function TopMenu() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   // 表示/非表示状態に応じてスタイルを切替
   const visibleStyle: CSSProperties = isVisible
@@ -138,15 +139,28 @@ function SlideshowController() {
   const { start, stop } = useSlideshow();
   const isSlideshowRunning = useAtomValue(isSlideshowRunningAtom);
   const isImageViewing = !!useAtomValue(viewingImageAtom);
+  const [interval, setInterval] = useAtom(slideshowIntervalAtom);
 
   return (
-    <div style={SWITCHER_STYLE}>
+    <div style={{ ...SWITCHER_STYLE, gap: "0.2rem" }}>
       <IconButton
         src={isSlideshowRunning ? "/player-stop.svg" : "/player-play.svg"}
         label={isSlideshowRunning ? "再生停止" : "自動再生"}
         onClick={() => (isSlideshowRunning ? stop() : start())}
         variant={isImageViewing ? "normal" : "disabled"}
       />
+      <div style={SLIDESHOW_INTERVAL_BOX_STYLE}>
+        間隔(秒)
+        <input
+          type="number"
+          value={interval / 1000}
+          onChange={(e) => setInterval(Number(e.currentTarget.value) * 1000)}
+          min={0.1}
+          step={0.1}
+          max={100000}
+          style={SLIDESHOW_INTERVAL_INPUT_STYLE}
+        />
+      </div>
     </div>
   );
 }
@@ -167,6 +181,17 @@ const BUTTON_LABEL_STYLE: CSSProperties = {
   overflow: "hidden",
   letterSpacing: "-0.05rem",
   fontFeatureSettings: "palt",
+};
+
+const SLIDESHOW_INTERVAL_INPUT_STYLE: CSSProperties = {
+  fontSize: "1.4rem",
+  width: "6rem",
+};
+
+const SLIDESHOW_INTERVAL_BOX_STYLE: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  textShadow: "0 0 6px white",
 };
 
 /**

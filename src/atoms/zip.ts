@@ -3,7 +3,14 @@ import * as fflate from "fflate";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { rename, exists } from "@tauri-apps/plugin-fs";
-import { appModeAtom, isOpeningRenameViewAtom, singleOrDoubleAtom, viewingImageAtom } from "./app";
+import {
+  appModeAtom,
+  isOpeningRenameViewAtom,
+  resetSlideshowAtom,
+  singleOrDoubleAtom,
+  stopSlideshowAtom,
+  viewingImageAtom,
+} from "./app";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import { AppEvent } from "../types/event";
 import { ZipData } from "../types/data";
@@ -104,6 +111,9 @@ export const openZipAtom = atom(null, async (get, set, path: string | undefined)
   getCurrentWindow().setFocus();
 
   set(appModeAtom, "zip");
+
+  // スライドショーを停止する
+  set(stopSlideshowAtom);
 
   // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
   const fileNames = Object.keys(unzipped)
@@ -332,6 +342,10 @@ export const moveIndexAtom = atom(
       return;
     }
 
+    // ページ移動したため、スライドショーの経過時間をリセット
+    // 手動と自動(スライドショー)の区別なくリセットしても問題ない
+    set(resetSlideshowAtom);
+
     set($openingImageIndexAtom, index);
 
     // このアーカイブで最後に開いたインデックスを保持
@@ -348,6 +362,10 @@ export const moveIndexAtom = atom(
         type: "single",
         source: zipData[name1].blob,
       });
+      // 最終ページに到達したときはスライドショーを停止
+      if (get($openingImageIndexAtom) === get($imageNameListAtom).length - 1) {
+        set(stopSlideshowAtom);
+      }
       return;
     }
 
@@ -355,12 +373,22 @@ export const moveIndexAtom = atom(
     await convertData(zipData, name2);
     set($openingZipDataAtom, zipData);
 
-    // 1枚目が横長のときと、2枚目がないときは、1枚目のみを表示する
-    if (zipData[name1].orientation === "landscape" || !name2) {
+    // 1枚目が横長のときは、1枚目のみを表示する
+    if (zipData[name1].orientation === "landscape") {
       set(viewingImageAtom, {
         type: "single",
         source: zipData[name1].blob,
       });
+      return;
+    }
+
+    // 1枚目が最後の画像のとき(2枚目がない)は、1枚目のみを表示する
+    if (!name2) {
+      set(viewingImageAtom, {
+        type: "single",
+        source: zipData[name1].blob,
+      });
+      set(stopSlideshowAtom); // 最終ページに到達したのでスライドショーを停止
       return;
     }
 
@@ -371,6 +399,10 @@ export const moveIndexAtom = atom(
         source1: zipData[name1].blob,
         source2: zipData[name2].blob,
       });
+      // 最終ページに到達したときはスライドショーを停止
+      if (get($imageNameListAtom).length - 2 <= get($openingImageIndexAtom)) {
+        set(stopSlideshowAtom);
+      }
       return;
     }
 

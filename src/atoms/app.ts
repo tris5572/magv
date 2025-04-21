@@ -53,3 +53,65 @@ export const isMagnifierEnabledAtom = atom<boolean>(false);
  * デフォルトでは左に進む（右開き）で `"left"`
  */
 export const pageDirectionAtom = atom<"right" | "left">("left");
+
+// =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
+// #region スライドショー関連
+// =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
+
+// スライドショーの制御について
+//
+// 開始 `start` はカスタムフック `useSlideshow` からのみ呼び出せる。
+// これは次ページへ移動するイベントを実行するため。
+// （`useHandleEvent` を経由してイベントを呼び出す必要があるため、atom からは呼び出せない）
+//
+// 停止 `stop` とリセット `reset` は、カスタムフック `useSlideshow` と atom の両方から呼び出し可能。
+// atom 側から停止させたいケースが多く存在するため。（最終ページに到達したときなど）
+// カスタムフック `useSlideshow` の実装は、この atom を呼び出すものとしている。
+
+/**
+ * スライドショーの累積カウント(ミリ秒)を保持する atom
+ *
+ * スライドショーを再生しているときはこのカウントを増やしていき、設定された閾値以上になったときに次ページ移動のイベントを発行する
+ */
+export const slideshowCountAtom = atom(0);
+
+/**
+ * スライドショーの切替間隔(ミリ秒)を保持する atom
+ */
+export const slideshowIntervalAtom = atom(500);
+
+/**
+ * スライドショーの経過時間をカウントする setInterval の ID を保持する atom
+ *
+ * これが `undefined` のときはスライドショーが行われていないと判定可能だが、それは行わない
+ */
+export const slideshowIntervalIdAtom = atom<number | undefined>(undefined);
+
+/**
+ * スライドショーが実行中かどうかを返す atom
+ *
+ * 実行中は `true`、停止中は `false` を返す
+ */
+export const isSlideshowRunningAtom = atom((get) => {
+  return get(slideshowIntervalIdAtom) !== undefined;
+});
+
+/**
+ * スライドショーを停止する atom
+ *
+ * 停止のみを行い、累積カウントはリセットしない
+ */
+export const stopSlideshowAtom = atom(null, (get, set) => {
+  const intervalId = get(slideshowIntervalIdAtom);
+  if (intervalId !== undefined) {
+    clearInterval(intervalId);
+    set(slideshowIntervalIdAtom, undefined);
+  }
+});
+
+/**
+ * スライドショーの経過時間をリセットする atom
+ */
+export const resetSlideshowAtom = atom(null, (_, set) => {
+  set(slideshowCountAtom, 0);
+});

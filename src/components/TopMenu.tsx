@@ -1,7 +1,13 @@
 import { useState, type CSSProperties } from "react";
-import { useAtom } from "jotai";
-import { pageDirectionAtom, singleOrDoubleAtom } from "../atoms/app";
-import { useHandleEvent } from "../hooks/event";
+import { useAtom, useAtomValue } from "jotai";
+import {
+  isSlideshowRunningAtom,
+  pageDirectionAtom,
+  singleOrDoubleAtom,
+  slideshowIntervalAtom,
+  viewingImageAtom,
+} from "../atoms/app";
+import { useHandleEvent, useSlideshow } from "../hooks/event";
 import { AppEvent } from "../types/event";
 
 /** 上部メニューに常に割り当てるスタイル */
@@ -27,7 +33,7 @@ const MENU_BODY_STYLE: CSSProperties = {
  * 上部端にマウスを当てることで表示される
  */
 export function TopMenu() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   // 表示/非表示状態に応じてスタイルを切替
   const visibleStyle: CSSProperties = isVisible
@@ -51,6 +57,7 @@ export function TopMenu() {
         <div style={MENU_BODY_STYLE}>
           <SingleDoubleSwitcher />
           <PageDirectionSwitcher />
+          <SlideshowController />
         </div>
       )}
     </div>
@@ -79,7 +86,7 @@ function SingleDoubleSwitcher() {
           setSingleOrDouble("single");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={singleOrDouble === "single"}
+        variant={singleOrDouble === "single" ? "selected" : "unselected"}
       />
       <IconButton
         src="/page-view-2.svg"
@@ -88,7 +95,7 @@ function SingleDoubleSwitcher() {
           setSingleOrDouble("double");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={singleOrDouble === "double"}
+        variant={singleOrDouble === "double" ? "selected" : "unselected"}
       />
     </div>
   );
@@ -110,7 +117,7 @@ function PageDirectionSwitcher() {
           setPageDirection("left");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={pageDirection === "left"}
+        variant={pageDirection === "left" ? "selected" : "unselected"}
       />
       <IconButton
         src="/page-direction-right.svg"
@@ -119,8 +126,41 @@ function PageDirectionSwitcher() {
           setPageDirection("right");
           handleEvent(AppEvent.UPDATE_PAGE);
         }}
-        selected={pageDirection === "right"}
+        variant={pageDirection === "right" ? "selected" : "unselected"}
       />
+    </div>
+  );
+}
+
+/**
+ * スライドショーのコントローラーのコンポーネント
+ */
+function SlideshowController() {
+  const { start, stop } = useSlideshow();
+  const isSlideshowRunning = useAtomValue(isSlideshowRunningAtom);
+  const isImageViewing = !!useAtomValue(viewingImageAtom);
+  const [interval, setInterval] = useAtom(slideshowIntervalAtom);
+
+  return (
+    <div style={{ ...SWITCHER_STYLE, gap: "0.2rem" }}>
+      <IconButton
+        src={isSlideshowRunning ? "/player-stop.svg" : "/player-play.svg"}
+        label={isSlideshowRunning ? "再生停止" : "自動再生"}
+        onClick={() => (isSlideshowRunning ? stop() : start())}
+        variant={isImageViewing ? "normal" : "disabled"}
+      />
+      <div style={SLIDESHOW_INTERVAL_BOX_STYLE}>
+        間隔(秒)
+        <input
+          type="number"
+          value={interval / 1000}
+          onChange={(e) => setInterval(Number(e.currentTarget.value) * 1000)}
+          min={0.1}
+          step={0.1}
+          max={100000}
+          style={SLIDESHOW_INTERVAL_INPUT_STYLE}
+        />
+      </div>
     </div>
   );
 }
@@ -143,34 +183,70 @@ const BUTTON_LABEL_STYLE: CSSProperties = {
   fontFeatureSettings: "palt",
 };
 
+const SLIDESHOW_INTERVAL_INPUT_STYLE: CSSProperties = {
+  fontSize: "1.4rem",
+  width: "6rem",
+};
+
+const SLIDESHOW_INTERVAL_BOX_STYLE: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  textShadow: "0 0 6px white",
+};
+
 /**
  * アイコンが付いたボタンのコンポーネント
  */
 function IconButton({
   src,
   label,
-  selected = false,
+  variant = "normal",
   onClick,
 }: {
   src: string;
   label?: string;
-  selected?: boolean;
-  onClick: () => void;
+  /**
+   * ボタンのバリエーション
+   * - `normal`: 常時押下可能な普通のボタン
+   * - `disabled`: 押下不能なボタン
+   * - `selected`: 選択されている、色の枠が付いたボタン
+   * - `unselected`: 選択されていない、薄いボタン
+   */
+  variant?: "normal" | "disabled" | "selected" | "unselected";
+  onClick?: () => void;
   style?: CSSProperties;
 }) {
-  const buttonStyle: CSSProperties = selected
-    ? {
-        backgroundColor: "hsl(0 0% 100% / 80%)",
-        border: "3px solid hsl(180 80% 50% / 0.5)",
-      }
-    : {
-        backgroundColor: "hsl(0 0% 100% / 30%)",
-        cursor: "pointer",
-        border: "none",
-      };
+  let buttonStyle: CSSProperties;
+  if (variant === "selected") {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 80%)",
+      border: "3px solid hsl(180 80% 50% / 0.5)",
+      cursor: "pointer",
+    };
+  } else if (variant === "unselected") {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 30%)",
+      border: "none",
+      cursor: "pointer",
+    };
+  } else if (variant === "disabled") {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 30%)",
+      border: "none",
+    };
+  } else {
+    buttonStyle = {
+      backgroundColor: "hsl(0 0% 100% / 80%)",
+      border: "none",
+      cursor: "pointer",
+    };
+  }
 
   return (
-    <button style={{ ...ICON_BUTTON_COMMON_STYLE, ...buttonStyle }} onClick={onClick}>
+    <button
+      style={{ ...ICON_BUTTON_COMMON_STYLE, ...buttonStyle }}
+      onClick={variant !== "disabled" ? onClick : undefined}
+    >
       <div>
         <img src={src} />
       </div>

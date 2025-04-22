@@ -33,7 +33,7 @@ const MENU_BODY_STYLE: CSSProperties = {
  * 上部端にマウスを当てることで表示される
  */
 export function TopMenu() {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   // 表示/非表示状態に応じてスタイルを切替
   const visibleStyle: CSSProperties = isVisible

@@ -78,7 +78,7 @@ export const slideshowCountAtom = atom(0);
 /**
  * スライドショーの切替間隔(ミリ秒)を保持する atom
  */
-export const slideshowIntervalAtom = atom(500);
+export const slideshowIntervalAtom = atom(1000);
 
 /**
  * スライドショーの経過時間をカウントする setInterval の ID を保持する atom

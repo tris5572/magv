@@ -10,6 +10,7 @@ export function ImageView() {
   const openImagePath = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
 
+  // 見開き表示
   if (openImagePath?.type === "double") {
     return (
       <div style={getDoubleStyle(pageDirection)}>
@@ -18,11 +19,11 @@ export function ImageView() {
       </div>
     );
   }
-
+  // 画像なし
   if (!openImagePath?.source) {
     return <EmptyMessage />;
   }
-
+  // 単体表示
   return (
     <div style={SINGLE_STYLE}>
       <SingleImageView source={openImagePath?.source} />
@@ -44,6 +45,7 @@ const PLACEHOLDER_STYLE: CSSProperties = {
   fontSize: "1.6rem",
 };
 
+/** 画像単体表示時のスタイル */
 const SINGLE_STYLE: CSSProperties = {
   height: "calc(100dvh - 32px)",
   overflow: "hidden",

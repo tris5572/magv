@@ -31,20 +31,6 @@ export function ImageView() {
   );
 }
 
-/** 空のメッセージのスタイル */
-const PLACEHOLDER_STYLE: CSSProperties = {
-  height: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
-  userSelect: "none",
-  "-webkit-user-select": "none",
-  background: "var(--black-color)",
-  color: "color-mix(in srgb, var(--white-color) 50%, transparent)",
-  fontSize: "1.6rem",
-};
-
 /** 画像単体表示時のスタイル */
 const SINGLE_STYLE: CSSProperties = {
   height: "calc(100dvh - 32px)",
@@ -65,6 +51,20 @@ function getDoubleStyle(pageDirection: "right" | "left"): CSSProperties {
     overflow: "hidden",
   };
 }
+
+/** 空のメッセージのスタイル */
+const PLACEHOLDER_STYLE: CSSProperties = {
+  height: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  userSelect: "none",
+  "-webkit-user-select": "none",
+  background: "var(--black-color)",
+  color: "color-mix(in srgb, var(--white-color) 50%, transparent)",
+  fontSize: "1.6rem",
+};
 
 /**
  * 画像を表示していない空のときにメッセージを表示するコンポーネント

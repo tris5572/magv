@@ -19,11 +19,6 @@ export function ImageView() {
     overflow: "hidden",
   };
 
-  const singleStyle: CSSProperties = {
-    height: "calc(100dvh - 32px)",
-    overflow: "hidden",
-  };
-
   if (openImagePath?.type === "double") {
     return (
       <div style={doubleStyle}>
@@ -38,7 +33,7 @@ export function ImageView() {
   }
 
   return (
-    <div style={singleStyle}>
+    <div style={SINGLE_STYLE}>
       <SingleImageView source={openImagePath?.source} />
     </div>
   );
@@ -56,6 +51,11 @@ const PLACEHOLDER_STYLE: CSSProperties = {
   background: "var(--black-color)",
   color: "color-mix(in srgb, var(--white-color) 50%, transparent)",
   fontSize: "1.6rem",
+};
+
+const SINGLE_STYLE: CSSProperties = {
+  height: "calc(100dvh - 32px)",
+  overflow: "hidden",
 };
 
 /**

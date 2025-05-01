@@ -10,7 +10,39 @@ export function ImageView() {
   const openImagePath = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
 
-  const doubleStyle: CSSProperties = {
+  // 見開き表示
+  if (openImagePath?.type === "double") {
+    return (
+      <div style={getDoubleStyle(pageDirection)}>
+        <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
+        <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
+      </div>
+    );
+  }
+  // 画像なし
+  if (!openImagePath?.source) {
+    return <EmptyMessage />;
+  }
+  // 単体表示
+  return (
+    <div style={SINGLE_STYLE}>
+      <SingleImageView source={openImagePath?.source} />
+    </div>
+  );
+}
+
+/** 画像単体表示時のスタイル */
+const SINGLE_STYLE: CSSProperties = {
+  height: "calc(100dvh - 32px)",
+  overflow: "hidden",
+};
+
+/**
+ * 見開き表示時のスタイルを返す
+ * @param pageDirection ページの開き方向
+ */
+function getDoubleStyle(pageDirection: "right" | "left"): CSSProperties {
+  return {
     height: "calc(100dvh - 32px)",
     display: "flex",
     flexDirection: pageDirection === "left" ? "row-reverse" : "row",
@@ -18,30 +50,6 @@ export function ImageView() {
     alignItems: "center",
     overflow: "hidden",
   };
-
-  const singleStyle: CSSProperties = {
-    height: "calc(100dvh - 32px)",
-    overflow: "hidden",
-  };
-
-  if (openImagePath?.type === "double") {
-    return (
-      <div style={doubleStyle}>
-        <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
-        <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
-      </div>
-    );
-  }
-
-  if (!openImagePath?.source) {
-    return <EmptyMessage />;
-  }
-
-  return (
-    <div style={singleStyle}>
-      <SingleImageView source={openImagePath?.source} />
-    </div>
-  );
 }
 
 /** 空のメッセージのスタイル */

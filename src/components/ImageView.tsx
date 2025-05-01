@@ -10,18 +10,9 @@ export function ImageView() {
   const openImagePath = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
 
-  const doubleStyle: CSSProperties = {
-    height: "calc(100dvh - 32px)",
-    display: "flex",
-    flexDirection: pageDirection === "left" ? "row-reverse" : "row",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  };
-
   if (openImagePath?.type === "double") {
     return (
-      <div style={doubleStyle}>
+      <div style={getDoubleStyle(pageDirection)}>
         <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
         <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
       </div>
@@ -57,6 +48,21 @@ const SINGLE_STYLE: CSSProperties = {
   height: "calc(100dvh - 32px)",
   overflow: "hidden",
 };
+
+/**
+ * 見開き表示時のスタイルを返す
+ * @param pageDirection ページの開き方向
+ */
+function getDoubleStyle(pageDirection: "right" | "left"): CSSProperties {
+  return {
+    height: "calc(100dvh - 32px)",
+    display: "flex",
+    flexDirection: pageDirection === "left" ? "row-reverse" : "row",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  };
+}
 
 /**
  * 画像を表示していない空のときにメッセージを表示するコンポーネント

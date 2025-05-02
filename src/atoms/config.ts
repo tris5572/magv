@@ -1,6 +1,8 @@
 import { atom } from "jotai";
 import { WindowConfig, KeyboardConfig } from "../types/config";
 import { AppEvent } from "../types/event";
+import { PhysicalPosition, PhysicalSize } from "@tauri-apps/api/dpi";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 /**
  * 右開きでのデフォルトのキーボード操作
@@ -175,9 +177,18 @@ export const windowPositionAtom = atom(
 /**
  * 保存するウィンドウの位置とサイズの設定データを返す atom
  */
-export const windowConfigDataAtom = atom((get) => {
+export const windowConfigDataAtom = atom(async (get) => {
+  const size = get($windowSizeAtom);
+  const position = get($windowPositionAtom);
+
+  // 表示スケールの違いに対応するため、物理位置・サイズから論理位置・サイズに変換して保存
+  const appWindow = getCurrentWindow();
+  const factor = await appWindow.scaleFactor();
+  const s = size == undefined ? undefined : new PhysicalSize(size).toLogical(factor);
+  const p = position == undefined ? undefined : new PhysicalPosition(position).toLogical(factor);
+
   return {
-    window: { size: get($windowSizeAtom), position: get($windowPositionAtom) },
+    window: { size: s, position: p },
   } satisfies WindowConfig;
 });
 

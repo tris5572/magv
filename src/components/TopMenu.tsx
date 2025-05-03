@@ -10,23 +10,6 @@ import {
 import { useHandleEvent, useSlideshow } from "../hooks/event";
 import { AppEvent } from "../types/event";
 
-/** 上部メニューに常に割り当てるスタイル */
-const MENU_WRAPPER_STYLE: CSSProperties = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  width: "100dvw",
-  color: "hsl(180 10% 20%)",
-};
-
-/** 上部メニューの中身を並べるスタイル */
-const MENU_BODY_STYLE: CSSProperties = {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "center",
-  gap: "8px",
-};
-
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント
  *
@@ -64,10 +47,21 @@ export function TopMenu() {
   );
 }
 
-/** 切替ボタンのグループのスタイル */
-const SWITCHER_STYLE: React.CSSProperties = {
+/** 上部メニューに常に割り当てるスタイル */
+const MENU_WRAPPER_STYLE: CSSProperties = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100dvw",
+  color: "hsl(180 10% 20%)",
+};
+
+/** 上部メニューの中身を並べるスタイル */
+const MENU_BODY_STYLE: CSSProperties = {
   display: "flex",
+  flexDirection: "row",
   justifyContent: "center",
+  gap: "8px",
 };
 
 /**
@@ -165,22 +159,10 @@ function SlideshowController() {
   );
 }
 
-const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
+/** 切替ボタンのグループのスタイル */
+const SWITCHER_STYLE: React.CSSProperties = {
   display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
   justifyContent: "center",
-  borderRadius: "8px",
-  padding: "2px 0 1px",
-  width: "5rem",
-};
-
-const BUTTON_LABEL_STYLE: CSSProperties = {
-  fontSize: "1.2rem",
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  letterSpacing: "-0.05rem",
-  fontFeatureSettings: "palt",
 };
 
 const SLIDESHOW_INTERVAL_INPUT_STYLE: CSSProperties = {
@@ -257,3 +239,21 @@ function IconButton({
     </button>
   );
 }
+
+const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "8px",
+  padding: "2px 0 1px",
+  width: "5rem",
+};
+
+const BUTTON_LABEL_STYLE: CSSProperties = {
+  fontSize: "1.2rem",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  letterSpacing: "-0.05rem",
+  fontFeatureSettings: "palt",
+};

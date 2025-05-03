@@ -176,7 +176,7 @@ const ICON_BUTTON_COMMON_STYLE: CSSProperties = {
 };
 
 const BUTTON_LABEL_STYLE: CSSProperties = {
-  fontSize: "12px",
+  fontSize: "1.2rem",
   whiteSpace: "nowrap",
   overflow: "hidden",
   letterSpacing: "-0.05rem",
@@ -191,6 +191,9 @@ const SLIDESHOW_INTERVAL_INPUT_STYLE: CSSProperties = {
 const SLIDESHOW_INTERVAL_BOX_STYLE: CSSProperties = {
   display: "flex",
   alignItems: "center",
+  gap: "4px",
+  paddingLeft: "4px",
+  fontSize: "1.2rem",
   textShadow: "0 0 6px white",
 };
 

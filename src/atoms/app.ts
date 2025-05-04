@@ -1,6 +1,16 @@
 import { atom } from "jotai";
 import { ViewImageMode } from "../types/image";
 import { AppViewMode } from "../types/app";
+import {
+  isFirstPageAtom as zipFirstPageAtom,
+  isLastPageAtom as zipLastPageAtom,
+  isOpenZipAtom as zipOpenAtom,
+} from "./zip";
+import {
+  isOpenImageAtom as imageOpenAtom,
+  isFirstPageAtom as imageFirstPageAtom,
+  isLastPageAtom as imageLastPageAtom,
+} from "./image";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 アプリケーション全体の状態を管理する atom を集めたファイル
@@ -53,6 +63,38 @@ export const isMagnifierEnabledAtom = atom<boolean>(false);
  * デフォルトでは左に進む（右開き）で `"left"`
  */
 export const pageDirectionAtom = atom<"right" | "left">("left");
+
+// =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
+// #region 画像情報取得関連
+// =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
+
+/**
+ * 画像を表示しているかどうかを取得する atom
+ */
+export const isOpenPageAtom = atom((get) => {
+  const mode = get(appModeAtom);
+  return mode === "zip" ? get(zipOpenAtom) : get(imageOpenAtom);
+});
+
+/**
+ * 最初のページを表示しているかどうかを取得する atom
+ *
+ * 画像を表示していないときは false を返す
+ */
+export const isFirstPageAtom = atom((get) => {
+  const mode = get(appModeAtom);
+  return mode === "zip" ? get(zipFirstPageAtom) : get(imageFirstPageAtom);
+});
+
+/**
+ * 最後のページを表示しているかどうかを取得する atom
+ *
+ * 画像を表示していないときは false を返す
+ */
+export const isLastPageAtom = atom((get) => {
+  const mode = get(appModeAtom);
+  return mode === "zip" ? get(zipLastPageAtom) : get(imageLastPageAtom);
+});
 
 // =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
 // #region スライドショー関連

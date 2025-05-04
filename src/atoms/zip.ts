@@ -182,10 +182,58 @@ const setOpeningArchivePathAtom = atom(null, (_, set, path: string) => {
 });
 
 /**
+ * zip ファイルを開いているかどうかを取得する atom
+ */
+export const isOpenZipAtom = atom((get) => {
+  return get($openingZipDataAtom) !== undefined;
+});
+
+/**
  * アーカイブ内の画像のパスの一覧を取得する atom
  */
 export const imageListAtom = atom((get) => {
   return get($imageNameListAtom);
+});
+
+/**
+ * 最初のページを表示しているかどうかを取得する atom
+ *
+ * zip ファイルを開いていないときは false を返す
+ */
+export const isFirstPageAtom = atom((get) => {
+  if (!get(isOpenZipAtom)) {
+    return false;
+  }
+  const index = get($openingImageIndexAtom);
+  return index === 0;
+});
+
+/**
+ * 最後のページを表示しているかどうかを取得する atom
+ *
+ * zip ファイルを開いていないときは false を返す
+ */
+export const isLastPageAtom = atom((get) => {
+  if (!get(isOpenZipAtom)) {
+    return false;
+  }
+  const imageList = get($imageNameListAtom);
+  const index = get($openingImageIndexAtom);
+  // 最後の画像を1枚のみ表示している場合は true
+  if (index === imageList.length - 1) {
+    return true;
+  }
+  // 最後の2枚より前を表示している場合は false
+  if (index < imageList.length - 2) {
+    return false;
+  }
+  // 最後から2枚目をインデックスが示しているとき、見開き表示かどうかを加味して判定
+  const imageProperty = get(viewingImageAtom);
+  // 一応、画像情報がないときは false を返しておく
+  if (!imageProperty) {
+    return false;
+  }
+  return imageProperty.type === "double";
 });
 
 /**

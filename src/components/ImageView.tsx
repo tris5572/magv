@@ -1,7 +1,16 @@
 import { CSSProperties } from "react";
 import { useAtomValue } from "jotai";
-import { pageDirectionAtom, viewingImageAtom } from "../atoms/app";
+import {
+  isFirstPageAtom,
+  isLastPageAtom,
+  isOpenPageAtom,
+  pageDirectionAtom,
+  viewingImageAtom,
+} from "../atoms/app";
 import { SingleImageView } from "./SingleImageView";
+import { Menu } from "@tauri-apps/api/menu";
+import { useHandleEvent } from "../hooks/event";
+import { AppEvent } from "../types/event";
 
 /**
  * 画像を表示するコンポーネント
@@ -9,11 +18,18 @@ import { SingleImageView } from "./SingleImageView";
 export function ImageView() {
   const openImagePath = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
+  const contextMenu = useContextMenu();
+
+  async function handleContextMenu(event: React.MouseEvent) {
+    event.preventDefault();
+    const menu = await contextMenu;
+    menu.popup();
+  }
 
   // 見開き表示
   if (openImagePath?.type === "double") {
     return (
-      <div style={getDoubleStyle(pageDirection)}>
+      <div style={getDoubleStyle(pageDirection)} onContextMenu={handleContextMenu}>
         <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
         <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
       </div>
@@ -21,11 +37,15 @@ export function ImageView() {
   }
   // 画像なし
   if (!openImagePath?.source) {
-    return <EmptyMessage />;
+    return (
+      <div onContextMenu={handleContextMenu}>
+        <EmptyMessage />
+      </div>
+    );
   }
   // 単体表示
   return (
-    <div style={SINGLE_STYLE}>
+    <div style={SINGLE_STYLE} onContextMenu={handleContextMenu}>
       <SingleImageView source={openImagePath?.source} />
     </div>
   );
@@ -82,4 +102,53 @@ function EmptyMessage() {
       画像が入ったフォルダ
     </div>
   );
+}
+
+/**
+ * コンテキストメニューを生成するカスタムフック
+ */
+function useContextMenu() {
+  const handleEvent = useHandleEvent();
+  const isFirstPage = useAtomValue(isFirstPageAtom);
+  const isLastPage = useAtomValue(isLastPageAtom);
+  const isOpen = useAtomValue(isOpenPageAtom);
+
+  // 有効/無効の切り替えに、前後ページの有無を反転して使用しているため、開いているかどうかも条件に含めている
+  const menuPromise = Menu.new({
+    items: [
+      {
+        text: "次のページ",
+        icon: "GoLeft",
+        action: () => handleEvent(AppEvent.MOVE_NEXT_PAGE),
+        enabled: isOpen && !isLastPage,
+      },
+      {
+        text: "前のページ",
+        icon: "GoRight",
+        action: () => handleEvent(AppEvent.MOVE_PREV_PAGE),
+        enabled: isOpen && !isFirstPage,
+      },
+      {
+        item: "Separator",
+      },
+      {
+        text: "最後のページ",
+        action: () => handleEvent(AppEvent.MOVE_LAST_PAGE),
+        enabled: isOpen && !isLastPage,
+      },
+      {
+        text: "最初のページ",
+        action: () => handleEvent(AppEvent.MOVE_FIRST_PAGE),
+        enabled: isOpen && !isFirstPage,
+      },
+      {
+        item: "Separator",
+      },
+      {
+        item: "Fullscreen",
+      },
+    ],
+  });
+
+  return menuPromise;
 }

@@ -75,6 +75,55 @@ export const openImagePathAtom = atom(null, async (_, set, path: string) => {
   }
 });
 
+/**
+ * 画像を表示しているかどうかを取得する atom
+ */
+export const isOpenImageAtom = atom((get) => {
+  const list = get($imagePathListAtom);
+  return 0 < list.length;
+});
+
+/**
+ * 最初のページを表示しているかどうかを取得する atom
+ *
+ * 画像を表示していないときは false を返す
+ */
+export const isFirstPageAtom = atom((get) => {
+  if (!get(isOpenImageAtom)) {
+    return false;
+  }
+  const index = get($openingIndexAtom);
+  return index === 0;
+});
+
+/**
+ * 最後のページを表示しているかどうかを取得する atom
+ *
+ * 画像を表示していないときは false を返す
+ */
+export const isLastPageAtom = atom((get) => {
+  if (!get(isOpenImageAtom)) {
+    return false;
+  }
+  const imageList = get($imagePathListAtom);
+  const index = get($openingIndexAtom);
+  // 最後の画像を1枚のみ表示している場合は true
+  if (index === imageList.length - 1) {
+    return true;
+  }
+  // 最後の2枚より前を表示している場合は false
+  if (index < imageList.length - 2) {
+    return false;
+  }
+  // 最後から2枚目をインデックスが示しているとき、見開き表示かどうかを加味して判定
+  const imageProperty = get(viewingImageAtom);
+  // 一応、画像情報がないときは false を返しておく
+  if (!imageProperty) {
+    return false;
+  }
+  return imageProperty.type === "double";
+});
+
 // -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
 // イベント系
 

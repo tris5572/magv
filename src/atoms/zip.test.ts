@@ -5,11 +5,36 @@ import {
   moveIndexAtom,
   moveNextSingleImageAtom,
   $openingImageIndexAtom,
+  isOpenZipAtom,
+  isFirstPageAtom,
 } from "./zip";
 import { viewingImageAtom } from "./app";
 
 afterEach(() => {
   vi.clearAllMocks();
+});
+
+describe("isFirstPageAtom", () => {
+  test("zipファイルを開いていないとき、falseを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(false);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    expect(store.get(isFirstPageAtom)).toBe(false);
+  });
+
+  test("最初の画像を表示しているとき、trueを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    expect(store.get(isFirstPageAtom)).toBe(true);
+  });
+
+  test("最初の画像以外を表示しているとき、falseを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
+    expect(store.get(isFirstPageAtom)).toBe(false);
+  });
 });
 
 describe("moveFirstImageAtom", () => {

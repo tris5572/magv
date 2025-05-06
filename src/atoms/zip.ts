@@ -465,11 +465,9 @@ export const moveIndexAtom = atom(
 /**
  * 次のページを表示する atom
  *
- * 次のページに相当する画像の縦横を元に、表示する枚数を判定する
- *
- * 縦画像が1枚だけ表示されるケースもあり得る
+ * export for testing
  */
-const moveNextPageAtom = atom(null, async (get, set) => {
+export const moveNextPageAtom = atom(null, async (get, set) => {
   const openIndex = get($openingImageIndexAtom);
   const imageData = get(viewingImageAtom);
 

@@ -8,6 +8,7 @@ import {
   isOpenZipAtom,
   isFirstPageAtom,
   isLastPageAtom,
+  moveNextPageAtom,
 } from "./zip";
 import { viewingImageAtom } from "./app";
 
@@ -106,6 +107,46 @@ describe("moveFirstImageAtom", () => {
     store.set(moveFirstImageAtom);
     expect(moveIndexAtomWriteSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
       index: 0,
+    });
+  });
+});
+
+describe("moveNextPageAtom", () => {
+  test("画像が表示されていないとき、何もしないこと", () => {
+    const store = createStore();
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+
+    store.set(moveNextPageAtom);
+    expect(moveIndexAtomSpy).not.toHaveBeenCalled();
+  });
+
+  test("単体表示中のとき、1枚分移動すること", () => {
+    const store = createStore();
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({ type: "single", source: "" });
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+
+    store.set(moveNextPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 1,
+    });
+  });
+
+  test("見開き表示中のとき、2枚分移動すること", () => {
+    const store = createStore();
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({
+      type: "double",
+      source1: "",
+      source2: "",
+    });
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+
+    store.set(moveNextPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 2,
     });
   });
 });

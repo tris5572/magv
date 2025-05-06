@@ -476,6 +476,7 @@ export const moveNextPageAtom = atom(null, async (get, set) => {
   }
 
   // 現在の表示枚数を元に、次のインデックスを計算する
+  // 最終ページからのはみ出しは、呼び出された moveIndexAtom 側で判定して処理する
   const index = imageData.type === "single" ? openIndex + 1 : openIndex + 2;
 
   set(moveIndexAtom, { index });

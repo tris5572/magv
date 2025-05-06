@@ -7,6 +7,7 @@ import {
   $openingImageIndexAtom,
   isOpenZipAtom,
   isFirstPageAtom,
+  isLastPageAtom,
 } from "./zip";
 import { viewingImageAtom } from "./app";
 
@@ -34,6 +35,66 @@ describe("isFirstPageAtom", () => {
     vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
     vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
     expect(store.get(isFirstPageAtom)).toBe(false);
+  });
+});
+
+describe("isLastPageAtom", () => {
+  test("zipファイルを開いていないとき、falseを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(false);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue([]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
+    expect(store.get(isLastPageAtom)).toBe(false);
+  });
+
+  test("zipファイル内に画像がないとき、falseを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue([]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
+    expect(store.get(isLastPageAtom)).toBe(false);
+  });
+
+  test("画像が1枚のみのとき、trueを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({ type: "single", source: "" });
+    expect(store.get(isLastPageAtom)).toBe(true);
+  });
+
+  test("最後の1枚を表示しているとき、trueを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({ type: "single", source: "" });
+    expect(store.get(isLastPageAtom)).toBe(true);
+  });
+
+  test("最後から2枚目を見開きで表示しているとき、trueを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({
+      type: "double",
+      source1: "",
+      source2: "",
+    });
+    expect(store.get(isLastPageAtom)).toBe(true);
+  });
+
+  test("最後から2枚目を単体で表示しているとき、falseを返すこと", () => {
+    const store = createStore();
+    vi.spyOn(isOpenZipAtom, "read").mockReturnValue(true);
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
+    vi.spyOn(viewingImageAtom, "read").mockReturnValue({ type: "single", source: "" });
+    expect(store.get(isLastPageAtom)).toBe(false);
   });
 });
 

@@ -102,7 +102,7 @@ describe("isLastPageAtom", () => {
 describe("moveFirstImageAtom", () => {
   test("常にインデックスを0として呼び出すこと", () => {
     const store = createStore();
-    const moveIndexAtomWriteSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomWriteSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveFirstImageAtom);
     expect(moveIndexAtomWriteSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
@@ -116,7 +116,7 @@ describe("moveNextPageAtom", () => {
     const store = createStore();
     vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextPageAtom);
     expect(moveIndexAtomSpy).not.toHaveBeenCalled();
@@ -126,7 +126,7 @@ describe("moveNextPageAtom", () => {
     const store = createStore();
     vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue({ type: "single", source: "" });
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextPageAtom);
     expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
@@ -142,7 +142,7 @@ describe("moveNextPageAtom", () => {
       source1: "",
       source2: "",
     });
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextPageAtom);
     expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
@@ -172,7 +172,7 @@ describe("moveNextSingleImageAtom", () => {
       source1: "",
       source2: "",
     });
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextSingleImageAtom);
     expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
@@ -188,7 +188,7 @@ describe("moveNextSingleImageAtom", () => {
       type: "single",
       source: "",
     });
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextSingleImageAtom);
     expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
@@ -204,7 +204,7 @@ describe("moveNextSingleImageAtom", () => {
       type: "single",
       source: "",
     });
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextSingleImageAtom);
     expect(moveIndexAtomSpy).not.toHaveBeenCalled();
@@ -219,7 +219,7 @@ describe("moveNextSingleImageAtom", () => {
       source1: "",
       source2: "",
     });
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     store.set(moveNextSingleImageAtom);
     expect(moveIndexAtomSpy).not.toHaveBeenCalled();

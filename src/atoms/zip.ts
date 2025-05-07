@@ -32,8 +32,10 @@ type LastIndex = {
 
 /**
  * 開いているアーカイブのデータを保持する atom
+ *
+ * export for testing
  */
-const $openingZipDataAtom = atom<ZipData | undefined>(undefined);
+export const $openingZipDataAtom = atom<ZipData | undefined>(undefined);
 
 /**
  * アーカイブ内のファイル名のリストを保持する atom
@@ -501,8 +503,10 @@ export const moveNextPageAtom = atom(null, async (get, set) => {
  * 縦0 | 横1 | (なし) | 横1
  * 横0 | 縦1 | (なし) | 縦1
  * 横0 | 横1 | (なし) | 横1
+ *
+ * export for testing
  */
-const movePrevPageAtom = atom(null, async (get, set) => {
+export const movePrevPageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const zipData = get($openingZipDataAtom);

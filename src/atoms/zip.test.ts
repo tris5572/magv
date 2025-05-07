@@ -9,6 +9,8 @@ import {
   isFirstPageAtom,
   isLastPageAtom,
   moveNextPageAtom,
+  $openingZipDataAtom,
+  movePrevPageAtom,
 } from "./zip";
 import { viewingImageAtom } from "./app";
 
@@ -147,6 +149,144 @@ describe("moveNextPageAtom", () => {
     store.set(moveNextPageAtom);
     expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
       index: 2,
+    });
+  });
+});
+
+describe("movePrevPageAtom", () => {
+  test("画像が表示されていないとき、何もしないこと", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue([]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue(undefined);
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).not.toHaveBeenCalled();
+  });
+
+  test("1枚の画像のみが表示されているとき、何もしないこと", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).not.toHaveBeenCalled();
+  });
+
+  test("最初の画像が表示されているとき、何もしないこと", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "portrait" },
+      "1": { blob: new Blob(), orientation: "portrait" },
+      "2": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).not.toHaveBeenCalled();
+  });
+
+  test("見開き状態の2枚目から1枚目に戻るとき、1枚表示になること", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(1);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "portrait" },
+      "1": { blob: new Blob(), orientation: "portrait" },
+      "2": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 0,
+      forceSingle: true,
+    });
+  });
+
+  test("前2枚が縦のとき、見開き表示になること", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "portrait" },
+      "1": { blob: new Blob(), orientation: "portrait" },
+      "2": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 0,
+    });
+  });
+
+  test("前2枚が横のとき、単体表示になること", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "landscape" },
+      "1": { blob: new Blob(), orientation: "landscape" },
+      "2": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 1,
+      forceSingle: true,
+    });
+  });
+
+  test("1枚前が横のとき、単体表示になること", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "portrait" },
+      "1": { blob: new Blob(), orientation: "landscape" },
+      "2": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 1,
+      forceSingle: true,
+    });
+  });
+
+  test("1枚前が縦で2枚前が横のとき、単体表示になること", async () => {
+    const store = createStore();
+    vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2"]);
+    vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
+    vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
+      "0": { blob: new Blob(), orientation: "landscape" },
+      "1": { blob: new Blob(), orientation: "portrait" },
+      "2": { blob: new Blob(), orientation: "portrait" },
+    });
+    vi.spyOn($openingZipDataAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
+
+    await store.set(movePrevPageAtom);
+    expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
+      index: 1,
+      forceSingle: true,
     });
   });
 });

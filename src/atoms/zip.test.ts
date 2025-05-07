@@ -159,7 +159,7 @@ describe("movePrevPageAtom", () => {
     vi.spyOn($imageNameListAtom, "read").mockReturnValue([]);
     vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
     vi.spyOn($openingZipDataAtom, "read").mockReturnValue(undefined);
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -173,7 +173,7 @@ describe("movePrevPageAtom", () => {
     vi.spyOn($openingZipDataAtom, "read").mockReturnValue({
       "0": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -189,7 +189,7 @@ describe("movePrevPageAtom", () => {
       "1": { blob: new Blob(), orientation: "portrait" },
       "2": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -205,7 +205,7 @@ describe("movePrevPageAtom", () => {
       "1": { blob: new Blob(), orientation: "portrait" },
       "2": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -224,7 +224,7 @@ describe("movePrevPageAtom", () => {
       "1": { blob: new Blob(), orientation: "portrait" },
       "2": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -242,7 +242,7 @@ describe("movePrevPageAtom", () => {
       "1": { blob: new Blob(), orientation: "landscape" },
       "2": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -261,7 +261,7 @@ describe("movePrevPageAtom", () => {
       "1": { blob: new Blob(), orientation: "landscape" },
       "2": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -280,7 +280,7 @@ describe("movePrevPageAtom", () => {
       "1": { blob: new Blob(), orientation: "portrait" },
       "2": { blob: new Blob(), orientation: "portrait" },
     });
-    vi.spyOn($openingZipDataAtom, "write");
+    vi.spyOn($openingZipDataAtom, "write").mockImplementation(vi.fn());
     const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(movePrevPageAtom);
@@ -297,7 +297,7 @@ describe("moveNextSingleImageAtom", () => {
     vi.spyOn($imageNameListAtom, "read").mockReturnValue([]);
     vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(0);
     vi.spyOn(viewingImageAtom, "read").mockReturnValue(undefined);
-    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write");
+    const moveIndexAtomSpy = vi.spyOn(moveIndexAtom, "write").mockImplementation(vi.fn());
 
     await store.set(moveNextSingleImageAtom);
     expect(moveIndexAtomSpy).not.toHaveBeenCalled();

@@ -582,8 +582,10 @@ export const moveNextSingleImageAtom = atom(null, async (get, set) => {
  * - |横0| 縦1 横2 → 横0 |縦1| 横2
  * - |横0| 横1 縦2 → 横0 |横1| 縦2
  * - (最後の画像が縦で1枚のみ表示されているケースは、|縦 縦0| 開始と同じパターン)
+ *
+ * export for testing
  */
-const movePrevSingleImageAtom = atom(null, async (get, set) => {
+export const movePrevSingleImageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const zipData = get($openingZipDataAtom);

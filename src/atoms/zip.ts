@@ -32,8 +32,10 @@ type LastIndex = {
 
 /**
  * 開いているアーカイブのデータを保持する atom
+ *
+ * export for testing
  */
-const $openingZipDataAtom = atom<ZipData | undefined>(undefined);
+export const $openingZipDataAtom = atom<ZipData | undefined>(undefined);
 
 /**
  * アーカイブ内のファイル名のリストを保持する atom
@@ -465,11 +467,9 @@ export const moveIndexAtom = atom(
 /**
  * 次のページを表示する atom
  *
- * 次のページに相当する画像の縦横を元に、表示する枚数を判定する
- *
- * 縦画像が1枚だけ表示されるケースもあり得る
+ * export for testing
  */
-const moveNextPageAtom = atom(null, async (get, set) => {
+export const moveNextPageAtom = atom(null, async (get, set) => {
   const openIndex = get($openingImageIndexAtom);
   const imageData = get(viewingImageAtom);
 
@@ -478,6 +478,7 @@ const moveNextPageAtom = atom(null, async (get, set) => {
   }
 
   // 現在の表示枚数を元に、次のインデックスを計算する
+  // 最終ページからのはみ出しは、呼び出された moveIndexAtom 側で判定して処理する
   const index = imageData.type === "single" ? openIndex + 1 : openIndex + 2;
 
   set(moveIndexAtom, { index });
@@ -502,8 +503,10 @@ const moveNextPageAtom = atom(null, async (get, set) => {
  * 縦0 | 横1 | (なし) | 横1
  * 横0 | 縦1 | (なし) | 縦1
  * 横0 | 横1 | (なし) | 横1
+ *
+ * export for testing
  */
-const movePrevPageAtom = atom(null, async (get, set) => {
+export const movePrevPageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const zipData = get($openingZipDataAtom);
@@ -579,8 +582,10 @@ export const moveNextSingleImageAtom = atom(null, async (get, set) => {
  * - |横0| 縦1 横2 → 横0 |縦1| 横2
  * - |横0| 横1 縦2 → 横0 |横1| 縦2
  * - (最後の画像が縦で1枚のみ表示されているケースは、|縦 縦0| 開始と同じパターン)
+ *
+ * export for testing
  */
-const movePrevSingleImageAtom = atom(null, async (get, set) => {
+export const movePrevSingleImageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const zipData = get($openingZipDataAtom);

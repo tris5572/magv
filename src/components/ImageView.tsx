@@ -1,9 +1,8 @@
 import { CSSProperties } from "react";
 import { useAtomValue } from "jotai";
 import {
-  isFirstPageAtom,
-  isLastPageAtom,
-  isOpenPageAtom,
+  canMoveNextAtom,
+  canMovePrevAtom,
   pageDirectionAtom,
   viewingImageAtom,
 } from "../atoms/app";
@@ -109,9 +108,8 @@ function EmptyMessage() {
  */
 function useContextMenu() {
   const handleEvent = useHandleEvent();
-  const isFirstPage = useAtomValue(isFirstPageAtom);
-  const isLastPage = useAtomValue(isLastPageAtom);
-  const isOpen = useAtomValue(isOpenPageAtom);
+  const canMoveNext = useAtomValue(canMoveNextAtom);
+  const canMovePrev = useAtomValue(canMovePrevAtom);
 
   // 有効/無効の切り替えに、前後ページの有無を反転して使用しているため、開いているかどうかも条件に含めている
   const menuPromise = Menu.new({
@@ -120,13 +118,13 @@ function useContextMenu() {
         text: "次のページ",
         icon: "GoLeft",
         action: () => handleEvent(AppEvent.MOVE_NEXT_PAGE),
-        enabled: isOpen && !isLastPage,
+        enabled: canMoveNext,
       },
       {
         text: "前のページ",
         icon: "GoRight",
         action: () => handleEvent(AppEvent.MOVE_PREV_PAGE),
-        enabled: isOpen && !isFirstPage,
+        enabled: canMovePrev,
       },
       {
         item: "Separator",
@@ -134,12 +132,12 @@ function useContextMenu() {
       {
         text: "最後のページ",
         action: () => handleEvent(AppEvent.MOVE_LAST_PAGE),
-        enabled: isOpen && !isLastPage,
+        enabled: canMoveNext,
       },
       {
         text: "最初のページ",
         action: () => handleEvent(AppEvent.MOVE_FIRST_PAGE),
-        enabled: isOpen && !isFirstPage,
+        enabled: canMovePrev,
       },
       {
         item: "Separator",

@@ -96,6 +96,20 @@ export const isLastPageAtom = atom((get) => {
   return mode === "zip" ? get(zipLastPageAtom) : get(imageLastPageAtom);
 });
 
+/**
+ * 前のページへ移動可能かどうかを取得する atom
+ */
+export const canMovePrevAtom = atom((get) => {
+  return get(isOpenPageAtom) && !get(isFirstPageAtom);
+});
+
+/**
+ * 次のページへ移動可能かどうかを取得する atom
+ */
+export const canMoveNextAtom = atom((get) => {
+  return get(isOpenPageAtom) && !get(isLastPageAtom);
+});
+
 // =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
 // #region スライドショー関連
 // =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =

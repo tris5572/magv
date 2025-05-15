@@ -2,14 +2,14 @@ import { atom } from "jotai";
 import { ViewImageMode } from "../types/image";
 import { AppViewMode } from "../types/app";
 import {
-  isFirstPageAtom as zipFirstPageAtom,
-  isLastPageAtom as zipLastPageAtom,
-  isOpenZipAtom as zipOpenAtom,
+  isFirstPageAtom as isZipFirstPageAtom,
+  isLastPageAtom as isZipLastPageAtom,
+  isOpenZipAtom,
 } from "./zip";
 import {
-  isOpenImageAtom as imageOpenAtom,
-  isFirstPageAtom as imageFirstPageAtom,
-  isLastPageAtom as imageLastPageAtom,
+  isFirstPageAtom as isImageFirstPageAtom,
+  isLastPageAtom as isImageLastPageAtom,
+  isOpenImageAtom,
 } from "./image";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -73,7 +73,7 @@ export const pageDirectionAtom = atom<"right" | "left">("left");
  */
 export const isOpenPageAtom = atom((get) => {
   const mode = get(appModeAtom);
-  return mode === "zip" ? get(zipOpenAtom) : get(imageOpenAtom);
+  return mode === "zip" ? get(isOpenZipAtom) : get(isOpenImageAtom);
 });
 
 /**
@@ -83,7 +83,7 @@ export const isOpenPageAtom = atom((get) => {
  */
 export const isFirstPageAtom = atom((get) => {
   const mode = get(appModeAtom);
-  return mode === "zip" ? get(zipFirstPageAtom) : get(imageFirstPageAtom);
+  return mode === "zip" ? get(isZipFirstPageAtom) : get(isImageFirstPageAtom);
 });
 
 /**
@@ -93,7 +93,7 @@ export const isFirstPageAtom = atom((get) => {
  */
 export const isLastPageAtom = atom((get) => {
   const mode = get(appModeAtom);
-  return mode === "zip" ? get(zipLastPageAtom) : get(imageLastPageAtom);
+  return mode === "zip" ? get(isZipLastPageAtom) : get(isImageLastPageAtom);
 });
 
 /**

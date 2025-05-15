@@ -1,6 +1,7 @@
 import { CSSProperties, useCallback, useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
+import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
 import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
@@ -12,6 +13,7 @@ import { isOpeningRenameViewAtom } from "../atoms/app";
 import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
+import { AppEvent } from "../types/event";
 
 const APP_STYLE: CSSProperties = {
   height: "100dvh",
@@ -28,6 +30,7 @@ export function App() {
 
   useRestoreWindowConfig();
   useEventListener();
+  useAppMenu();
 
   return (
     <main style={APP_STYLE}>
@@ -132,4 +135,116 @@ function useEventListener() {
       document.removeEventListener("mousedown", handleEvent);
     };
   }, [handleEvent]);
+}
+
+/**
+ * アプリのメニューを表示するカスタムフック
+ */
+function useAppMenu() {
+  const handleEvent = useHandleEvent();
+
+  (async function () {
+    const separator = await PredefinedMenuItem.new({
+      text: "-",
+      item: "Separator",
+    });
+
+    // macOS では最初の1つがアプリ名のメニューになる
+    const app = await Submenu.new({
+      text: "magv",
+      items: [
+        await MenuItem.new({
+          text: "magv について",
+          action: () => {},
+          enabled: false,
+        }),
+        separator,
+        await PredefinedMenuItem.new({
+          text: "magv を終了",
+          item: "Quit",
+        }),
+      ],
+    });
+
+    const file = await Submenu.new({
+      text: "ファイル",
+      items: [
+        await MenuItem.new({
+          text: "ファイルを開く",
+          action: () => {},
+          enabled: false,
+        }),
+      ],
+    });
+
+    const view = await Submenu.new({
+      text: "表示",
+      items: [],
+    });
+
+    const move = await Submenu.new({
+      text: "移動",
+      items: [
+        await MenuItem.new({
+          text: "次のページ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_NEXT_PAGE);
+          },
+        }),
+        await MenuItem.new({
+          text: "前のページ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_PREV_PAGE);
+          },
+        }),
+        separator,
+        await MenuItem.new({
+          text: "最後のページ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_LAST_PAGE);
+          },
+        }),
+        await MenuItem.new({
+          text: "最初のページ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_FIRST_PAGE);
+          },
+        }),
+      ],
+    });
+
+    const window = await Submenu.new({
+      text: "ウィンドウ",
+      items: [
+        await PredefinedMenuItem.new({
+          text: "フルスクリーン",
+          item: "Fullscreen",
+        }),
+        separator,
+        await PredefinedMenuItem.new({
+          text: "拡大/縮小",
+          item: "Maximize",
+        }),
+        await PredefinedMenuItem.new({
+          text: "最小化",
+          item: "Minimize",
+        }),
+        separator,
+        await PredefinedMenuItem.new({
+          text: "隠す",
+          item: "Hide",
+        }),
+        await PredefinedMenuItem.new({
+          text: "他を隠す",
+          item: "HideOthers",
+        }),
+      ],
+    });
+
+    const menu = await Menu.new({
+      items: [app, file, view, move, window],
+    });
+
+    await menu.setAsAppMenu();
+  })();
 }

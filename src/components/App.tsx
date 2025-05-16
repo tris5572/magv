@@ -161,6 +161,21 @@ function useAppMenu() {
           enabled: false,
         }),
         separator,
+        await MenuItem.new({
+          text: "設定",
+          action: () => {},
+          enabled: false,
+        }),
+        separator,
+        await PredefinedMenuItem.new({
+          text: "magv を非表示",
+          item: "Hide",
+        }),
+        await PredefinedMenuItem.new({
+          text: "ほかを非表示",
+          item: "HideOthers",
+        }),
+        separator,
         await PredefinedMenuItem.new({
           text: "magv を終了",
           item: "Quit",
@@ -173,6 +188,7 @@ function useAppMenu() {
       items: [
         await MenuItem.new({
           text: "ファイルを開く",
+          accelerator: "Command+o",
           action: () => {},
           enabled: false,
         }),
@@ -198,6 +214,21 @@ function useAppMenu() {
           text: "前のページ",
           action: () => {
             handleEvent(AppEvent.MOVE_PREV_PAGE);
+          },
+          enabled: canMovePrev,
+        }),
+        separator,
+        await MenuItem.new({
+          text: "1枚次へ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_NEXT_SINGLE_IMAGE);
+          },
+          enabled: canMoveNext,
+        }),
+        await MenuItem.new({
+          text: "1枚前へ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_PREV_SINGLE_IMAGE);
           },
           enabled: canMovePrev,
         }),
@@ -234,15 +265,6 @@ function useAppMenu() {
         await PredefinedMenuItem.new({
           text: "最小化",
           item: "Minimize",
-        }),
-        separator,
-        await PredefinedMenuItem.new({
-          text: "隠す",
-          item: "Hide",
-        }),
-        await PredefinedMenuItem.new({
-          text: "他を隠す",
-          item: "HideOthers",
         }),
       ],
     });

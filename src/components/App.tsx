@@ -175,6 +175,10 @@ function useAppMenu() {
           text: "ほかを非表示",
           item: "HideOthers",
         }),
+        await PredefinedMenuItem.new({
+          text: "すべてを表示",
+          item: "ShowAll",
+        }),
         separator,
         await PredefinedMenuItem.new({
           text: "magv を終了",

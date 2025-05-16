@@ -9,7 +9,7 @@ import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
 import { RenameBox } from "./RenameBox";
-import { isOpeningRenameViewAtom } from "../atoms/app";
+import { canMoveNextAtom, canMovePrevAtom, isOpeningRenameViewAtom } from "../atoms/app";
 import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
@@ -142,6 +142,8 @@ function useEventListener() {
  */
 function useAppMenu() {
   const handleEvent = useHandleEvent();
+  const canMoveNext = useAtomValue(canMoveNextAtom);
+  const canMovePrev = useAtomValue(canMovePrevAtom);
 
   (async function () {
     const separator = await PredefinedMenuItem.new({
@@ -190,12 +192,14 @@ function useAppMenu() {
           action: () => {
             handleEvent(AppEvent.MOVE_NEXT_PAGE);
           },
+          enabled: canMoveNext,
         }),
         await MenuItem.new({
           text: "前のページ",
           action: () => {
             handleEvent(AppEvent.MOVE_PREV_PAGE);
           },
+          enabled: canMovePrev,
         }),
         separator,
         await MenuItem.new({
@@ -203,12 +207,14 @@ function useAppMenu() {
           action: () => {
             handleEvent(AppEvent.MOVE_LAST_PAGE);
           },
+          enabled: canMoveNext,
         }),
         await MenuItem.new({
           text: "最初のページ",
           action: () => {
             handleEvent(AppEvent.MOVE_FIRST_PAGE);
           },
+          enabled: canMovePrev,
         }),
       ],
     });

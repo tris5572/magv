@@ -196,6 +196,12 @@ function useAppMenu() {
           action: () => {},
           enabled: false,
         }),
+        separator,
+        await MenuItem.new({
+          text: "ウィンドウを閉じる",
+          accelerator: "Command+W",
+          action: () => {},
+        }),
       ],
     });
 

@@ -1,7 +1,7 @@
 import { CSSProperties, useCallback, useEffect } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
-import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
+import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
 import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
@@ -9,7 +9,13 @@ import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
 import { RenameBox } from "./RenameBox";
-import { canMoveNextAtom, canMovePrevAtom, isOpeningRenameViewAtom } from "../atoms/app";
+import {
+  canMoveNextAtom,
+  canMovePrevAtom,
+  isOpeningRenameViewAtom,
+  isOpenPageAtom,
+  singleOrDoubleAtom,
+} from "../atoms/app";
 import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
@@ -144,6 +150,8 @@ function useAppMenu() {
   const handleEvent = useHandleEvent();
   const canMoveNext = useAtomValue(canMoveNextAtom);
   const canMovePrev = useAtomValue(canMovePrevAtom);
+  const isOpenPage = useAtomValue(isOpenPageAtom);
+  const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
 
   (async function () {
     const separator = await PredefinedMenuItem.new({
@@ -207,7 +215,26 @@ function useAppMenu() {
 
     const view = await Submenu.new({
       text: "表示",
-      items: [],
+      items: [
+        await CheckMenuItem.new({
+          text: "単体表示",
+          checked: singleOrDouble === "single",
+          enabled: isOpenPage,
+          action: () => {
+            setSingleOrDouble("single");
+            handleEvent(AppEvent.UPDATE_PAGE); // 表示モード切替後は強制的に再描画
+          },
+        }),
+        await CheckMenuItem.new({
+          text: "見開き表示",
+          checked: singleOrDouble === "double",
+          enabled: isOpenPage,
+          action: () => {
+            setSingleOrDouble("double");
+            handleEvent(AppEvent.UPDATE_PAGE); // 表示モード切替後は強制的に再描画
+          },
+        }),
+      ],
     });
 
     const move = await Submenu.new({

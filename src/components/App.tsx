@@ -153,7 +153,7 @@ function useAppMenu() {
   const isOpenPage = useAtomValue(isOpenPageAtom);
   const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
 
-  (async function () {
+  const createMenu = async () => {
     const separator = await PredefinedMenuItem.new({
       text: "-",
       item: "Separator",
@@ -311,5 +311,7 @@ function useAppMenu() {
     });
 
     await menu.setAsAppMenu();
-  })();
+  };
+
+  createMenu();
 }

@@ -1,7 +1,7 @@
 import { CSSProperties, useCallback, useEffect } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
-import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
+import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { Log } from "./Log";
 import { openZipAtom } from "../atoms/zip";
 import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
@@ -9,7 +9,13 @@ import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { useHandleEvent } from "../hooks/event";
 import { RenameBox } from "./RenameBox";
-import { isOpeningRenameViewAtom } from "../atoms/app";
+import {
+  canMoveNextAtom,
+  canMovePrevAtom,
+  isOpeningRenameViewAtom,
+  isOpenPageAtom,
+  singleOrDoubleAtom,
+} from "../atoms/app";
 import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
@@ -142,8 +148,12 @@ function useEventListener() {
  */
 function useAppMenu() {
   const handleEvent = useHandleEvent();
+  const canMoveNext = useAtomValue(canMoveNextAtom);
+  const canMovePrev = useAtomValue(canMovePrevAtom);
+  const isOpenPage = useAtomValue(isOpenPageAtom);
+  const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
 
-  (async function () {
+  const createMenu = async () => {
     const separator = await PredefinedMenuItem.new({
       text: "-",
       item: "Separator",
@@ -159,6 +169,25 @@ function useAppMenu() {
           enabled: false,
         }),
         separator,
+        await MenuItem.new({
+          text: "設定",
+          action: () => {},
+          enabled: false,
+        }),
+        separator,
+        await PredefinedMenuItem.new({
+          text: "magv を非表示",
+          item: "Hide",
+        }),
+        await PredefinedMenuItem.new({
+          text: "ほかを非表示",
+          item: "HideOthers",
+        }),
+        await PredefinedMenuItem.new({
+          text: "すべてを表示",
+          item: "ShowAll",
+        }),
+        separator,
         await PredefinedMenuItem.new({
           text: "magv を終了",
           item: "Quit",
@@ -171,15 +200,41 @@ function useAppMenu() {
       items: [
         await MenuItem.new({
           text: "ファイルを開く",
+          accelerator: "Command+o",
           action: () => {},
           enabled: false,
+        }),
+        separator,
+        await MenuItem.new({
+          text: "ウィンドウを閉じる",
+          accelerator: "Command+W",
+          action: () => {},
         }),
       ],
     });
 
     const view = await Submenu.new({
       text: "表示",
-      items: [],
+      items: [
+        await CheckMenuItem.new({
+          text: "単体表示",
+          checked: singleOrDouble === "single",
+          enabled: isOpenPage,
+          action: () => {
+            setSingleOrDouble("single");
+            handleEvent(AppEvent.UPDATE_PAGE); // 表示モード切替後は強制的に再描画
+          },
+        }),
+        await CheckMenuItem.new({
+          text: "見開き表示",
+          checked: singleOrDouble === "double",
+          enabled: isOpenPage,
+          action: () => {
+            setSingleOrDouble("double");
+            handleEvent(AppEvent.UPDATE_PAGE); // 表示モード切替後は強制的に再描画
+          },
+        }),
+      ],
     });
 
     const move = await Submenu.new({
@@ -190,12 +245,29 @@ function useAppMenu() {
           action: () => {
             handleEvent(AppEvent.MOVE_NEXT_PAGE);
           },
+          enabled: canMoveNext,
         }),
         await MenuItem.new({
           text: "前のページ",
           action: () => {
             handleEvent(AppEvent.MOVE_PREV_PAGE);
           },
+          enabled: canMovePrev,
+        }),
+        separator,
+        await MenuItem.new({
+          text: "1枚次へ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_NEXT_SINGLE_IMAGE);
+          },
+          enabled: canMoveNext,
+        }),
+        await MenuItem.new({
+          text: "1枚前へ",
+          action: () => {
+            handleEvent(AppEvent.MOVE_PREV_SINGLE_IMAGE);
+          },
+          enabled: canMovePrev,
         }),
         separator,
         await MenuItem.new({
@@ -203,12 +275,14 @@ function useAppMenu() {
           action: () => {
             handleEvent(AppEvent.MOVE_LAST_PAGE);
           },
+          enabled: canMoveNext,
         }),
         await MenuItem.new({
           text: "最初のページ",
           action: () => {
             handleEvent(AppEvent.MOVE_FIRST_PAGE);
           },
+          enabled: canMovePrev,
         }),
       ],
     });
@@ -229,15 +303,6 @@ function useAppMenu() {
           text: "最小化",
           item: "Minimize",
         }),
-        separator,
-        await PredefinedMenuItem.new({
-          text: "隠す",
-          item: "Hide",
-        }),
-        await PredefinedMenuItem.new({
-          text: "他を隠す",
-          item: "HideOthers",
-        }),
       ],
     });
 
@@ -246,5 +311,7 @@ function useAppMenu() {
     });
 
     await menu.setAsAppMenu();
-  })();
+  };
+
+  createMenu();
 }

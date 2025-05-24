@@ -116,13 +116,11 @@ function useContextMenu() {
     items: [
       {
         text: "次のページ",
-        icon: "GoLeft",
         action: () => handleEvent(AppEvent.MOVE_NEXT_PAGE),
         enabled: canMoveNext,
       },
       {
         text: "前のページ",
-        icon: "GoRight",
         action: () => handleEvent(AppEvent.MOVE_PREV_PAGE),
         enabled: canMovePrev,
       },

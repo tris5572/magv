@@ -15,7 +15,7 @@ import { AppEvent } from "../types/event";
  * 画像を表示するコンポーネント
  */
 export function ImageView() {
-  const openImagePath = useAtomValue(viewingImageAtom);
+  const viewingImage = useAtomValue(viewingImageAtom);
   const pageDirection = useAtomValue(pageDirectionAtom);
   const contextMenu = useContextMenu();
 
@@ -26,16 +26,16 @@ export function ImageView() {
   }
 
   // 見開き表示
-  if (openImagePath?.type === "double") {
+  if (viewingImage?.type === "double") {
     return (
       <div style={getDoubleStyle(pageDirection)} onContextMenu={handleContextMenu}>
-        <SingleImageView source={openImagePath?.source1} isHalf justify="left" />
-        <SingleImageView source={openImagePath?.source2} isHalf justify="right" />
+        <SingleImageView source={viewingImage?.source1} isHalf justify="left" />
+        <SingleImageView source={viewingImage?.source2} isHalf justify="right" />
       </div>
     );
   }
   // 画像なし
-  if (!openImagePath?.source) {
+  if (!viewingImage?.source) {
     return (
       <div onContextMenu={handleContextMenu}>
         <EmptyMessage />
@@ -45,7 +45,7 @@ export function ImageView() {
   // 単体表示
   return (
     <div style={SINGLE_STYLE} onContextMenu={handleContextMenu}>
-      <SingleImageView source={openImagePath?.source} />
+      <SingleImageView source={viewingImage?.source} />
     </div>
   );
 }

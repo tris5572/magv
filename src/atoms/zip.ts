@@ -676,10 +676,8 @@ const renameArchiveAtom = atom(null, async (get, set, name: string) => {
   if (!beforePath) {
     return;
   }
-  console.log(name);
 
   const newPath = await createRenamedPathToExcludeExtensionName(beforePath, name);
-  console.log(newPath);
 
   // リネームして、変更後のファイル名を開いていることにする
   rename(beforePath, newPath);

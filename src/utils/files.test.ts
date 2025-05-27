@@ -171,4 +171,11 @@ describe("createRenamedPathToExcludeExtensionName", () => {
       await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "ピリオドの前.と後")
     ).toBe("/a/b/ピリオドの前.と後_.txt");
   });
+
+  test("前後のファイル名が同じ場合、アンダースコアが付与していないパスが返されること", async () => {
+    vi.mocked(exists).mockReturnValue(Promise.resolve(true));
+    expect(await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "元の名前")).toBe(
+      "/a/b/元の名前.txt"
+    );
+  });
 });

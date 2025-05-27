@@ -153,6 +153,10 @@ export async function createRenamedPathToExcludeExtensionName(
   let newName = ext ? `${name}.${ext}` : name; // 新しいファイル名の拡張子を含んだ部分
   let newPath = [...buf, newName].join("/");
 
+  if (beforeName === newName) {
+    return path;
+  }
+
   // 変更後のファイル名がすでに存在している場合、ファイル名と拡張子に分割し、ファイル名の末尾に `_` を付与してから結合して戻す
   while (await exists(newPath)) {
     newBody = `${newBody}_`;

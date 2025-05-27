@@ -25,6 +25,15 @@ export function ImageView() {
     menu.popup();
   }
 
+  // 画像なし
+  if (!viewingImage) {
+    return (
+      <div onContextMenu={handleContextMenu}>
+        <EmptyMessage />
+      </div>
+    );
+  }
+
   // 見開き表示
   if (viewingImage?.type === "double") {
     return (
@@ -34,14 +43,7 @@ export function ImageView() {
       </div>
     );
   }
-  // 画像なし
-  if (!viewingImage?.source) {
-    return (
-      <div onContextMenu={handleContextMenu}>
-        <EmptyMessage />
-      </div>
-    );
-  }
+
   // 単体表示
   return (
     <div style={SINGLE_STYLE} onContextMenu={handleContextMenu}>

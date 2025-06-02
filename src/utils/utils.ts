@@ -72,6 +72,11 @@ export async function storeConfigFile(config: WindowConfig, name: string) {
   const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
   const path = await join(dir, name);
 
+  // 設定ファイルの破損を防ぐため、保存対象のデータがない場合は保存しない
+  if (config.window?.position == null || config.window?.size == null) {
+    return;
+  }
+
   // 保存先のディレクトリが存在しないときは作成する
   if (!(await exists(dir))) {
     await mkdir(dir);

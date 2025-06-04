@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   canMoveNextAtom,
   canMovePrevAtom,
@@ -8,8 +8,8 @@ import {
 } from "../atoms/app";
 import { SingleImageView } from "./SingleImageView";
 import { Menu } from "@tauri-apps/api/menu";
-import { useHandleEvent } from "../hooks/event";
 import { AppEvent } from "../types/event";
+import { handleEventAtom } from "../atoms/event";
 
 /**
  * 画像を表示するコンポーネント
@@ -109,7 +109,7 @@ function EmptyMessage() {
  * コンテキストメニューを生成するカスタムフック
  */
 function useContextMenu() {
-  const handleEvent = useHandleEvent();
+  const handleEvent = useSetAtom(handleEventAtom);
   const canMoveNext = useAtomValue(canMoveNextAtom);
   const canMovePrev = useAtomValue(canMovePrevAtom);
 

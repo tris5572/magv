@@ -7,7 +7,6 @@ import { openZipAtom } from "../atoms/zip";
 import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
-import { useHandleEvent } from "../hooks/event";
 import { RenameBox } from "./RenameBox";
 import {
   canMoveNextAtom,
@@ -20,6 +19,7 @@ import { TopMenu } from "./TopMenu";
 import { getPathKind } from "../utils/files";
 import { openImagePathAtom } from "../atoms/image";
 import { AppEvent } from "../types/event";
+import { handleEventAtom } from "../atoms/event";
 
 const APP_STYLE: CSSProperties = {
   height: "100dvh",
@@ -60,7 +60,7 @@ function useEventListener() {
   const openImage = useSetAtom(openImagePathAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreWindowConfig();
-  const handleEvent = useHandleEvent();
+  const handleEvent = useSetAtom(handleEventAtom);
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
@@ -147,7 +147,7 @@ function useEventListener() {
  * アプリのメニューを表示するカスタムフック
  */
 function useAppMenu() {
-  const handleEvent = useHandleEvent();
+  const handleEvent = useSetAtom(handleEventAtom);
   const canMoveNext = useAtomValue(canMoveNextAtom);
   const canMovePrev = useAtomValue(canMovePrevAtom);
   const isOpenPage = useAtomValue(isOpenPageAtom);

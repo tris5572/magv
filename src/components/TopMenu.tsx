@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   isSlideshowRunningAtom,
   pageDirectionAtom,
@@ -7,8 +7,9 @@ import {
   slideshowIntervalAtom,
   viewingImageAtom,
 } from "../atoms/app";
-import { useHandleEvent, useSlideshow } from "../hooks/event";
+import { useSlideshow } from "../hooks/event";
 import { AppEvent } from "../types/event";
+import { handleEventAtom } from "../atoms/event";
 
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント
@@ -69,7 +70,7 @@ const MENU_BODY_STYLE: CSSProperties = {
  */
 function SingleDoubleSwitcher() {
   const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
-  const handleEvent = useHandleEvent();
+  const handleEvent = useSetAtom(handleEventAtom);
 
   return (
     <div style={SWITCHER_STYLE}>
@@ -100,7 +101,7 @@ function SingleDoubleSwitcher() {
  */
 function PageDirectionSwitcher() {
   const [pageDirection, setPageDirection] = useAtom(pageDirectionAtom);
-  const handleEvent = useHandleEvent();
+  const handleEvent = useSetAtom(handleEventAtom);
 
   return (
     <div style={SWITCHER_STYLE}>

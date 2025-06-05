@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { ImageSize } from "../types/image";
+import type { ImageSize, ImageOrientation } from "../types/image";
 
 /**
  * 画像のサイズを取得するカスタムフック
@@ -37,7 +37,7 @@ export const useImageSize = (path: string): ImageSize | undefined => {
  * - 横向きの場合は "landscape"
  * - 画像のサイズが取得できなかった場合は `undefined`
  */
-export const useImageOrientation = (path: string): "portrait" | "landscape" | undefined => {
+export const useImageOrientation = (path: string): ImageOrientation | undefined => {
   const size = useImageSize(path);
   // console.log(path, size);
 

@@ -1,3 +1,5 @@
+import type { ImageOrientation } from "./image";
+
 /**
  * 解凍したアーカイブのデータ
  */
@@ -15,6 +17,6 @@ export type ZipData = {
      *
      * 向きを未取得または取得できなかった場合は `undefined`
      */
-    orientation?: "portrait" | "landscape";
+    orientation?: ImageOrientation;
   };
 };

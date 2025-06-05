@@ -3,6 +3,7 @@ import { WindowConfig } from "../types/config";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { ImageOrientation } from "../types/image";
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 画像関連
@@ -51,7 +52,9 @@ export function getImageSize(
  * - 横向きの場合は "landscape"
  * - 画像のサイズが取得できなかった場合は `undefined`
  */
-export async function getImageOrientation(source: string | Blob) {
+export async function getImageOrientation(
+  source: string | Blob
+): Promise<ImageOrientation | undefined> {
   const size = await getImageSize(source);
   if (!size) {
     return undefined;

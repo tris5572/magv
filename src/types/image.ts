@@ -27,3 +27,11 @@ export type ImageSize = {
   width: number;
   height: number;
 };
+
+/**
+ * 画像の向き
+ *
+ * - "portrait": 縦向き
+ * - "landscape": 横向き
+ */
+export type ImageOrientation = "portrait" | "landscape";

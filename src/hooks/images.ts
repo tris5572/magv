@@ -1,15 +1,15 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  imageListAtom as zipListAtom,
-  openingImageIndexAtom as zipIndexAtom,
-  moveIndexAtom as zipMoveIndexAtom,
-} from "../atoms/zip";
 import { appModeAtom } from "../atoms/app";
 import {
   openingImageIndexAtom as imageIndexAtom,
   imageListAtom,
   moveIndexAtom as imageMoveIndexAtom,
 } from "../atoms/image";
+import {
+  imageListAtom as zipListAtom,
+  openingImageIndexAtom as zipIndexAtom,
+  moveIndexAtom as zipMoveIndexAtom,
+} from "../atoms/zip";
 
 /**
  * 表示画像に関する情報を扱うカスタムフック

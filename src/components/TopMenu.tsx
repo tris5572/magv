@@ -1,5 +1,5 @@
-import { useState, type CSSProperties } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useState, type CSSProperties } from "react";
 import {
   isSlideshowRunningAtom,
   pageDirectionAtom,
@@ -7,9 +7,9 @@ import {
   slideshowIntervalAtom,
   viewingImageAtom,
 } from "../atoms/app";
+import { handleEventAtom } from "../atoms/event";
 import { useSlideshow } from "../hooks/event";
 import { AppEvent } from "../types/event";
-import { handleEventAtom } from "../atoms/event";
 
 /**
  * 画面上部に表示する挙動切替メニューのコンポーネント

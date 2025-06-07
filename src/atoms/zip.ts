@@ -1,8 +1,17 @@
-import { atom } from "jotai";
-import * as fflate from "fflate";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { rename, exists } from "@tauri-apps/plugin-fs";
+import * as fflate from "fflate";
+import { atom } from "jotai";
+import { ZipData } from "../types/data";
+import { AppEvent } from "../types/event";
+import {
+  getFileNameRemovedExtension,
+  getFileList,
+  createRenamedPathToExcludeExtensionName,
+  createExclamationAddedPath,
+} from "../utils/files";
+import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import {
   appModeAtom,
   isOpeningRenameViewAtom,
@@ -11,15 +20,6 @@ import {
   stopSlideshowAtom,
   viewingImageAtom,
 } from "./app";
-import { getImageOrientation, searchAtBrowser } from "../utils/utils";
-import { AppEvent } from "../types/event";
-import { ZipData } from "../types/data";
-import {
-  getFileNameRemovedExtension,
-  getFileList,
-  createRenamedPathToExcludeExtensionName,
-  createExclamationAddedPath,
-} from "../utils/files";
 
 type LastIndex = {
   path: string;

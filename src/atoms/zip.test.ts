@@ -1,4 +1,5 @@
 import { createStore } from "jotai";
+import { viewingImageAtom } from "./app";
 import {
   $imageNameListAtom,
   moveFirstImageAtom,
@@ -13,7 +14,6 @@ import {
   movePrevPageAtom,
   movePrevSingleImageAtom,
 } from "./zip";
-import { viewingImageAtom } from "./app";
 
 afterEach(() => {
   vi.clearAllMocks();

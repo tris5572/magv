@@ -1,4 +1,7 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { atom } from "jotai";
+import { AppEvent } from "../types/event";
+import { dirFromPath, getFileList } from "../utils/files";
 import { getImageOrientation } from "../utils/utils";
 import {
   appModeAtom,
@@ -7,9 +10,6 @@ import {
   stopSlideshowAtom,
   viewingImageAtom,
 } from "./app";
-import { AppEvent } from "../types/event";
-import { dirFromPath, getFileList } from "../utils/files";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 // 画像ファイルを開いたときの状態を管理する
 

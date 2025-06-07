@@ -1,15 +1,15 @@
-import { CSSProperties } from "react";
+import { Menu } from "@tauri-apps/api/menu";
 import { useAtomValue, useSetAtom } from "jotai";
+import { CSSProperties } from "react";
 import {
   canMoveNextAtom,
   canMovePrevAtom,
   pageDirectionAtom,
   viewingImageAtom,
 } from "../atoms/app";
-import { SingleImageView } from "./SingleImageView";
-import { Menu } from "@tauri-apps/api/menu";
-import { AppEvent } from "../types/event";
 import { handleEventAtom } from "../atoms/event";
+import { AppEvent } from "../types/event";
+import { SingleImageView } from "./SingleImageView";
 
 /**
  * 画像を表示するコンポーネント

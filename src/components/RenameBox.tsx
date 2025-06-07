@@ -1,5 +1,5 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import {
   handleAppEvent,

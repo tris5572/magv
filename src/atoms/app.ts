@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { AppViewMode } from "../types/app";
-import { ViewImageMode } from "../types/image";
+import { type ViewImageMode } from "../types/image";
 import {
   isFirstPageAtom as isImageFirstPageAtom,
   isLastPageAtom as isImageLastPageAtom,

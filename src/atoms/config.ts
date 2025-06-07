@@ -1,7 +1,7 @@
 import { PhysicalPosition, PhysicalSize } from "@tauri-apps/api/dpi";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { atom } from "jotai";
-import { WindowConfig, KeyboardConfig } from "../types/config";
+import { type WindowConfig, type KeyboardConfig } from "../types/config";
 import { AppEvent } from "../types/event";
 
 /**

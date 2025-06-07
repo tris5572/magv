@@ -1,4 +1,4 @@
-import { AppEvent } from "./event";
+import { type AppEvent } from "./event";
 
 /**
  * ウィンドウの位置と保存する設定ファイルのファイル名

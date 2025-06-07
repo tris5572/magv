@@ -1,6 +1,6 @@
 import { Menu } from "@tauri-apps/api/menu";
 import { useAtomValue, useSetAtom } from "jotai";
-import { CSSProperties } from "react";
+import { type CSSProperties } from "react";
 import {
   canMoveNextAtom,
   canMovePrevAtom,

@@ -1,16 +1,16 @@
 import { atom } from "jotai";
-import { ViewImageMode } from "../types/image";
 import { AppViewMode } from "../types/app";
-import {
-  isFirstPageAtom as isZipFirstPageAtom,
-  isLastPageAtom as isZipLastPageAtom,
-  isOpenZipAtom,
-} from "./zip";
+import { ViewImageMode } from "../types/image";
 import {
   isFirstPageAtom as isImageFirstPageAtom,
   isLastPageAtom as isImageLastPageAtom,
   isOpenImageAtom,
 } from "./image";
+import {
+  isFirstPageAtom as isZipFirstPageAtom,
+  isLastPageAtom as isZipLastPageAtom,
+  isOpenZipAtom,
+} from "./zip";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 アプリケーション全体の状態を管理する atom を集めたファイル

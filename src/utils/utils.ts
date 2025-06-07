@@ -1,8 +1,8 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { WindowConfig } from "../types/config";
 import { appConfigDir, join } from "@tauri-apps/api/path";
 import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { WindowConfig } from "../types/config";
 import type { ImageOrientation } from "../types/image";
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

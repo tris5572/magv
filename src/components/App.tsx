@@ -1,13 +1,7 @@
-import { CSSProperties, useCallback, useEffect } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { listen } from "@tauri-apps/api/event";
 import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
-import { Log } from "./Log";
-import { openZipAtom } from "../atoms/zip";
-import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
-import { ImageView } from "./ImageView";
-import { Indicator } from "./Indicator";
-import { RenameBox } from "./RenameBox";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { CSSProperties, useCallback, useEffect } from "react";
 import {
   canMoveNextAtom,
   canMovePrevAtom,
@@ -15,11 +9,17 @@ import {
   isOpenPageAtom,
   singleOrDoubleAtom,
 } from "../atoms/app";
-import { TopMenu } from "./TopMenu";
-import { getPathKind } from "../utils/files";
-import { openImagePathAtom } from "../atoms/image";
-import { AppEvent } from "../types/event";
 import { handleEventAtom } from "../atoms/event";
+import { openImagePathAtom } from "../atoms/image";
+import { openZipAtom } from "../atoms/zip";
+import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
+import { AppEvent } from "../types/event";
+import { getPathKind } from "../utils/files";
+import { ImageView } from "./ImageView";
+import { Indicator } from "./Indicator";
+import { Log } from "./Log";
+import { RenameBox } from "./RenameBox";
+import { TopMenu } from "./TopMenu";
 
 const APP_STYLE: CSSProperties = {
   height: "100dvh",

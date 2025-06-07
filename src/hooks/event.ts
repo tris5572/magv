@@ -1,6 +1,5 @@
-import { useCallback, useEffect } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { AppEvent } from "../types/event";
+import { useCallback, useEffect } from "react";
 import {
   resetSlideshowAtom,
   slideshowCountAtom,
@@ -9,6 +8,7 @@ import {
   stopSlideshowAtom,
 } from "../atoms/app";
 import { handleEventAtom } from "../atoms/event";
+import { AppEvent } from "../types/event";
 
 // =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
 // #region スライドショー関連

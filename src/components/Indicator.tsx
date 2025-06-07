@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
-import { useImageData } from "../hooks/images";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { pageDirectionAtom } from "../atoms/app";
+import { useImageData } from "../hooks/images";
 
 /** コンポーネント全体のラッパーのスタイル */
 const CONTAINER_STYLE: React.CSSProperties = {

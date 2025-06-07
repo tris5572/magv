@@ -1,4 +1,7 @@
 import { atom } from "jotai";
+import { KeyboardConfig } from "../types/config";
+import { AppEvent } from "../types/event";
+import { getHorizontalSwitchEvent } from "../utils/event";
 import {
   isOpeningRenameViewAtom,
   isMagnifierEnabledAtom,
@@ -6,11 +9,8 @@ import {
   pageDirectionAtom,
 } from "./app";
 import { keyboardConfigAtom } from "./config";
-import { handleAppEvent as handleEventZip } from "./zip";
 import { handleAppEvent as handleEventImage } from "./image";
-import { AppEvent } from "../types/event";
-import { KeyboardConfig } from "../types/config";
-import { getHorizontalSwitchEvent } from "../utils/event";
+import { handleAppEvent as handleEventZip } from "./zip";
 
 /**
  * イベントを処理する atom

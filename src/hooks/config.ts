@@ -2,8 +2,8 @@ import { getCurrentWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { windowConfigDataAtom, windowPositionAtom, windowSizeAtom } from "../atoms/config";
-import { readConfigFile, storeConfigFile } from "../utils/utils";
 import { WINDOW_CONFIG_FILE_NAME } from "../types/config";
+import { readConfigFile, storeConfigFile } from "../utils/utils";
 
 /**
  * ウィンドウ操作のイベント（移動とリサイズ）を扱う関数を返すカスタムフック

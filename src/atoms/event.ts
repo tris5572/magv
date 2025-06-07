@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { KeyboardConfig } from "../types/config";
+import { type KeyboardConfig } from "../types/config";
 import { AppEvent } from "../types/event";
 import { getHorizontalSwitchEvent } from "../utils/event";
 import {

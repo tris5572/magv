@@ -1,7 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { CSSProperties, useCallback, useEffect } from "react";
+import { type CSSProperties, useCallback, useEffect } from "react";
 import {
   canMoveNextAtom,
   canMovePrevAtom,

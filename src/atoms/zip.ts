@@ -3,7 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { rename, exists } from "@tauri-apps/plugin-fs";
 import * as fflate from "fflate";
 import { atom } from "jotai";
-import { ZipData } from "../types/data";
+import { type ZipData } from "../types/data";
 import { AppEvent } from "../types/event";
 import {
   getFileNameRemovedExtension,

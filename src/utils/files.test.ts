@@ -1,4 +1,4 @@
-import { exists, FileInfo, lstat, stat } from "@tauri-apps/plugin-fs";
+import { exists, type FileInfo, lstat, stat } from "@tauri-apps/plugin-fs";
 import {
   createExclamationAddedPath,
   createRenamedPathToExcludeExtensionName,

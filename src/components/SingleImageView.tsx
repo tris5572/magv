@@ -106,6 +106,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
         onMouseEnter={(e) => mouseEnter(e)}
         onMouseLeave={(e) => mouseLeave(e)}
         onMouseMove={(e) => mouseMove(e)}
+        onDragStart={(e) => e.preventDefault()}
       />
       <div
         style={{

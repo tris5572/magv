@@ -133,7 +133,12 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
 }
 
 /** 1枚の画像 img のスタイル */
-const IMAGE_STYLE: React.CSSProperties = { height: "100%", maxWidth: "100%", objectFit: "contain" };
+const IMAGE_STYLE: React.CSSProperties = {
+  height: "100%",
+  maxWidth: "100%",
+  objectFit: "contain",
+  cursor: "default",
+};
 
 /** 表示画像のコンテナーのスタイル */
 const CONTAINER_STYLE: React.CSSProperties = {

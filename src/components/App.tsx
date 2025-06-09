@@ -213,6 +213,37 @@ function useAppMenu() {
       ],
     });
 
+    const edit = await Submenu.new({
+      text: "編集",
+      items: [
+        await PredefinedMenuItem.new({
+          text: "元に戻す",
+          item: "Undo",
+        }),
+        await PredefinedMenuItem.new({
+          text: "やり直し",
+          item: "Redo",
+        }),
+        separator,
+        await PredefinedMenuItem.new({
+          text: "切り取り",
+          item: "Cut",
+        }),
+        await PredefinedMenuItem.new({
+          text: "コピー",
+          item: "Copy",
+        }),
+        await PredefinedMenuItem.new({
+          text: "貼り付け",
+          item: "Paste",
+        }),
+        await PredefinedMenuItem.new({
+          text: "すべて選択",
+          item: "SelectAll",
+        }),
+      ],
+    });
+
     const view = await Submenu.new({
       text: "表示",
       items: [
@@ -307,7 +338,7 @@ function useAppMenu() {
     });
 
     const menu = await Menu.new({
-      items: [app, file, view, move, window],
+      items: [app, file, edit, view, move, window],
     });
 
     await menu.setAsAppMenu();

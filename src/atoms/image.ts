@@ -400,6 +400,12 @@ const moveLastPageAtom = atom(null, async (get, set) => {
   const lastIndex = fileList.length - 1;
   const path1 = fileList[lastIndex - 1]; // 最後の1つ手前
   const path2 = fileList[lastIndex]; // 最後
+  const isSingleMode = get(singleOrDoubleAtom) === "single"; // 単体表示モードかどうか
+
+  if (isSingleMode) {
+    set(moveIndexAtom, { index: lastIndex, forceSingle: true });
+    return;
+  }
 
   const orientation1 = await getImageOrientation(path1);
   const orientation2 = await getImageOrientation(path2);

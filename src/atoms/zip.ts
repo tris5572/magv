@@ -639,6 +639,7 @@ export const moveFirstImageAtom = atom(null, async (_, set) => {
 const moveLastImageAtom = atom(null, async (get, set) => {
   const imageList = get($imageNameListAtom);
   const zipData = get($openingZipDataAtom);
+  const isSingleMode = get(singleOrDoubleAtom) === "single"; // 単体表示モードかどうか
 
   if (!zipData) {
     return;
@@ -648,6 +649,12 @@ const moveLastImageAtom = atom(null, async (get, set) => {
   const lastIndex = imageList.length - 1;
   const name1 = imageList[lastIndex - 1];
   const name2 = imageList[lastIndex];
+
+  // 単体表示モードのときは、最後の2枚の縦横に関係なく、一番最後の画像を表示
+  if (isSingleMode) {
+    set(moveIndexAtom, { index: lastIndex, forceSingle: true });
+    return;
+  }
 
   if (!name2) {
     return;

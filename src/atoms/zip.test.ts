@@ -485,7 +485,7 @@ describe("movePrevSingleImageAtom", () => {
     });
   });
 
-  test("単体表示から1つ前の縦へ戻るとき、2つ前も縦なら、見開き表示になること", async () => {
+  test("単体表示から1つ前の縦へ戻るとき、2つ前も縦でも、単体表示になること", async () => {
     const store = createStore();
     vi.spyOn($imageNameListAtom, "read").mockReturnValue(["0", "1", "2", "3"]);
     vi.spyOn($openingImageIndexAtom, "read").mockReturnValue(2);
@@ -500,7 +500,7 @@ describe("movePrevSingleImageAtom", () => {
 
     await store.set(movePrevSingleImageAtom);
     expect(moveIndexAtomSpy).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {
-      index: 0,
+      index: 1,
     });
   });
 

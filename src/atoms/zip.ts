@@ -574,14 +574,7 @@ export const moveNextSingleImageAtom = atom(null, async (get, set) => {
 /**
  * 1枚だけ前の画像へ移動する atom
  *
- * 右開き（右が若い）で挙動を示すと以下の通り。（表示が「|」の中）
- * - |縦 縦0| 縦1 縦2 → 縦 |縦0 縦1| 縦2
- * - |縦 縦0| 縦1 横2 → 縦 |縦0 縦1| 横2
- * - |縦 縦0| 横1 → 縦 縦0 |横1|
- * - |横0| 縦1 縦2 → 横0 |縦1 縦2|
- * - |横0| 縦1 横2 → 横0 |縦1| 横2
- * - |横0| 横1 縦2 → 横0 |横1| 縦2
- * - (最後の画像が縦で1枚のみ表示されているケースは、|縦 縦0| 開始と同じパターン)
+ * 見開き状態等に関係なく、インデックスを1つだけ前に移動する
  *
  * export for testing
  */
@@ -596,29 +589,12 @@ export const movePrevSingleImageAtom = atom(null, async (get, set) => {
 
   const name0 = imageList[index];
   const name1 = imageList[index - 1];
-  const name2 = imageList[index - 2];
 
   if (!name0 || !name1) {
     return;
   }
 
-  await convertData(zipData, name0);
-  await convertData(zipData, name1);
-  await convertData(zipData, name2);
-  set($openingZipDataAtom, zipData);
-
-  // 現在、横画像を表示していて、-1枚目と-2枚目が両方とも縦長のときは、2枚戻って見開き表示する
-  if (
-    zipData[name0].orientation === "landscape" &&
-    name2 &&
-    zipData[name1].orientation === "portrait" &&
-    zipData[name2].orientation === "portrait"
-  ) {
-    set(moveIndexAtom, { index: index - 2 });
-    return;
-  }
-
-  // それ以外のときは、-1枚目のみを基準に表示する (見開き判定は表示処理で実施)
+  // 1枚分だけ前に戻り、見開き判定は表示処理側で実施
   set(moveIndexAtom, { index: index - 1 });
 });
 

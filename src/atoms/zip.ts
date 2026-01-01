@@ -127,7 +127,7 @@ export const openZipAtom = atom(null, async (get, set, path: string | undefined)
 
   // 生データを Blob に変換
   const bufData = fileNames.reduce<ZipData>((acc, name) => {
-    const blob = new Blob([unzipped[name]]);
+    const blob = new Blob([unzipped[name] as Uint8Array<ArrayBuffer>]); // 型エラーを一時的に解消するために型アサーション。TS 5.9 での型の変更に伴うもので、fflate の定義が変更されれば不要になる
     acc[name] = { blob };
     return acc;
   }, {});

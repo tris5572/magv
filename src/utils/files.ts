@@ -77,9 +77,9 @@ export async function getFileList(
 
   for (const source of sourceList) {
     if (kind === "zip" || kind === "image") {
-    // ファイルではないときと、ピリオドから始まる特殊ファイル(.DS_Store 等)のときはスキップする
-    if (!source.isFile || source.name.startsWith(".")) {
-      continue;
+      // ファイルではないときと、ピリオドから始まる特殊ファイル(.DS_Store 等)のときはスキップする
+      if (!source.isFile || source.name.startsWith(".")) {
+        continue;
       }
     }
     if (kind === "directory") {
@@ -117,6 +117,19 @@ export async function dirFromPath(path: string): Promise<string> {
   }
 
   return path.split("/").slice(0, -1).join("/");
+}
+
+/**
+ * パスの親ディレクトリのパスを返す
+ *
+ * ファイルのパスが渡されたとき、そのファイルが含まれるディレクトリのさらに親ディレクトリを返す
+ */
+export async function parentDirPath(path: string): Promise<string | undefined> {
+  const st = await stat(path);
+  const target = st.isFile ? await dirFromPath(path) : path;
+  const result = target.split("/").slice(0, -1).join("/");
+  // 親ディレクトリが存在しないときは undefined を返す
+  return result === "" ? undefined : result;
 }
 
 /**

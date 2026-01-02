@@ -5,6 +5,7 @@ import {
   dirFromPath,
   getFileNameRemovedExtension,
   getPathKind,
+  parentDirPath,
 } from "./files";
 
 vi.mock("@tauri-apps/plugin-fs", () => {
@@ -69,6 +70,29 @@ describe("dirFromPath", () => {
 
   test("ファイルが指定されたら、その上位ディレクトリを返すこと", async () => {
     expect(await dirFromPath("/a/b/c.txt")).toBe("/a/b");
+  });
+});
+
+describe("parentDirPath", () => {
+  test("ディレクトリが指定されたら、その親ディレクトリを返すこと", async () => {
+    vi.mocked(stat).mockReturnValue(Promise.resolve({ isFile: false } as FileInfo));
+    expect(await parentDirPath("/a/b/c")).toBe("/a/b");
+    expect(await parentDirPath("/a/b")).toBe("/a");
+  });
+
+  test("ファイルが指定されたら、含まれるディレクトリの親ディレクトリを返すこと", async () => {
+    vi.mocked(stat).mockReturnValue(Promise.resolve({ isFile: true } as FileInfo));
+    expect(await parentDirPath("/a/b/c.txt")).toBe("/a");
+  });
+
+  test("親がないディレクトリが指定されたら、undefined を返すこと", async () => {
+    vi.mocked(stat).mockReturnValue(Promise.resolve({ isFile: false } as FileInfo));
+    expect(await parentDirPath("/a")).toBe(undefined);
+  });
+
+  test("親ディレクトリがないファイルが指定されたら、undefined を返すこと", async () => {
+    vi.mocked(stat).mockReturnValue(Promise.resolve({ isFile: true } as FileInfo));
+    expect(await parentDirPath("/a/b.txt")).toBe(undefined);
   });
 });
 

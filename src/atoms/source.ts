@@ -209,10 +209,10 @@ export const handleAppEvent = atom(
         set(moveFirstImageAtom);
         break;
       }
-      // case AppEvent.MOVE_LAST_PAGE: {
-      //   set(moveLastImageAtom);
-      //   break;
-      // }
+      case AppEvent.MOVE_LAST_PAGE: {
+        set(moveLastImageAtom);
+        break;
+      }
       // case AppEvent.SWITCH_NEXT_ARCHIVE: {
       //   set(openNextArchiveAtom);
       //   break;
@@ -504,6 +504,48 @@ const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) =>
  */
 const moveFirstImageAtom = atom(null, async (_, set) => {
   set(moveIndexAtom, { index: 0 });
+});
+
+/**
+ * 最後のページを表示する atom
+ *
+ * 最後の2枚が両方とも縦画像の場合、見開き表示する
+ */
+const moveLastImageAtom = atom(null, async (get, set) => {
+  const dataSource = get($openingSourceAtom);
+  const isSingleMode = get(singleOrDoubleAtom) === "single"; // 単体表示モードかどうか
+
+  if (!dataSource) {
+    return;
+  }
+
+  // 最後の2枚を取得する。name1 の方が若く、name2 が本当に最後
+  const lastIndex = dataSource.images.length - 1;
+  const index1 = lastIndex === 0 ? undefined : lastIndex - 1;
+
+  if (index1 === undefined) {
+    return; // 1枚しか画像が存在しない場合は何もしない
+  }
+
+  // 単体表示モードのときは、最後の2枚の縦横に関係なく、一番最後の画像を表示
+  if (isSingleMode) {
+    set(moveIndexAtom, { index: lastIndex, forceSingle: true });
+    return;
+  }
+
+  await set(updateImageDataAtom, [index1, lastIndex]);
+
+  // 1枚目と2枚目の両方が縦長のときは、見開きで2枚とも表示する
+  if (
+    dataSource.images[index1].orientation === "portrait" &&
+    dataSource.images[lastIndex].orientation === "portrait"
+  ) {
+    set(moveIndexAtom, { index: lastIndex - 1 });
+    return;
+  }
+
+  // その他のときは最後の画像のみを表示する
+  set(moveIndexAtom, { index: lastIndex });
 });
 
 /**

@@ -27,13 +27,6 @@ import {
 export const $openingSourceAtom = atom<DataSource | undefined>(undefined);
 
 /**
- * アーカイブ内のファイル名のリストを保持する atom
- *
- * export for testing
- */
-export const $imageNameListAtom = atom<string[]>([]);
-
-/**
  * 表示している画像ファイルのインデックスを保持する atom
  *
  * 見開き(2枚)表示時は、若い方のインデックス
@@ -54,19 +47,19 @@ const $openingSourcePathAtom = atom<string | undefined>();
  *
  * 「前」が存在しないときは `undefined`
  */
-const $prevSourcePathAtom = atom<string | undefined>();
+// const $prevSourcePathAtom = atom<string | undefined>();
 
 /**
  * 「次」のデータソースのパスを保持する atom
  *
  * 「次」が存在しないときは `undefined`
  */
-const $nextSourcePathAtom = atom<string | undefined>();
+// const $nextSourcePathAtom = atom<string | undefined>();
 
 /**
  * 対象フォルダ内にあるデータソースのリストを保持する atom
  */
-const $sourcePathListAtom = atom<string[]>([]);
+// const $sourcePathListAtom = atom<string[]>([]);
 
 /**
  * 各データソースで最後に開いた画像のインデックスを保持する atom
@@ -113,7 +106,6 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
     const fileList = await getFileList(path, "zip"); // 開くアーカイブと同じ階層にあるファイルのリスト
     const source = { images, siblings: fileList };
 
-    set($imageNameListAtom, fileNames);
     set($openingSourceAtom, source); // 初期化したデータを保持
     set(appModeAtom, "zip");
   } else {
@@ -306,7 +298,7 @@ export const moveIndexAtom = atom(
         });
       }
       // 最終ページに到達したときはスライドショーを停止
-      if (get($openingImageIndexAtom) === get($imageNameListAtom).length - 1) {
+      if (get($openingImageIndexAtom) === dataSource.images.length - 1) {
         set(stopSlideshowAtom);
       }
       return;
@@ -334,7 +326,7 @@ export const moveIndexAtom = atom(
         source2: dataSource.images[index2].source,
       });
       // 最終ページに到達したときはスライドショーを停止
-      if (get($imageNameListAtom).length - 2 <= get($openingImageIndexAtom)) {
+      if (dataSource.images.length - 2 <= get($openingImageIndexAtom)) {
         set(stopSlideshowAtom);
       }
       return;

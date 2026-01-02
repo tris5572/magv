@@ -241,10 +241,10 @@ export const handleAppEvent = atom(
       //   searchAtBrowser(get(openingArchivePathWithoutExtension));
       //   break;
       // }
-      // case AppEvent.UPDATE_PAGE: {
-      //   set(updatePageAtom);
-      //   break;
-      // }
+      case AppEvent.UPDATE_PAGE: {
+        set(updatePageAtom);
+        break;
+      }
     }
   }
 );
@@ -425,6 +425,20 @@ const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) =>
     }
   }
 });
+
+/**
+ * 現在のページの表示を更新する atom
+ *
+ * 表示モードを切り替えたときなどに呼び出す
+ */
+const updatePageAtom = atom(null, async (get, set) => {
+  const index = get($openingImageIndexAtom);
+  set(moveIndexAtom, { index });
+});
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// #region データ更新系
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**
  * 各データソースで、最後に開いた画像のインデックスを取得・更新する atom

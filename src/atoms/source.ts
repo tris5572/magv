@@ -205,14 +205,14 @@ export const handleAppEvent = atom(
         set(movePrevPageAtom);
         break;
       }
-      // case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
-      //   set(moveNextSingleImageAtom);
-      //   break;
-      // }
-      // case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
-      //   set(movePrevSingleImageAtom);
-      //   break;
-      // }
+      case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+        set(moveNextSingleImageAtom);
+        break;
+      }
+      case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+        set(movePrevSingleImageAtom);
+        break;
+      }
       // case AppEvent.MOVE_FIRST_PAGE: {
       //   set(moveFirstImageAtom);
       //   break;
@@ -427,25 +427,23 @@ const movePrevPageAtom = atom(null, async (get, set) => {
 
 /**
  * 1枚だけ次の画像に移動する atom
- *
- * export for testing
  */
 export const moveNextSingleImageAtom = atom(null, async (get, set) => {
-  const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
+  const dataSource = get($openingSourceAtom);
   const imageProperty = get(viewingImageAtom);
 
-  if (!imageProperty) {
+  if (!imageProperty || !dataSource) {
     return;
   }
 
   // 最後の画像を表示しているときは何もしない
-  if (imageList.length - 1 <= index) {
+  if (dataSource.images.length - 1 <= index) {
     return;
   }
 
   // 最後のページとして2枚表示されている場合は移動せず見開きのままとする
-  if (imageProperty.type === "double" && imageList.length - 2 <= index) {
+  if (imageProperty.type === "double" && dataSource.images.length - 2 <= index) {
     return;
   }
 

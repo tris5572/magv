@@ -30,9 +30,14 @@ export type ImageData = {
    */
   name: string;
   /**
-   * Blob に変換した画像データ
+   * 表示する画像のソース
+   *
+   * - 画像を Blob に変換したデータ
+   * - 画像のパス
+   *
+   * 表示処理の中で自動判定するため、まとめて保持可能
    */
-  blob: Blob;
+  source: Blob | string;
   /**
    * 画像の向き
    *

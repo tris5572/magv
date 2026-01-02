@@ -107,7 +107,7 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
     const images = [];
     for (const name of fileNames) {
       const blob = new Blob([unzipped[name] as Uint8Array<ArrayBuffer>]); // 型エラーを一時的に解消するために型アサーション。TS 5.9 での型の変更に伴うもので、fflate の定義が変更されれば不要になる
-      images.push({ name, blob, orientation: undefined });
+      images.push({ name, source: blob, orientation: undefined });
     }
     const fileList = await getFileList(path, "zip"); // 開くアーカイブと同じ階層にあるファイルのリスト
     const source = { images, siblings: fileList };
@@ -202,11 +202,11 @@ export const moveIndexAtom = atom(
     if (forceSingle || singleOrDouble === "single" || index2 === undefined) {
       await set(updateImageDataAtom, [index1]);
 
-      const blob = dataSource.images.at(index1)?.blob;
+      const blob = dataSource.images.at(index1)?.source;
       if (blob) {
         set(viewingImageAtom, {
           type: "single",
-          source: dataSource.images[index1].blob,
+          source: dataSource.images[index1].source,
         });
       }
       // 最終ページに到達したときはスライドショーを停止
@@ -220,7 +220,7 @@ export const moveIndexAtom = atom(
     if (dataSource.images[index1].orientation === "landscape") {
       set(viewingImageAtom, {
         type: "single",
-        source: dataSource.images[index1].blob,
+        source: dataSource.images[index1].source,
       });
       return;
     }
@@ -234,8 +234,8 @@ export const moveIndexAtom = atom(
     ) {
       set(viewingImageAtom, {
         type: "double",
-        source1: dataSource.images[index1].blob,
-        source2: dataSource.images[index2].blob,
+        source1: dataSource.images[index1].source,
+        source2: dataSource.images[index2].source,
       });
       // 最終ページに到達したときはスライドショーを停止
       if (get($imageNameListAtom).length - 2 <= get($openingImageIndexAtom)) {
@@ -247,7 +247,7 @@ export const moveIndexAtom = atom(
     // 1枚目が縦長で2枚目が横長のときは、1枚目のみを表示する
     set(viewingImageAtom, {
       type: "single",
-      source: dataSource.images[index1].blob,
+      source: dataSource.images[index1].source,
     });
   }
 );
@@ -317,7 +317,7 @@ const updateImageDataAtom = atom(
     if (isNumberArray(targets)) {
       // 画像のインデックスが指定されたときは、当該インデックスのデータを更新する
       for (const n of targets) {
-        source.images[n].orientation = await getImageOrientation(source.images[n].blob);
+        source.images[n].orientation = await getImageOrientation(source.images[n].source);
       }
     }
     // TODO: ファイル名を渡したときの処理

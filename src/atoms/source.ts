@@ -3,7 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import * as fflate from "fflate";
 import { atom } from "jotai";
 import type { DataSource, LastIndex } from "../types/data";
-import { getFileList, getPathKind } from "../utils/files";
+import { dirFromPath, getFileList, getPathKind } from "../utils/files";
 import { getImageOrientation } from "../utils/utils";
 import {
   appModeAtom,
@@ -114,19 +114,38 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
 
     set($imageNameListAtom, fileNames);
     set($openingSourceAtom, source); // 初期化したデータを保持
+    set(appModeAtom, "zip");
+  } else {
+    // フォルダまたは画像を開く場合
+    const fileList = await getFileList(path, "image"); // 画像ファイルの一覧を取得
+
+    if (fileList.length === 0) {
+      return; // ディレクトリ内に画像ファイルがない場合は何もしない
+    }
+
+    // 画像ファイル一覧を保持データへ変換
+    const images = [];
+    for (const name of fileList) {
+      images.push({ name, source: name, orientation: undefined });
+    }
+    const source = { images, siblings: fileList };
+
+    set($openingSourceAtom, source); // 初期化したデータを保持
+    set(appModeAtom, "image");
+
+    // パスで指定された画像ファイルの有無により表示画像を変える
+    const index = fileList.findIndex((file) => file === path);
+    const dirPath = await dirFromPath(path);
+    if (dirPath === path || index === -1) {
+      set(moveIndexAtom, { index: 0 });
+    } else {
+      set(moveIndexAtom, { index });
+    }
   }
 
-  // フォルダ内のアーカイブファイルのリストを更新
-  //   await set(updateArchiveListAtom, path);
-  //   set(setOpeningArchivePathAtom, path);
-
-  // ウィンドウを前面に出す
-  getCurrentWindow().setFocus();
-
-  set(appModeAtom, "zip");
-
-  // スライドショーを停止する
-  set(stopSlideshowAtom);
+  set(updateOpeningSourcePathAtom, path); // 保持するデータソースのパスとウィンドウのタイトルを更新
+  getCurrentWindow().setFocus(); // ウィンドウを前面に出す
+  set(stopSlideshowAtom); // スライドショーを停止する
 
   // 前後のアーカイブファイルのパスを更新して保持する
   //   const archiveList = get($archivePathListAtom);
@@ -251,6 +270,37 @@ export const moveIndexAtom = atom(
     });
   }
 );
+
+/**
+ * 現在開いているデータソースのパスをセットする atom
+ *
+ * データソースを新たに開いたときと、名前を変更したときに呼び出す際の共通処理として、以下の処理を行う
+ *
+ * - 保持しているパス情報の更新
+ * - ウィンドウタイトルの更新
+ *
+ * 呼び出し前に、開いているデータソースの種類をセットしておく必要がある
+ */
+const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) => {
+  const appMode = get(appModeAtom);
+
+  set($openingSourcePathAtom, path);
+
+  if (appMode === "zip") {
+    // アーカイブのファイル名をウィンドウのタイトルに設定
+    const zipName = path.split("/").pop();
+    if (zipName) {
+      getCurrentWindow().setTitle(zipName);
+    }
+  } else {
+    // ディレクトリ名をウィンドウのタイトルに設定
+    const dirPath = await dirFromPath(path);
+    const dirName = dirPath.split("/").pop();
+    if (dirName) {
+      getCurrentWindow().setTitle(dirName);
+    }
+  }
+});
 
 /**
  * 各データソースで、最後に開いた画像のインデックスを取得・更新する atom

@@ -11,6 +11,7 @@ import {
 } from "../atoms/app";
 import { handleEventAtom } from "../atoms/event";
 import { openImagePathAtom } from "../atoms/image";
+import { openFileAtom } from "../atoms/source";
 import { openZipAtom } from "../atoms/zip";
 import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { AppEvent } from "../types/event";
@@ -58,6 +59,7 @@ export function App() {
 function useEventListener() {
   const openZip = useSetAtom(openZipAtom);
   const openImage = useSetAtom(openImagePathAtom);
+  const openSource = useSetAtom(openFileAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreWindowConfig();
   const handleEvent = useSetAtom(handleEventAtom);
@@ -76,16 +78,22 @@ function useEventListener() {
     },
     [openImage, openZip]
   );
+  const handleDrop2 = useCallback(
+    async (path: string) => {
+      openSource(path);
+    },
+    [openSource]
+  );
 
   // ファイルをドロップしたときのリスナーを設定
   useEffect(() => {
     const unlisten = listen<{ paths: string[] }>("tauri://drag-drop", (event) => {
-      handleDrop(event.payload.paths[0]);
+      handleDrop2(event.payload.paths[0]);
     });
     return () => {
       unlisten.then((f) => f());
     };
-  }, [handleDrop]);
+  }, [handleDrop2]);
 
   // ウィンドウ移動のリスナーを設定
   useEffect(() => {

@@ -205,10 +205,10 @@ export const handleAppEvent = atom(
         set(movePrevSingleImageAtom);
         break;
       }
-      // case AppEvent.MOVE_FIRST_PAGE: {
-      //   set(moveFirstImageAtom);
-      //   break;
-      // }
+      case AppEvent.MOVE_FIRST_PAGE: {
+        set(moveFirstImageAtom);
+        break;
+      }
       // case AppEvent.MOVE_LAST_PAGE: {
       //   set(moveLastImageAtom);
       //   break;
@@ -497,6 +497,13 @@ const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) =>
       getCurrentWindow().setTitle(dirName);
     }
   }
+});
+
+/**
+ * 最初のページを表示する atom
+ */
+const moveFirstImageAtom = atom(null, async (_, set) => {
+  set(moveIndexAtom, { index: 0 });
 });
 
 /**

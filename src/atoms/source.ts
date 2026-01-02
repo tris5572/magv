@@ -3,6 +3,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import * as fflate from "fflate";
 import { atom } from "jotai";
 import type { DataSource, LastIndex } from "../types/data";
+import { AppEvent } from "../types/event";
 import { dirFromPath, getFileList, getPathKind } from "../utils/files";
 import { getImageOrientation } from "../utils/utils";
 import {
@@ -172,6 +173,82 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
   set(moveIndexAtom, { index });
 });
 
+/**
+ * 操作イベントを処理する atom
+ */
+export const handleAppEvent = atom(
+  null,
+  async (get, set, event: AppEvent | { event: AppEvent; payload: number | string }) => {
+    const singleOrDouble = get(singleOrDoubleAtom);
+
+    // if (typeof event === "object") {
+    //   if (event.event === AppEvent.RENAME_ARCHIVE) {
+    //     set(renameArchiveAtom, String(event.payload));
+    //   }
+    //   return;
+    // }
+
+    switch (event) {
+      case AppEvent.MOVE_NEXT_PAGE: {
+        if (singleOrDouble === "single") {
+          set(moveNextSingleImageAtom);
+          break;
+        }
+        set(moveNextPageAtom);
+        break;
+      }
+      // case AppEvent.MOVE_PREV_PAGE: {
+      //   if (singleOrDouble === "single") {
+      //     set(movePrevSingleImageAtom);
+      //     break;
+      //   }
+      //   set(movePrevPageAtom);
+      //   break;
+      // }
+      // case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
+      //   set(moveNextSingleImageAtom);
+      //   break;
+      // }
+      // case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
+      //   set(movePrevSingleImageAtom);
+      //   break;
+      // }
+      // case AppEvent.MOVE_FIRST_PAGE: {
+      //   set(moveFirstImageAtom);
+      //   break;
+      // }
+      // case AppEvent.MOVE_LAST_PAGE: {
+      //   set(moveLastImageAtom);
+      //   break;
+      // }
+      // case AppEvent.SWITCH_NEXT_ARCHIVE: {
+      //   set(openNextArchiveAtom);
+      //   break;
+      // }
+      // case AppEvent.SWITCH_PREV_ARCHIVE: {
+      //   set(openPrevArchiveAtom);
+      //   break;
+      // }
+      // case AppEvent.SWITCH_RANDOM_ARCHIVE: {
+      //   set(openRandomArchiveAtom);
+      //   break;
+      // }
+      // case AppEvent.ADD_EXCLAMATION_MARK: {
+      //   set(renameAddExclamationMarkAtom);
+      //   break;
+      // }
+      // case AppEvent.SEARCH_FILE_NAME: {
+      //   searchAtBrowser(get(openingArchivePathWithoutExtension));
+      //   break;
+      // }
+      // case AppEvent.UPDATE_PAGE: {
+      //   set(updatePageAtom);
+      //   break;
+      // }
+    }
+  }
+);
+
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region ページ移動系
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -270,6 +347,53 @@ export const moveIndexAtom = atom(
     });
   }
 );
+
+/**
+ * 次のページを表示する atom
+ *
+ * export for testing
+ */
+export const moveNextPageAtom = atom(null, async (get, set) => {
+  const openIndex = get($openingImageIndexAtom);
+  const imageData = get(viewingImageAtom);
+
+  if (!imageData) {
+    return;
+  }
+
+  // 現在の表示枚数を元に、次のインデックスを計算する
+  // 最終ページからのはみ出しは、呼び出された moveIndexAtom 側で判定して処理する
+  const index = imageData.type === "single" ? openIndex + 1 : openIndex + 2;
+
+  set(moveIndexAtom, { index });
+});
+
+/**
+ * 1枚だけ次の画像に移動する atom
+ *
+ * export for testing
+ */
+export const moveNextSingleImageAtom = atom(null, async (get, set) => {
+  const imageList = get($imageNameListAtom);
+  const index = get($openingImageIndexAtom);
+  const imageProperty = get(viewingImageAtom);
+
+  if (!imageProperty) {
+    return;
+  }
+
+  // 最後の画像を表示しているときは何もしない
+  if (imageList.length - 1 <= index) {
+    return;
+  }
+
+  // 最後のページとして2枚表示されている場合は移動せず見開きのままとする
+  if (imageProperty.type === "double" && imageList.length - 2 <= index) {
+    return;
+  }
+
+  set(moveIndexAtom, { index: index + 1 });
+});
 
 /**
  * 現在開いているデータソースのパスをセットする atom

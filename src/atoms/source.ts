@@ -7,6 +7,7 @@ import type { DataSource, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
 import {
   createExclamationAddedPath,
+  createRenamedPathToExcludeExtensionName,
   dirFromPath,
   getFileList,
   getFileNameRemovedExtension,
@@ -189,12 +190,12 @@ export const handleAppEvent = atom(
   async (get, set, event: AppEvent | { event: AppEvent; payload: number | string }) => {
     const singleOrDouble = get(singleOrDoubleAtom);
 
-    // if (typeof event === "object") {
-    //   if (event.event === AppEvent.RENAME_ARCHIVE) {
-    //     set(renameArchiveAtom, String(event.payload));
-    //   }
-    //   return;
-    // }
+    if (typeof event === "object") {
+      if (event.event === AppEvent.RENAME_ARCHIVE) {
+        set(renameSourceAtom, String(event.payload));
+      }
+      return;
+    }
 
     switch (event) {
       case AppEvent.MOVE_NEXT_PAGE: {
@@ -657,6 +658,47 @@ export const openingSourcePathWithoutExtension = atom((get) => {
     return "";
   }
   return getFileNameRemovedExtension(path);
+});
+
+/**
+ * 前のアーカイブファイル名（拡張子なし）を取得する atom
+ */
+export const prevSourceNameWithoutExtensionAtom = atom((get) => {
+  const path = get($prevSourcePathAtom);
+  if (!path) {
+    return "";
+  }
+  return getFileNameRemovedExtension(path);
+});
+
+/**
+ * 次のアーカイブファイル名（拡張子なし）を取得する atom
+ */
+export const nextSourceNameWithoutExtensionAtom = atom((get) => {
+  const path = get($nextSourcePathAtom);
+  if (!path) {
+    return "";
+  }
+  return getFileNameRemovedExtension(path);
+});
+
+/**
+ * 開いているデータソースをリネームする atom
+ *
+ * TODO: フォルダを開いているときにリネーム可能とする。現状、リネーム後の名前生成処理で拡張子がない場合が不正となるため、event.ts でリネーム不可としている。
+ */
+const renameSourceAtom = atom(null, async (get, set, name: string) => {
+  const beforePath = get($openingSourcePathAtom);
+
+  if (!beforePath) {
+    return;
+  }
+
+  const newPath = await createRenamedPathToExcludeExtensionName(beforePath, name);
+
+  // リネームして、変更後のファイル名を開いていることにする
+  rename(beforePath, newPath);
+  set(updateOpeningSourcePathAtom, newPath);
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

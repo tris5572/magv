@@ -4,7 +4,7 @@ import * as fflate from "fflate";
 import { atom } from "jotai";
 import type { DataSource, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
-import { dirFromPath, getFileList, getPathKind } from "../utils/files";
+import { dirFromPath, getFileList, getPathKind, parentDirPath } from "../utils/files";
 import { getImageOrientation } from "../utils/utils";
 import {
   appModeAtom,
@@ -47,19 +47,14 @@ const $openingSourcePathAtom = atom<string | undefined>();
  *
  * 「前」が存在しないときは `undefined`
  */
-// const $prevSourcePathAtom = atom<string | undefined>();
+const $prevSourcePathAtom = atom<string | undefined>();
 
 /**
  * 「次」のデータソースのパスを保持する atom
  *
  * 「次」が存在しないときは `undefined`
  */
-// const $nextSourcePathAtom = atom<string | undefined>();
-
-/**
- * 対象フォルダ内にあるデータソースのリストを保持する atom
- */
-// const $sourcePathListAtom = atom<string[]>([]);
+const $nextSourcePathAtom = atom<string | undefined>();
 
 /**
  * 各データソースで最後に開いた画像のインデックスを保持する atom
@@ -114,6 +109,7 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
 
     if (fileList.length === 0) {
       return; // ディレクトリ内に画像ファイルがない場合は何もしない
+      // TODO: 前後のデータソースに移動後、フォルダ内に画像ファイルが存在しないときの挙動を検討
     }
 
     // 画像ファイル一覧を保持データへ変換
@@ -121,7 +117,9 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
     for (const name of fileList) {
       images.push({ name, source: name, orientation: undefined });
     }
-    const source = { images, siblings: fileList };
+    const parent = await parentDirPath(path);
+    const siblings = parent != undefined ? await getFileList(parent, "directory") : [];
+    const source = { images, siblings };
 
     set($openingSourceAtom, source); // 初期化したデータを保持
     set(appModeAtom, "image");
@@ -140,17 +138,27 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
   getCurrentWindow().setFocus(); // ウィンドウを前面に出す
   set(stopSlideshowAtom); // スライドショーを停止する
 
-  // 前後のアーカイブファイルのパスを更新して保持する
-  //   const archiveList = get($archivePathListAtom);
-  //   const archiveIndex = archiveList.findIndex((p) => p === path); // 現在のアーカイブのインデックスを探す
-  //   if (archiveIndex !== -1) {
-  //     // 現在のアーカイブが見付かったときのみ保持する（基本的に見付かるはず）
-  //     // 前後のファイルが存在しないときは、自動的に undefined が入るので気にしない
-  //     const prevPath = archiveList[archiveIndex - 1];
-  //     const nextPath = archiveList[archiveIndex + 1];
-  //     set($prevArchivePathAtom, prevPath);
-  //     set($nextArchivePathAtom, nextPath);
-  //   }
+  // 前後のデータソースのパスを更新して保持する
+  const dataSource = get($openingSourceAtom);
+  const appMode = get(appModeAtom);
+  if (dataSource) {
+    const siblings = dataSource.siblings;
+    // 前後の基準となる、現在開いているデータソースのパス
+    const target =
+      appMode === "zip"
+        ? path // アーカイブを開いているときは、そのアーカイブ
+        : await dirFromPath(path); // 画像を直接開いたときは、画像ではなくディレクトリのパスを見る必要がある
+    const index = siblings.findIndex((p) => p === target); // 兄弟の中で、現在のデータソースのインデックスを探す
+
+    if (index !== -1) {
+      // 現在のデータソースが見つかったときのみ保持する（基本的に見つかるはず）
+      // 前後のファイルが存在しないときは undefined をセットする
+      const prevPath = siblings[index - 1];
+      const nextPath = siblings[index + 1];
+      set($prevSourcePathAtom, prevPath);
+      set($nextSourcePathAtom, nextPath);
+    }
+  }
 
   // リネームビューを閉じる
   // リネームビューを開いている状態で、テキストフィールドからフォーカスを外してアーカイブ移動（カーソル上下）したとき、
@@ -213,14 +221,14 @@ export const handleAppEvent = atom(
         set(moveLastImageAtom);
         break;
       }
-      // case AppEvent.SWITCH_NEXT_ARCHIVE: {
-      //   set(openNextArchiveAtom);
-      //   break;
-      // }
-      // case AppEvent.SWITCH_PREV_ARCHIVE: {
-      //   set(openPrevArchiveAtom);
-      //   break;
-      // }
+      case AppEvent.SWITCH_NEXT_ARCHIVE: {
+        set(openNextSourceAtom);
+        break;
+      }
+      case AppEvent.SWITCH_PREV_ARCHIVE: {
+        set(openPrevSourceAtom);
+        break;
+      }
       // case AppEvent.SWITCH_RANDOM_ARCHIVE: {
       //   set(openRandomArchiveAtom);
       //   break;
@@ -469,37 +477,6 @@ export const movePrevSingleImageAtom = atom(null, async (get, set) => {
 });
 
 /**
- * 現在開いているデータソースのパスをセットする atom
- *
- * データソースを新たに開いたときと、名前を変更したときに呼び出す際の共通処理として、以下の処理を行う
- *
- * - 保持しているパス情報の更新
- * - ウィンドウタイトルの更新
- *
- * 呼び出し前に、開いているデータソースの種類をセットしておく必要がある
- */
-const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) => {
-  const appMode = get(appModeAtom);
-
-  set($openingSourcePathAtom, path);
-
-  if (appMode === "zip") {
-    // アーカイブのファイル名をウィンドウのタイトルに設定
-    const zipName = path.split("/").pop();
-    if (zipName) {
-      getCurrentWindow().setTitle(zipName);
-    }
-  } else {
-    // ディレクトリ名をウィンドウのタイトルに設定
-    const dirPath = await dirFromPath(path);
-    const dirName = dirPath.split("/").pop();
-    if (dirName) {
-      getCurrentWindow().setTitle(dirName);
-    }
-  }
-});
-
-/**
  * 最初のページを表示する atom
  */
 const moveFirstImageAtom = atom(null, async (_, set) => {
@@ -556,6 +533,57 @@ const moveLastImageAtom = atom(null, async (get, set) => {
 const updatePageAtom = atom(null, async (get, set) => {
   const index = get($openingImageIndexAtom);
   set(moveIndexAtom, { index });
+});
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// #region データソース操作系
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+/**
+ * 次のデータソースを開く
+ */
+const openNextSourceAtom = atom(null, async (get, set) => {
+  const path = get($nextSourcePathAtom);
+  set(openFileAtom, path);
+});
+
+/**
+ * 前のデータソースを開く
+ */
+const openPrevSourceAtom = atom(null, async (get, set) => {
+  const path = get($prevSourcePathAtom);
+  set(openFileAtom, path);
+});
+
+/**
+ * 現在開いているデータソースのパスをセットする atom
+ *
+ * データソースを新たに開いたときと、名前を変更したときに呼び出す際の共通処理として、以下の処理を行う
+ *
+ * - 保持しているパス情報の更新
+ * - ウィンドウタイトルの更新
+ *
+ * 呼び出し前に、開いているデータソースの種類をセットしておく必要がある
+ */
+const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) => {
+  const appMode = get(appModeAtom);
+
+  set($openingSourcePathAtom, path);
+
+  if (appMode === "zip") {
+    // アーカイブのファイル名をウィンドウのタイトルに設定
+    const zipName = path.split("/").pop();
+    if (zipName) {
+      getCurrentWindow().setTitle(zipName);
+    }
+  } else {
+    // ディレクトリ名をウィンドウのタイトルに設定
+    const dirPath = await dirFromPath(path);
+    const dirName = dirPath.split("/").pop();
+    if (dirName) {
+      getCurrentWindow().setTitle(dirName);
+    }
+  }
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

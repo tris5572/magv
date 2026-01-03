@@ -1,5 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { exists } from "@tauri-apps/plugin-fs";
 import * as fflate from "fflate";
 import { atom } from "jotai";
 import type { DataSource, LastIndex } from "../types/data";
@@ -229,10 +230,10 @@ export const handleAppEvent = atom(
         set(openPrevSourceAtom);
         break;
       }
-      // case AppEvent.SWITCH_RANDOM_ARCHIVE: {
-      //   set(openRandomArchiveAtom);
-      //   break;
-      // }
+      case AppEvent.SWITCH_RANDOM_ARCHIVE: {
+        set(openRandomSourceAtom);
+        break;
+      }
       // case AppEvent.ADD_EXCLAMATION_MARK: {
       //   set(renameAddExclamationMarkAtom);
       //   break;
@@ -553,6 +554,42 @@ const openNextSourceAtom = atom(null, async (get, set) => {
 const openPrevSourceAtom = atom(null, async (get, set) => {
   const path = get($prevSourcePathAtom);
   set(openFileAtom, path);
+});
+
+/**
+ * 開いているデータソースがあるフォルダ内にある、別のランダムなデータソースを開く
+ *
+ * - 現在開いているデータソースと同じものは開かない
+ * - データソースの数が少なくて極端に運が悪い場合、ごく稀に失敗することがある
+ */
+const openRandomSourceAtom = atom(null, async (get, set) => {
+  const dataSource = get($openingSourceAtom);
+  const currentPath = get($openingSourcePathAtom);
+  if (!dataSource || !currentPath) {
+    return;
+  }
+  const sourceList = dataSource?.siblings;
+
+  // アーカイブファイルのリストから、現在開いているファイルを取り除く
+  const list = sourceList.filter((path) => path !== currentPath);
+  if (list.length === 0) {
+    return; // ディレクトリ内が現在のアーカイブのみだった場合は何もしない
+  }
+
+  // ランダムなファイル選択を規定回数行う
+  // ループしているのは、選んだファイルが移動・削除されている可能性があるため
+  // 回数を制限しているのは、全ファイルが削除されているような場合に無限ループになるのを防ぐため
+  let count = 0;
+  while (count < 100) {
+    count++;
+    const index = Math.floor(Math.random() * list.length);
+    const path = list[index];
+    if (path !== currentPath && (await exists(path))) {
+      set(openFileAtom, path);
+      return;
+    }
+  }
+  // TODO: 開けなかった場合にメッセージを表示する
 });
 
 /**

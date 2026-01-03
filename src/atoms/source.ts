@@ -30,19 +30,15 @@ import {
 
 /**
  * 開いているデータソースを保持する atom
- *
- * export for testing
  */
-export const $openingSourceAtom = atom<DataSource | undefined>(undefined);
+const $openingSourceAtom = atom<DataSource | undefined>(undefined);
 
 /**
  * 表示している画像ファイルのインデックスを保持する atom
  *
  * 見開き(2枚)表示時は、若い方のインデックス
- *
- * export for testing
  */
-export const $openingImageIndexAtom = atom<number>(0);
+const $openingImageIndexAtom = atom<number>(0);
 
 /**
  * 現在開いているデータソースのパスを保持する atom
@@ -363,10 +359,8 @@ export const moveIndexAtom = atom(
 
 /**
  * 次のページを表示する atom
- *
- * export for testing
  */
-export const moveNextPageAtom = atom(null, async (get, set) => {
+const moveNextPageAtom = atom(null, async (get, set) => {
   const openIndex = get($openingImageIndexAtom);
   const imageData = get(viewingImageAtom);
 
@@ -441,7 +435,7 @@ const movePrevPageAtom = atom(null, async (get, set) => {
 /**
  * 1枚だけ次の画像に移動する atom
  */
-export const moveNextSingleImageAtom = atom(null, async (get, set) => {
+const moveNextSingleImageAtom = atom(null, async (get, set) => {
   const index = get($openingImageIndexAtom);
   const dataSource = get($openingSourceAtom);
   const imageProperty = get(viewingImageAtom);
@@ -467,10 +461,8 @@ export const moveNextSingleImageAtom = atom(null, async (get, set) => {
  * 1枚だけ前の画像へ移動する atom
  *
  * 見開き状態等に関係なく、インデックスを1つだけ前に移動する
- *
- * export for testing
  */
-export const movePrevSingleImageAtom = atom(null, async (get, set) => {
+const movePrevSingleImageAtom = atom(null, async (get, set) => {
   // const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const dataSource = get($openingSourceAtom);

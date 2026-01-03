@@ -137,7 +137,7 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
   // 保持するデータソースのパスとウィンドウのタイトルを更新
   if (kind === "image") {
     set(updateOpeningSourcePathAtom, await dirFromPath(path)); // 画像を開いたときは、開いたインデックスの保存のために、そのディレクトリを保存する
-    } else {
+  } else {
     set(updateOpeningSourcePathAtom, path);
   }
 
@@ -821,38 +821,20 @@ const lastOpenIndexAtom = atom(
 /**
  * 画像を表示する前に、画像のデータを更新する atom
  */
-const updateImageDataAtom = atom(
-  null,
-  async (get, set, targets: number[] | string[] | undefined) => {
-    if (!targets) {
-      return;
-    }
-
-    // const t = targets[0];
-    // if (!t) {
-    //   return;
-    // }
-
-    const source = get($openingSourceAtom);
-    if (!source) {
-      return;
-    }
-
-    if (isNumberArray(targets)) {
-      // 画像のインデックスが指定されたときは、当該インデックスのデータを更新する
-      for (const n of targets) {
-        source.images[n].orientation = await getImageOrientation(source.images[n].source);
-      }
-    }
-    // TODO: ファイル名を渡したときの処理
-
-    set($openingSourceAtom, source);
+const updateImageDataAtom = atom(null, async (get, set, targets: number[] | undefined) => {
+  if (!targets) {
+    return;
   }
-);
 
-/**
- * 型ガード
- */
-function isNumberArray(value: unknown): value is number[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "number");
-}
+  const source = get($openingSourceAtom);
+  if (!source) {
+    return;
+  }
+
+  // 画像のインデックスが指定されたときは、当該インデックスのデータを更新する
+  for (const n of targets) {
+    source.images[n].orientation = await getImageOrientation(source.images[n].source);
+  }
+
+  set($openingSourceAtom, source);
+});

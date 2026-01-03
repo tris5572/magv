@@ -1,11 +1,17 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { exists } from "@tauri-apps/plugin-fs";
+import { exists, rename } from "@tauri-apps/plugin-fs";
 import * as fflate from "fflate";
 import { atom } from "jotai";
 import type { DataSource, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
-import { dirFromPath, getFileList, getPathKind, parentDirPath } from "../utils/files";
+import {
+  createExclamationAddedPath,
+  dirFromPath,
+  getFileList,
+  getPathKind,
+  parentDirPath,
+} from "../utils/files";
 import { getImageOrientation } from "../utils/utils";
 import {
   appModeAtom,
@@ -234,10 +240,10 @@ export const handleAppEvent = atom(
         set(openRandomSourceAtom);
         break;
       }
-      // case AppEvent.ADD_EXCLAMATION_MARK: {
-      //   set(renameAddExclamationMarkAtom);
-      //   break;
-      // }
+      case AppEvent.ADD_EXCLAMATION_MARK: {
+        set(renameAddExclamationMarkAtom);
+        break;
+      }
       // case AppEvent.SEARCH_FILE_NAME: {
       //   searchAtBrowser(get(openingArchivePathWithoutExtension));
       //   break;
@@ -621,6 +627,24 @@ const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) =>
       getCurrentWindow().setTitle(dirName);
     }
   }
+});
+
+/**
+ * 現在開いているデータソースに対して、名前の先頭にエクスクラメーションマークを付与してリネームする
+ */
+const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
+  const path = get($openingSourcePathAtom);
+
+  // ファイルを開いていないときは何もしない
+  if (!path) {
+    return;
+  }
+
+  // ファイル名にエクスクラメーションマークを付与してリネーム
+  const newPath = await createExclamationAddedPath(path);
+  // リネームして、変更後のファイル名を開いていることにする
+  rename(path, newPath);
+  set(updateOpeningSourcePathAtom, newPath);
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

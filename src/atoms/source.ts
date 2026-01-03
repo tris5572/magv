@@ -132,18 +132,15 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
 
     set($openingSourceAtom, source); // 初期化したデータを保持
     set(appModeAtom, "image");
-
-    // パスで指定された画像ファイルの有無により表示画像を変える
-    const index = fileList.findIndex((file) => file === path);
-    const dirPath = await dirFromPath(path);
-    if (dirPath === path || index === -1) {
-      set(moveIndexAtom, { index: 0 });
-    } else {
-      set(moveIndexAtom, { index });
-    }
   }
 
-  set(updateOpeningSourcePathAtom, path); // 保持するデータソースのパスとウィンドウのタイトルを更新
+  // 保持するデータソースのパスとウィンドウのタイトルを更新
+  if (kind === "image") {
+    set(updateOpeningSourcePathAtom, await dirFromPath(path)); // 画像を開いたときは、開いたインデックスの保存のために、そのディレクトリを保存する
+    } else {
+    set(updateOpeningSourcePathAtom, path);
+  }
+
   getCurrentWindow().setFocus(); // ウィンドウを前面に出す
   set(stopSlideshowAtom); // スライドショーを停止する
 
@@ -174,9 +171,16 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
   // テキストフィールドの内容と実際のファイルとの紐付けがゴチャゴチャになるので、一旦閉じる
   set(isOpeningRenameViewAtom, false);
 
-  // 当該アーカイブを最後に開いていたときのインデックスを取得
-  // 初めて開く場合は 0
-  const index = get(lastOpenIndexAtom);
+  // 当該アーカイブを最後に開いていたときのインデックスを取得。初めて開く場合は 0
+  let index = get(lastOpenIndexAtom);
+  // 画像を直接指定して開いた場合は、そのインデックス
+  if (kind === "image") {
+    const paths = dataSource?.images.map((v) => v.source) ?? [];
+    const idx = paths.findIndex((file) => file === path);
+    if (idx !== -1) {
+      index = idx;
+    }
+  }
 
   // ページを表示
   set(moveIndexAtom, { index });

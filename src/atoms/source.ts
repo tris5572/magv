@@ -9,10 +9,11 @@ import {
   createExclamationAddedPath,
   dirFromPath,
   getFileList,
+  getFileNameRemovedExtension,
   getPathKind,
   parentDirPath,
 } from "../utils/files";
-import { getImageOrientation } from "../utils/utils";
+import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import {
   appModeAtom,
   isOpeningRenameViewAtom,
@@ -244,10 +245,10 @@ export const handleAppEvent = atom(
         set(renameAddExclamationMarkAtom);
         break;
       }
-      // case AppEvent.SEARCH_FILE_NAME: {
-      //   searchAtBrowser(get(openingArchivePathWithoutExtension));
-      //   break;
-      // }
+      case AppEvent.SEARCH_FILE_NAME: {
+        searchAtBrowser(get(openingSourcePathWithoutExtension));
+        break;
+      }
       case AppEvent.UPDATE_PAGE: {
         set(updatePageAtom);
         break;
@@ -645,6 +646,17 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
   // リネームして、変更後のファイル名を開いていることにする
   rename(path, newPath);
   set(updateOpeningSourcePathAtom, newPath);
+});
+
+/**
+ * 開いているデータソースのパスから、拡張子を取り除いた名前を取得する atom
+ */
+export const openingSourcePathWithoutExtension = atom((get) => {
+  const path = get($openingSourcePathAtom);
+  if (!path) {
+    return "";
+  }
+  return getFileNameRemovedExtension(path);
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

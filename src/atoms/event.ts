@@ -9,8 +9,7 @@ import {
   pageDirectionAtom,
 } from "./app";
 import { keyboardConfigAtom } from "./config";
-import { handleAppEvent as handleEventImage } from "./image";
-import { handleAppEvent as handleEventZip } from "./zip";
+import { handleAppEvent } from "./source";
 
 /**
  * イベントを処理する atom
@@ -30,9 +29,6 @@ export const handleEventAtom = atom<
   const appMode = get(appModeAtom);
   const pageDirection = get(pageDirectionAtom);
 
-  // アプリの動作モード(開いている種類)によりイベント送信先を切り替える
-  const eventHandleAtom = appMode === "zip" ? handleEventZip : handleEventImage;
-
   if (event instanceof KeyboardEvent) {
     const ev = convertKeyboardEvent(event, keyboardConfig, pageDirection);
     if (ev) {
@@ -40,15 +36,15 @@ export const handleEventAtom = atom<
         // 画像表示モードのときはリネームビューを表示しない
         set(isOpeningRenameViewAtom, !openingRenameView);
       } else {
-        set(eventHandleAtom, ev);
+        set(handleAppEvent, ev);
       }
     }
   } else if (event instanceof WheelEvent) {
     // TODO: ホイールイベントはページ移動のみに決め打ちしているので、カスタマイズ可能にする
     if (0 < event.deltaY) {
-      set(eventHandleAtom, AppEvent.MOVE_NEXT_PAGE);
+      set(handleAppEvent, AppEvent.MOVE_NEXT_PAGE);
     } else if (event.deltaY < 0) {
-      set(eventHandleAtom, AppEvent.MOVE_PREV_PAGE);
+      set(handleAppEvent, AppEvent.MOVE_PREV_PAGE);
     }
   } else if (event instanceof MouseEvent) {
     // ホイールがクリックされたときは、ルーペの有効/無効を切り替える
@@ -57,7 +53,7 @@ export const handleEventAtom = atom<
     }
   } else {
     // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する
-    set(eventHandleAtom, event);
+    set(handleAppEvent, event);
   }
 });
 

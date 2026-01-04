@@ -2,15 +2,10 @@ import { atom } from "jotai";
 import { AppViewMode } from "../types/app";
 import { type ViewImageMode } from "../types/image";
 import {
-  isFirstPageAtom as isImageFirstPageAtom,
-  isLastPageAtom as isImageLastPageAtom,
-  isOpenImageAtom,
-} from "./image";
-import {
-  isFirstPageAtom as isZipFirstPageAtom,
-  isLastPageAtom as isZipLastPageAtom,
-  isOpenZipAtom,
-} from "./zip";
+  isFirstPageAtom as isSourceFirstPageAtom,
+  isLastPageAtom as isSourceLastPageAtom,
+  isOpenSourceAtom,
+} from "./source";
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 アプリケーション全体の状態を管理する atom を集めたファイル
@@ -72,8 +67,7 @@ export const pageDirectionAtom = atom<"right" | "left">("left");
  * 画像を表示しているかどうかを取得する atom
  */
 export const isOpenPageAtom = atom((get) => {
-  const mode = get(appModeAtom);
-  return mode === "zip" ? get(isOpenZipAtom) : get(isOpenImageAtom);
+  return get(isOpenSourceAtom);
 });
 
 /**
@@ -82,8 +76,7 @@ export const isOpenPageAtom = atom((get) => {
  * 画像を表示していないときは false を返す
  */
 export const isFirstPageAtom = atom((get) => {
-  const mode = get(appModeAtom);
-  return mode === "zip" ? get(isZipFirstPageAtom) : get(isImageFirstPageAtom);
+  return get(isSourceFirstPageAtom);
 });
 
 /**
@@ -92,8 +85,7 @@ export const isFirstPageAtom = atom((get) => {
  * 画像を表示していないときは false を返す
  */
 export const isLastPageAtom = atom((get) => {
-  const mode = get(appModeAtom);
-  return mode === "zip" ? get(isZipLastPageAtom) : get(isImageLastPageAtom);
+  return get(isSourceLastPageAtom);
 });
 
 /**

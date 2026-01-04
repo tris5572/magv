@@ -3,10 +3,10 @@ import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { isOpeningRenameViewAtom } from "../atoms/app";
 import {
   handleAppEvent,
-  nextArchiveNameWithoutExtensionAtom,
-  openingArchivePathWithoutExtension,
-  prevArchiveNameWithoutExtensionAtom,
-} from "../atoms/zip";
+  nextSourceNameWithoutExtensionAtom,
+  openingSourcePathWithoutExtension,
+  prevSourceNameWithoutExtensionAtom,
+} from "../atoms/source";
 import { AppEvent } from "../types/event";
 
 /** リネームボックスのスタイル */
@@ -50,9 +50,9 @@ export function RenameBox() {
   const [isComposing, setIsComposing] = useState(false); // 変換中かどうか
   const setIsOpeningView = useSetAtom(isOpeningRenameViewAtom);
   const inputRef = useRef<HTMLInputElement>(null);
-  const defaultValue = useAtomValue(openingArchivePathWithoutExtension);
-  const prevFileName = useAtomValue(prevArchiveNameWithoutExtensionAtom);
-  const nextFileName = useAtomValue(nextArchiveNameWithoutExtensionAtom);
+  const defaultValue = useAtomValue(openingSourcePathWithoutExtension);
+  const prevFileName = useAtomValue(prevSourceNameWithoutExtensionAtom);
+  const nextFileName = useAtomValue(nextSourceNameWithoutExtensionAtom);
   const handleZip = useSetAtom(handleAppEvent);
 
   // 表示したとき、テキストボックスにフォーカスを当てて中身を選択する

@@ -10,11 +10,9 @@ import {
   singleOrDoubleAtom,
 } from "../atoms/app";
 import { handleEventAtom } from "../atoms/event";
-import { openImagePathAtom } from "../atoms/image";
-import { openZipAtom } from "../atoms/zip";
+import { openFileAtom } from "../atoms/source";
 import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { AppEvent } from "../types/event";
-import { getPathKind } from "../utils/files";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { Log } from "./Log";
@@ -56,8 +54,7 @@ export function App() {
  * App コンポーネントのイベントリスナーを登録するカスタムフック
  */
 function useEventListener() {
-  const openZip = useSetAtom(openZipAtom);
-  const openImage = useSetAtom(openImagePathAtom);
+  const openSource = useSetAtom(openFileAtom);
   const { windowResized, windowMoved } = useWindowEvent();
   const storeConfig = useStoreWindowConfig();
   const handleEvent = useSetAtom(handleEventAtom);
@@ -65,16 +62,9 @@ function useEventListener() {
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
     async (path: string) => {
-      const kind = await getPathKind(path);
-      if (kind === "zip") {
-        openZip(path);
-      } else if (kind === "image") {
-        openImage(path);
-      } else if (kind === "directory") {
-        openImage(path);
-      }
+      openSource(path);
     },
-    [openImage, openZip]
+    [openSource]
   );
 
   // ファイルをドロップしたときのリスナーを設定

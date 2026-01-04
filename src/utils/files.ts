@@ -60,22 +60,33 @@ export function getFileNameRemovedExtension(path: string): string {
 }
 
 /**
- * 指定された path を元に、kind の種類のファイルのリストを返す
+ * 指定されたディレクトリの中で、kind の種類のファイルのリストを返す
  *
- * path がファイルの場合は、そのディレクトリ内のリストを返す
+ * ファイルが指定された場合は、そのファイルが存在するディレクトリ内のリストを返す
  *
  * 再帰的な読み込みは行わない
  */
-export async function getFileList(path: string, kind: "zip" | "image"): Promise<string[]> {
+export async function getFileList(
+  path: string,
+  kind: "zip" | "image" | "directory"
+): Promise<string[]> {
   const dir = await dirFromPath(path);
 
-  // zip ファイルのみを抽出する
   const sourceList = await readDir(dir);
   const array = [];
+
   for (const source of sourceList) {
-    // ファイルではないときと、ピリオドから始まる特殊ファイル(.DS_Store 等)のときはスキップする
-    if (!source.isFile || source.name.startsWith(".")) {
-      continue;
+    if (kind === "zip" || kind === "image") {
+      // ファイルではないときと、ピリオドから始まる特殊ファイル(.DS_Store 等)のときはスキップする
+      if (!source.isFile || source.name.startsWith(".")) {
+        continue;
+      }
+    }
+    if (kind === "directory") {
+      // ディレクトリではないときはスキップする
+      if (!source.isDirectory) {
+        continue;
+      }
     }
     const name = source.name;
     const target = dir + "/" + name; //ここで @tauri-apps/api/path の join(dir, name) を使うととても遅い
@@ -106,6 +117,19 @@ export async function dirFromPath(path: string): Promise<string> {
   }
 
   return path.split("/").slice(0, -1).join("/");
+}
+
+/**
+ * パスの親ディレクトリのパスを返す
+ *
+ * ファイルのパスが渡されたとき、そのファイルが含まれるディレクトリのさらに親ディレクトリを返す
+ */
+export async function parentDirPath(path: string): Promise<string | undefined> {
+  const st = await stat(path);
+  const target = st.isFile ? await dirFromPath(path) : path;
+  const result = target.split("/").slice(0, -1).join("/");
+  // 親ディレクトリが存在しないときは undefined を返す
+  return result === "" ? undefined : result;
 }
 
 /**

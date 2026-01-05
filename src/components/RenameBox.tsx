@@ -73,7 +73,7 @@ export function RenameBox() {
         return;
       }
       // ファイル名変更イベントを発火し、リネームビューを閉じる
-      handleZip({ event: AppEvent.RENAME_ARCHIVE, payload: value });
+      handleZip({ event: AppEvent.RENAME_SOURCE, payload: value });
       setIsOpeningView(false);
     }
     // Esc 押下時（変換中以外）は、変更を反映せずに閉じる

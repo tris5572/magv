@@ -191,7 +191,7 @@ export const handleAppEvent = atom(
     const singleOrDouble = get(singleOrDoubleAtom);
 
     if (typeof event === "object") {
-      if (event.event === AppEvent.RENAME_ARCHIVE) {
+      if (event.event === AppEvent.RENAME_SOURCE) {
         set(renameSourceAtom, String(event.payload));
       }
       return;
@@ -230,15 +230,15 @@ export const handleAppEvent = atom(
         set(moveLastImageAtom);
         break;
       }
-      case AppEvent.SWITCH_NEXT_ARCHIVE: {
+      case AppEvent.SWITCH_NEXT_SOURCE: {
         set(openNextSourceAtom);
         break;
       }
-      case AppEvent.SWITCH_PREV_ARCHIVE: {
+      case AppEvent.SWITCH_PREV_SOURCE: {
         set(openPrevSourceAtom);
         break;
       }
-      case AppEvent.SWITCH_RANDOM_ARCHIVE: {
+      case AppEvent.SWITCH_RANDOM_SOURCE: {
         set(openRandomSourceAtom);
         break;
       }

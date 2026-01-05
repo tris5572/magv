@@ -11,20 +11,20 @@ export const AppEvent = {
   MOVE_FIRST_PAGE: "MOVE_FIRST_PAGE",
   /** 最後の画像へ移動する */
   MOVE_LAST_PAGE: "MOVE_LAST_PAGE",
-  /** 次のアーカイブファイルへ切り替える */
-  SWITCH_NEXT_ARCHIVE: "SWITCH_NEXT_ARCHIVE",
-  /** 前のアーカイブファイルへ切り替える */
-  SWITCH_PREV_ARCHIVE: "SWITCH_PREV_ARCHIVE",
-  /** ランダムなアーカイブファイルへ切り替える */
-  SWITCH_RANDOM_ARCHIVE: "SWITCH_RANDOM_ARCHIVE",
+  /** 次のデータソースへ切り替える */
+  SWITCH_NEXT_SOURCE: "SWITCH_NEXT_SOURCE",
+  /** 前のデータソースへ切り替える */
+  SWITCH_PREV_SOURCE: "SWITCH_PREV_SOURCE",
+  /** ランダムなデータソースへ切り替える */
+  SWITCH_RANDOM_SOURCE: "SWITCH_RANDOM_SOURCE",
   /** ファイル名の先頭にビックリマークを付与する */
   ADD_EXCLAMATION_MARK: "ADD_EXCLAMATION_MARK",
   /** リネーム入力ビューを表示する */
   OPEN_RENAME_VIEW: "OPEN_RENAME_VIEW",
   /** リネーム入力ビューを閉じる */
   CLOSE_RENAME_VIEW: "CLOSE_RENAME_VIEW",
-  /** アーカイブファイルをリネームする */
-  RENAME_ARCHIVE: "RENAME_ARCHIVE",
+  /** データソースをリネームする */
+  RENAME_SOURCE: "RENAME_SOURCE",
   /** ファイル名で検索する */
   SEARCH_FILE_NAME: "SEARCH_FILE_NAME",
   /** 現在のページの表示を更新する（ページを切り替えない） */

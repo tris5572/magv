@@ -14,7 +14,7 @@ import {
   getPathKind,
   parentDirPath,
 } from "../utils/files";
-import { movePrevSingleImage } from "../utils/pages";
+import { moveNextSingleImage, movePrevSingleImage } from "../utils/pages";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import {
   appModeAtom,
@@ -441,21 +441,11 @@ const moveNextSingleImageAtom = atom(null, async (get, set) => {
   const dataSource = get($openingSourceAtom);
   const imageProperty = get(viewingImageAtom);
 
-  if (!imageProperty || !dataSource) {
-    return;
-  }
+  const result = moveNextSingleImage({ index, dataSource, imageProperty });
 
-  // 最後の画像を表示しているときは何もしない
-  if (dataSource.images.length - 1 <= index) {
-    return;
+  if (result !== undefined) {
+    set(moveIndexAtom, { index: result });
   }
-
-  // 最後のページとして2枚表示されている場合は移動せず見開きのままとする
-  if (imageProperty.type === "double" && dataSource.images.length - 2 <= index) {
-    return;
-  }
-
-  set(moveIndexAtom, { index: index + 1 });
 });
 
 /**

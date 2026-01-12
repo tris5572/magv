@@ -797,18 +797,17 @@ const lastOpenIndexAtom = atom(
 /**
  * 画像を表示する前に、画像のデータを更新する atom
  */
-const updateImageDataAtom = atom(null, async (get, set, targets: number[] | undefined) => {
-  if (!targets) {
-    return;
-  }
-
+const updateImageDataAtom = atom(null, async (get, set, targets: (number | undefined)[]) => {
   const source = get($openingSourceAtom);
   if (!source) {
     return;
   }
 
-  // 画像のインデックスが指定されたときは、当該インデックスのデータを更新する
+  // 当該インデックスのデータを更新する
   for (const n of targets) {
+    if (n === undefined) {
+      continue;
+    }
     source.images[n].orientation = await getImageOrientation(source.images[n].source);
   }
 

@@ -808,6 +808,9 @@ const updateImageDataAtom = atom(null, async (get, set, targets: (number | undef
     if (n === undefined) {
       continue;
     }
+    if (source.images[n].orientation !== undefined) {
+      continue; // すでに取得済みの場合はスキップ
+    }
     source.images[n].orientation = await getImageOrientation(source.images[n].source);
   }
 

@@ -276,16 +276,15 @@ export const moveIndexAtom = atom(
       forceSingle = false,
     }: {
       /** 開くインデックス */
-      index: number;
+      index: number | undefined;
       /** 強制的に1枚表示にするかどうかのフラグ */
       forceSingle?: boolean;
     }
   ) => {
-    // const imageList = get($imageNameListAtom);
     const dataSource = get($openingSourceAtom);
     const singleOrDouble = get(singleOrDoubleAtom);
 
-    if (!dataSource) {
+    if (!dataSource || index === undefined) {
       return;
     }
 
@@ -443,9 +442,7 @@ const moveNextSingleImageAtom = atom(null, async (get, set) => {
 
   const result = moveNextSingleImage({ index, dataSource, imageProperty });
 
-  if (result !== undefined) {
-    set(moveIndexAtom, { index: result });
-  }
+  set(moveIndexAtom, { index: result });
 });
 
 /**
@@ -459,10 +456,8 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 
   const result = movePrevSingleImage({ index, dataSource });
 
-  if (result !== undefined) {
-    // 1枚分だけ前に戻り、見開き判定は表示処理側で実施
-    set(moveIndexAtom, { index: result });
-  }
+  // 1枚分だけ前に戻り、見開き判定は表示処理側で実施
+  set(moveIndexAtom, { index: result });
 });
 
 /**

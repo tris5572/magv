@@ -224,11 +224,11 @@ export const handleAppEvent = atom(
         break;
       }
       case AppEvent.MOVE_FIRST_PAGE: {
-        set(moveFirstImageAtom);
+        set(moveFirstPageAtom);
         break;
       }
       case AppEvent.MOVE_LAST_PAGE: {
-        set(moveLastImageAtom);
+        set(moveLastPageAtom);
         break;
       }
       case AppEvent.SWITCH_NEXT_SOURCE: {
@@ -463,7 +463,7 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 /**
  * 最初のページを表示する atom
  */
-const moveFirstImageAtom = atom(null, async (_, set) => {
+const moveFirstPageAtom = atom(null, async (_, set) => {
   set(moveIndexAtom, { index: 0 });
 });
 
@@ -472,7 +472,7 @@ const moveFirstImageAtom = atom(null, async (_, set) => {
  *
  * 最後の2枚が両方とも縦画像の場合、見開き表示する
  */
-const moveLastImageAtom = atom(null, async (get, set) => {
+const moveLastPageAtom = atom(null, async (get, set) => {
   const dataSource = get($openingSourceAtom);
   const singleOrDouble = get(singleOrDoubleAtom);
   const updateData = (indexes: number[]) => set(updateImageDataAtom, indexes);

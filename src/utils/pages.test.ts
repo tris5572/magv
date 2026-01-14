@@ -1,6 +1,6 @@
 import type { DataSource } from "../types/data";
 import type { ViewImageMode } from "../types/image";
-import { moveNextSingleImage, movePrevSingleImage } from "./pages";
+import { moveLastPage, moveNextSingleImage, movePrevSingleImage } from "./pages";
 
 /**
  * データソースのモックデータを、画像の数から生成する
@@ -99,5 +99,88 @@ describe("movePrevSingleImage", () => {
       dataSource: createMockDataSourceByImageCount(3),
     });
     expect(result).toBe(0);
+  });
+});
+
+describe("moveLastPage", () => {
+  const mockUpdateData = vitest.fn();
+
+  test("データソースが undefined のとき、undefined を返すこと", async () => {
+    const result = await moveLastPage({
+      dataSource: undefined,
+      singleOrDouble: "double",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test("画像が0枚のとき、undefined を返すこと", async () => {
+    const result = await moveLastPage({
+      dataSource: createMockDataSourceByImageCount(0),
+      singleOrDouble: "double",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test("画像が1枚のみのとき、undefined を返すこと", async () => {
+    const result = await moveLastPage({
+      dataSource: createMockDataSourceByImageCount(1),
+      singleOrDouble: "double",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test("最後の2枚が両方とも縦画像のとき、見開き表示なら、手前のインデックスを返すこと", async () => {
+    const DATA = createMockDataSourceByImageCount(2);
+    DATA.images[0].orientation = "portrait";
+    DATA.images[1].orientation = "portrait";
+
+    const result = await moveLastPage({
+      dataSource: DATA,
+      singleOrDouble: "double",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBe(0);
+  });
+
+  test("最後の2枚が両方とも縦画像のとき、単体表示なら、最後のインデックスを返すこと", async () => {
+    const DATA = createMockDataSourceByImageCount(2);
+    DATA.images[0].orientation = "portrait";
+    DATA.images[1].orientation = "portrait";
+
+    const result = await moveLastPage({
+      dataSource: DATA,
+      singleOrDouble: "single",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBe(1);
+  });
+
+  test("最後が横画像で、手前が縦画像のとき、最後のインデックスを返すこと", async () => {
+    const DATA = createMockDataSourceByImageCount(2);
+    DATA.images[0].orientation = "portrait";
+    DATA.images[1].orientation = "landscape";
+
+    const result = await moveLastPage({
+      dataSource: DATA,
+      singleOrDouble: "double",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBe(1);
+  });
+
+  test("最後が縦画像で、手前が横画像のとき、最後のインデックスを返すこと", async () => {
+    const DATA = createMockDataSourceByImageCount(2);
+    DATA.images[0].orientation = "landscape";
+    DATA.images[1].orientation = "portrait";
+
+    const result = await moveLastPage({
+      dataSource: DATA,
+      singleOrDouble: "double",
+      updateData: mockUpdateData,
+    });
+    expect(result).toBe(1);
   });
 });

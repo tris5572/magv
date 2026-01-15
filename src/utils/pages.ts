@@ -2,6 +2,29 @@ import type { DataSource } from "../types/data";
 import type { ViewImageMode } from "../types/image";
 
 /**
+ * 次のページへ移動するときの遷移先を計算する
+ *
+ * 最終ページからのはみ出しを考慮せずにインデックスを計算する
+ *
+ * @returns 遷移可能なときはそのインデックス、遷移不能なときは undefined
+ */
+export function moveNextPage(args: {
+  /** 現在開いているインデックス */
+  index: number;
+  imageProperty: ViewImageMode | undefined;
+}): number | undefined {
+  if (!args.imageProperty) {
+    return undefined;
+  }
+
+  // 現在の表示枚数を元に、次のインデックスを計算する
+  // 最終ページからのはみ出しは、実際の遷移処理を行う関数側で判定して処理する
+  const result = args.imageProperty.type === "single" ? args.index + 1 : args.index + 2;
+
+  return result;
+}
+
+/**
  * 前のページへ移動するときの遷移先を計算する
  *
  * - 前のページに相当する画像の縦横を元に、表示する枚数を判定する

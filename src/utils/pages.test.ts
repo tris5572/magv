@@ -1,6 +1,12 @@
 import type { DataSource } from "../types/data";
 import type { ViewImageMode } from "../types/image";
-import { moveLastPage, movePrevPage, moveNextSingleImage, movePrevSingleImage } from "./pages";
+import {
+  moveLastPage,
+  movePrevPage,
+  moveNextSingleImage,
+  movePrevSingleImage,
+  moveNextPage,
+} from "./pages";
 
 /**
  * データソースのモックデータを、画像の数から生成する
@@ -38,6 +44,32 @@ function createMockImageProperty(type: "single" | "double"): ViewImageMode {
   }
   return { type: "double", source1: "", source2: "" };
 }
+
+describe("moveNextPage", () => {
+  test("画像プロパティが undefined のとき、undefined を返すこと", async () => {
+    const result = moveNextPage({
+      index: 0,
+      imageProperty: undefined,
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test("単体表示で次の画像へ移動できるとき、そのインデックスを返すこと", async () => {
+    const result = moveNextPage({
+      index: 0,
+      imageProperty: createMockImageProperty("single"),
+    });
+    expect(result).toBe(1);
+  });
+
+  test("見開き表示で次の画像へ移動できるとき、そのインデックスを返すこと", async () => {
+    const result = moveNextPage({
+      index: 0,
+      imageProperty: createMockImageProperty("double"),
+    });
+    expect(result).toBe(2);
+  });
+});
 
 describe("movePrevPage", () => {
   test("データソースが undefined のとき、undefined を返すこと", async () => {

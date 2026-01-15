@@ -16,6 +16,7 @@ import {
 } from "../utils/files";
 import {
   moveLastPage,
+  moveNextPage,
   moveNextSingleImage,
   movePrevPage,
   movePrevSingleImage,
@@ -366,18 +367,12 @@ export const moveIndexAtom = atom(
  * 次のページを表示する atom
  */
 const moveNextPageAtom = atom(null, async (get, set) => {
-  const openIndex = get($openingImageIndexAtom);
-  const imageData = get(viewingImageAtom);
+  const index = get($openingImageIndexAtom);
+  const imageProperty = get(viewingImageAtom);
 
-  if (!imageData) {
-    return;
-  }
+  const result = moveNextPage({ index, imageProperty });
 
-  // 現在の表示枚数を元に、次のインデックスを計算する
-  // 最終ページからのはみ出しは、呼び出された moveIndexAtom 側で判定して処理する
-  const index = imageData.type === "single" ? openIndex + 1 : openIndex + 2;
-
-  set(moveIndexAtom, { index });
+  set(moveIndexAtom, { index: result });
 });
 
 /**

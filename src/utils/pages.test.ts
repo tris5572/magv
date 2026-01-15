@@ -1,6 +1,6 @@
 import type { DataSource } from "../types/data";
 import type { ViewImageMode } from "../types/image";
-import { moveLastPage, moveNextSingleImage, movePrevSingleImage } from "./pages";
+import { moveLastPage, movePrevPage, moveNextSingleImage, movePrevSingleImage } from "./pages";
 
 /**
  * データソースのモックデータを、画像の数から生成する
@@ -16,12 +16,96 @@ function createMockDataSourceByImageCount(imageCount: number): DataSource {
   };
 }
 
+/**
+ * データソースのモックデータを、画像の向きの配列から生成する
+ */
+function createMockDataSourceByImageOrientations(
+  orientations: ("portrait" | "landscape")[]
+): DataSource {
+  return {
+    images: orientations.map((orientation, i) => ({
+      name: `${i + 1}.png`,
+      source: "",
+      orientation,
+    })),
+    siblings: [],
+  };
+}
+
 function createMockImageProperty(type: "single" | "double"): ViewImageMode {
   if (type === "single") {
     return { type: "single", source: "" };
   }
   return { type: "double", source1: "", source2: "" };
 }
+
+describe("movePrevPage", () => {
+  test("データソースが undefined のとき、undefined を返すこと", async () => {
+    const result = await movePrevPage({
+      index: 0,
+      dataSource: undefined,
+      updateData: vi.fn(),
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test("最初のページを表示しているとき、undefined を返すこと", async () => {
+    const result = await movePrevPage({
+      index: 0,
+      dataSource: createMockDataSourceByImageCount(3),
+      updateData: vi.fn(),
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test("1枚目を表示しているとき、undefined を返すこと", async () => {
+    const result = await movePrevPage({
+      index: 0,
+      dataSource: createMockDataSourceByImageCount(3),
+      updateData: vi.fn(),
+    });
+    expect(result).toBeUndefined();
+  });
+
+  test.each<[("portrait" | "landscape")[], { index: number; forceSingle: boolean }]>([
+    [["portrait", "portrait"], { index: 0, forceSingle: true }],
+    [["portrait", "landscape"], { index: 0, forceSingle: true }],
+    [["landscape", "portrait"], { index: 0, forceSingle: true }],
+    [["landscape", "landscape"], { index: 0, forceSingle: true }],
+  ])(
+    "2枚目を表示していて、画像の向きが %o のとき、%o を返すこと",
+    async (orientations, expected) => {
+      const DATA = createMockDataSourceByImageOrientations(orientations);
+      const result = await movePrevPage({
+        index: 1,
+        dataSource: DATA,
+        updateData: vi.fn(),
+      });
+      expect(result).toEqual(expected);
+    }
+  );
+
+  test.each<[("portrait" | "landscape")[], { index: number; forceSingle?: boolean }]>([
+    [["portrait", "portrait", "portrait"], { index: 0 }],
+    [["landscape", "portrait", "portrait"], { index: 1, forceSingle: true }],
+    [["portrait", "landscape", "portrait"], { index: 1, forceSingle: true }],
+    [["portrait", "portrait", "landscape"], { index: 0 }],
+    [["landscape", "portrait", "landscape"], { index: 1, forceSingle: true }],
+    [["portrait", "landscape", "landscape"], { index: 1, forceSingle: true }],
+    [["landscape", "landscape", "landscape"], { index: 1, forceSingle: true }],
+  ])(
+    "3枚目を表示していて、画像の向きが %o のとき、%o を返すこと",
+    async (orientations, expected) => {
+      const DATA = createMockDataSourceByImageOrientations(orientations);
+      const result = await movePrevPage({
+        index: 2,
+        dataSource: DATA,
+        updateData: vi.fn(),
+      });
+      expect(result).toEqual(expected);
+    }
+  );
+});
 
 describe("moveNextSingleImage", () => {
   test("データソースが undefined のとき、undefined を返すこと", () => {

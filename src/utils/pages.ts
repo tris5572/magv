@@ -2,6 +2,60 @@ import type { DataSource } from "../types/data";
 import type { ViewImageMode } from "../types/image";
 
 /**
+ * 前のページへ移動するときの遷移先を計算する
+ *
+ * - 前のページに相当する画像の縦横を元に、表示する枚数を判定する
+ * - 現在表示している画像は重複して表示しない。したがって移動後に縦画像が1枚だけ表示されるケースもあり得る
+ *
+ * 左開きの場合、以下のような表示となる（P:縦、L:横）
+ *
+ * - ...PP[P] → ...[PP]P
+ * - ...LP[P] → ...L[P]P （同じ画像は繰り返し表示しない）
+ * - ...PL[P] → ...P[L]P
+ * - ...PP[L] → ...[PP]L
+ * - ...LP[L] → ...L[P]L
+ * - ...L[L] → ...[L]L
+ * - P[P] → [P]P （最初の2枚が縦でも見開き表示しない）
+ * - L[P] → [L]P
+ * - P[L] → [P]L
+ * - L[L] → [L]L
+ *
+ * @returns 遷移可能なときはそのインデックス、遷移不能なときは undefined
+ */
+export async function movePrevPage(args: {
+  /** 現在開いているインデックス */
+  index: number;
+  dataSource: DataSource | undefined;
+  updateData: (indexes: (number | undefined)[]) => Promise<void>;
+}): Promise<{ index: number; forceSingle?: boolean } | undefined> {
+  if (!args.dataSource) {
+    return undefined;
+  }
+
+  const index1 = 1 <= args.index ? args.index - 1 : undefined; // 1枚手前のインデックス
+  const index2 = 2 <= args.index ? args.index - 2 : undefined; // 2枚手前のインデックス
+
+  // 前ページが存在しない場合は何もしない
+  if (index1 === undefined) {
+    return undefined;
+  }
+
+  await args.updateData([index1, index2]);
+
+  // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
+  if (
+    args.dataSource.images[index1].orientation === "landscape" ||
+    index2 === undefined ||
+    args.dataSource.images[index2].orientation === "landscape"
+  ) {
+    return { index: index1, forceSingle: true }; // 1枚だけ戻った結果として縦画像が連続しても見開き表示とならないよう、1枚表示を強制
+  }
+
+  // -1枚目と-2枚目が両方とも縦長のときは、見開き表示する
+  return { index: index2 };
+}
+
+/**
  * 1枚だけ次の画像へ移動するときの遷移先を計算する
  *
  * @returns 遷移可能なときはそのインデックス、遷移不能なときは undefined

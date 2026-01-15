@@ -14,7 +14,12 @@ import {
   getPathKind,
   parentDirPath,
 } from "../utils/files";
-import { moveLastPage, moveNextSingleImage, movePrevSingleImage } from "../utils/pages";
+import {
+  moveLastPage,
+  moveNextSingleImage,
+  movePrevPage,
+  movePrevSingleImage,
+} from "../utils/pages";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import {
   appModeAtom,
@@ -377,59 +382,15 @@ const moveNextPageAtom = atom(null, async (get, set) => {
 
 /**
  * 前のページを表示する atom
- *
- * 前のページに相当する画像の縦横を元に、表示する枚数を判定する
- *
- * 現在表示している画像は重複して表示しない。したがって縦画像が1枚だけ表示されるケースもあり得る
- *
- * 右開きのときの動作は以下の表の通り。「0枚目」は表示中の若い方を指す。
- *
- * 0枚目 | -1枚目 | -2枚目 | 表示
- * :--: | :--: | :--: | :--:
- * 縦0 | 縦1 | 縦2 | 縦1 縦2
- * 縦0 | 縦1 | 横2 | 縦1
- * 横0 | 縦1 | 縦2 | 縦1 縦2
- * 横0 | 縦1 | 横2 | 縦1
- * 縦0 | 縦1 | (なし) | 縦1
- * 縦0 | 横1 | (なし) | 横1
- * 横0 | 縦1 | (なし) | 縦1
- * 横0 | 横1 | (なし) | 横1
  */
 const movePrevPageAtom = atom(null, async (get, set) => {
-  // const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const dataSource = get($openingSourceAtom);
+  const updateData = (indexes: (number | undefined)[]) => set(updateImageDataAtom, indexes);
 
-  if (!dataSource) {
-    return;
-  }
+  const result = await movePrevPage({ index, dataSource, updateData });
 
-  const index1 = 1 <= index ? index - 1 : undefined;
-  const index2 = 2 <= index ? index - 2 : undefined;
-
-  // 前ページを取得できなかった場合は何もしない
-  if (index1 === undefined) {
-    return;
-  }
-
-  if (index2 === undefined) {
-    await set(updateImageDataAtom, [index1]);
-  } else {
-    await set(updateImageDataAtom, [index1, index2]);
-  }
-
-  // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
-  if (
-    dataSource.images[index1].orientation === "landscape" ||
-    index2 === undefined ||
-    dataSource.images[index2].orientation === "landscape"
-  ) {
-    set(moveIndexAtom, { index: index - 1, forceSingle: true }); // 最初の画像が 縦縦 と並んでいるときに見開き表示とならないよう、1枚表示を強制
-    return;
-  }
-
-  // -1枚目と-2枚目が両方とも縦長のときは、見開き表示する
-  set(moveIndexAtom, { index: index - 2 });
+  set(moveIndexAtom, { index: result?.index, forceSingle: result?.forceSingle });
 });
 
 /**

@@ -103,7 +103,7 @@ describe("movePrevSingleImage", () => {
 });
 
 describe("moveLastPage", () => {
-  const mockUpdateData = vitest.fn();
+  const mockUpdateData = vi.fn();
 
   test("データソースが undefined のとき、undefined を返すこと", async () => {
     const result = await moveLastPage({

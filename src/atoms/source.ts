@@ -14,7 +14,13 @@ import {
   getPathKind,
   parentDirPath,
 } from "../utils/files";
-import { moveNextSingleImage, movePrevSingleImage } from "../utils/pages";
+import {
+  moveLastPage,
+  moveNextPage,
+  moveNextSingleImage,
+  movePrevPage,
+  movePrevSingleImage,
+} from "../utils/pages";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import {
   appModeAtom,
@@ -224,11 +230,11 @@ export const handleAppEvent = atom(
         break;
       }
       case AppEvent.MOVE_FIRST_PAGE: {
-        set(moveFirstImageAtom);
+        set(moveFirstPageAtom);
         break;
       }
       case AppEvent.MOVE_LAST_PAGE: {
-        set(moveLastImageAtom);
+        set(moveLastPageAtom);
         break;
       }
       case AppEvent.SWITCH_NEXT_SOURCE: {
@@ -276,16 +282,15 @@ export const moveIndexAtom = atom(
       forceSingle = false,
     }: {
       /** 開くインデックス */
-      index: number;
+      index: number | undefined;
       /** 強制的に1枚表示にするかどうかのフラグ */
       forceSingle?: boolean;
     }
   ) => {
-    // const imageList = get($imageNameListAtom);
     const dataSource = get($openingSourceAtom);
     const singleOrDouble = get(singleOrDoubleAtom);
 
-    if (!dataSource) {
+    if (!dataSource || index === undefined) {
       return;
     }
 
@@ -362,75 +367,25 @@ export const moveIndexAtom = atom(
  * 次のページを表示する atom
  */
 const moveNextPageAtom = atom(null, async (get, set) => {
-  const openIndex = get($openingImageIndexAtom);
-  const imageData = get(viewingImageAtom);
+  const index = get($openingImageIndexAtom);
+  const imageProperty = get(viewingImageAtom);
 
-  if (!imageData) {
-    return;
-  }
+  const result = moveNextPage({ index, imageProperty });
 
-  // 現在の表示枚数を元に、次のインデックスを計算する
-  // 最終ページからのはみ出しは、呼び出された moveIndexAtom 側で判定して処理する
-  const index = imageData.type === "single" ? openIndex + 1 : openIndex + 2;
-
-  set(moveIndexAtom, { index });
+  set(moveIndexAtom, { index: result });
 });
 
 /**
  * 前のページを表示する atom
- *
- * 前のページに相当する画像の縦横を元に、表示する枚数を判定する
- *
- * 現在表示している画像は重複して表示しない。したがって縦画像が1枚だけ表示されるケースもあり得る
- *
- * 右開きのときの動作は以下の表の通り。「0枚目」は表示中の若い方を指す。
- *
- * 0枚目 | -1枚目 | -2枚目 | 表示
- * :--: | :--: | :--: | :--:
- * 縦0 | 縦1 | 縦2 | 縦1 縦2
- * 縦0 | 縦1 | 横2 | 縦1
- * 横0 | 縦1 | 縦2 | 縦1 縦2
- * 横0 | 縦1 | 横2 | 縦1
- * 縦0 | 縦1 | (なし) | 縦1
- * 縦0 | 横1 | (なし) | 横1
- * 横0 | 縦1 | (なし) | 縦1
- * 横0 | 横1 | (なし) | 横1
  */
 const movePrevPageAtom = atom(null, async (get, set) => {
-  // const imageList = get($imageNameListAtom);
   const index = get($openingImageIndexAtom);
   const dataSource = get($openingSourceAtom);
+  const updateData = (indexes: (number | undefined)[]) => set(updateImageDataAtom, indexes);
 
-  if (!dataSource) {
-    return;
-  }
+  const result = await movePrevPage({ index, dataSource, updateData });
 
-  const index1 = 1 <= index ? index - 1 : undefined;
-  const index2 = 2 <= index ? index - 2 : undefined;
-
-  // 前ページを取得できなかった場合は何もしない
-  if (index1 === undefined) {
-    return;
-  }
-
-  if (index2 === undefined) {
-    await set(updateImageDataAtom, [index1]);
-  } else {
-    await set(updateImageDataAtom, [index1, index2]);
-  }
-
-  // -1枚目が横のとき、-1枚目が最初の画像のとき(-2枚目がなかったとき)、-2枚目が横だったときは、1枚だけ戻って-1枚目のみを表示する
-  if (
-    dataSource.images[index1].orientation === "landscape" ||
-    index2 === undefined ||
-    dataSource.images[index2].orientation === "landscape"
-  ) {
-    set(moveIndexAtom, { index: index - 1, forceSingle: true }); // 最初の画像が 縦縦 と並んでいるときに見開き表示とならないよう、1枚表示を強制
-    return;
-  }
-
-  // -1枚目と-2枚目が両方とも縦長のときは、見開き表示する
-  set(moveIndexAtom, { index: index - 2 });
+  set(moveIndexAtom, { index: result?.index, forceSingle: result?.forceSingle });
 });
 
 /**
@@ -443,9 +398,7 @@ const moveNextSingleImageAtom = atom(null, async (get, set) => {
 
   const result = moveNextSingleImage({ index, dataSource, imageProperty });
 
-  if (result !== undefined) {
-    set(moveIndexAtom, { index: result });
-  }
+  set(moveIndexAtom, { index: result });
 });
 
 /**
@@ -459,16 +412,14 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
 
   const result = movePrevSingleImage({ index, dataSource });
 
-  if (result !== undefined) {
-    // 1枚分だけ前に戻り、見開き判定は表示処理側で実施
-    set(moveIndexAtom, { index: result });
-  }
+  // 1枚分だけ前に戻り、見開き判定は表示処理側で実施
+  set(moveIndexAtom, { index: result });
 });
 
 /**
  * 最初のページを表示する atom
  */
-const moveFirstImageAtom = atom(null, async (_, set) => {
+const moveFirstPageAtom = atom(null, async (_, set) => {
   set(moveIndexAtom, { index: 0 });
 });
 
@@ -477,41 +428,14 @@ const moveFirstImageAtom = atom(null, async (_, set) => {
  *
  * 最後の2枚が両方とも縦画像の場合、見開き表示する
  */
-const moveLastImageAtom = atom(null, async (get, set) => {
+const moveLastPageAtom = atom(null, async (get, set) => {
   const dataSource = get($openingSourceAtom);
-  const isSingleMode = get(singleOrDoubleAtom) === "single"; // 単体表示モードかどうか
+  const singleOrDouble = get(singleOrDoubleAtom);
+  const updateData = (indexes: number[]) => set(updateImageDataAtom, indexes);
 
-  if (!dataSource) {
-    return;
-  }
+  const result = await moveLastPage({ dataSource, singleOrDouble, updateData });
 
-  // 最後の2枚を取得する。name1 の方が若く、name2 が本当に最後
-  const lastIndex = dataSource.images.length - 1;
-  const index1 = lastIndex === 0 ? undefined : lastIndex - 1;
-
-  if (index1 === undefined) {
-    return; // 1枚しか画像が存在しない場合は何もしない
-  }
-
-  // 単体表示モードのときは、最後の2枚の縦横に関係なく、一番最後の画像を表示
-  if (isSingleMode) {
-    set(moveIndexAtom, { index: lastIndex, forceSingle: true });
-    return;
-  }
-
-  await set(updateImageDataAtom, [index1, lastIndex]);
-
-  // 1枚目と2枚目の両方が縦長のときは、見開きで2枚とも表示する
-  if (
-    dataSource.images[index1].orientation === "portrait" &&
-    dataSource.images[lastIndex].orientation === "portrait"
-  ) {
-    set(moveIndexAtom, { index: lastIndex - 1 });
-    return;
-  }
-
-  // その他のときは最後の画像のみを表示する
-  set(moveIndexAtom, { index: lastIndex });
+  set(moveIndexAtom, { index: result });
 });
 
 /**

@@ -116,9 +116,11 @@ export async function readConfigFile(name: string): Promise<WindowConfig | undef
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 export function searchAtBrowser(keyword: string) {
-  if (keyword) {
-    // const url = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
-    const url = `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(keyword)}`;
+  const word = keyword.replace(/-/g, " ");
+
+  if (word) {
+    // const url = `https://www.google.com/search?q=${encodeURIComponent(word)}`;
+    const url = `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(word)}`;
     openUrl(url);
   }
 }

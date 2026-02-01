@@ -18,7 +18,7 @@ import type { ImageOrientation } from "../types/image";
  * - 画像の Blob
  */
 export function getImageSize(
-  source: string | Blob
+  source: string | Blob,
 ): Promise<{ width: number; height: number } | undefined> {
   // ソースが存在しなかった場合(彼文字列も該当)は、何もしない Promise を返す
   if (!source) {
@@ -39,8 +39,8 @@ export function getImageSize(
       source instanceof Blob
         ? URL.createObjectURL(source) // Blob は URL を生成
         : source.startsWith("data:")
-        ? source // Base64 はそのまま
-        : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
+          ? source // Base64 はそのまま
+          : convertFileSrc(source); // ローカルのパスは、表示用のパスに変換
     img.src = src;
   });
 }
@@ -53,7 +53,7 @@ export function getImageSize(
  * - 画像のサイズが取得できなかった場合は `undefined`
  */
 export async function getImageOrientation(
-  source: string | Blob
+  source: string | Blob,
 ): Promise<ImageOrientation | undefined> {
   const size = await getImageSize(source);
   if (!size) {
@@ -115,10 +115,17 @@ export async function readConfigFile(name: string): Promise<WindowConfig | undef
 // #region その他
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
+/**
+ * 指定されたキーワードをWeb検索してブラウザで開く
+ *
+ * 検索キーワードからはハイフンを取り除く
+ */
 export function searchAtBrowser(keyword: string) {
-  if (keyword) {
-    // const url = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
-    const url = `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(keyword)}`;
+  const word = keyword.replace(/-/g, " ");
+
+  if (word) {
+    // const url = `https://www.google.com/search?q=${encodeURIComponent(word)}`;
+    const url = `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(word)}`;
     openUrl(url);
   }
 }

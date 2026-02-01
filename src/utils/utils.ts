@@ -115,6 +115,11 @@ export async function readConfigFile(name: string): Promise<WindowConfig | undef
 // #region その他
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
+/**
+ * 指定されたキーワードをWeb検索してブラウザで開く
+ *
+ * 検索キーワードからはハイフンを取り除く
+ */
 export function searchAtBrowser(keyword: string) {
   const word = keyword.replace(/-/g, " ");
 

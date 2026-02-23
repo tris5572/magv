@@ -16,29 +16,24 @@ export function useWindowEvent() {
   const [, setWindowPosition] = useAtom(windowPositionAtom);
   const [, setWindowSize] = useAtom(windowSizeAtom);
 
-  // 1秒経過を監視するためのもの
-  const isInitialRender = useRef(true);
   const [isWarmup, setIsWarmup] = useState(true);
 
   // 起動直後の位置・サイズ復元を無視するため、起動から1秒間をカウントする
   useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
       const timerId = setTimeout(() => {
-        setIsWarmup(true);
+      setIsWarmup(false);
       }, 1000);
       return () => clearTimeout(timerId);
-    }
-  });
+  }, []);
 
   const windowMoved = (position: { x: number; y: number }) => {
-    if (isWarmup) {
+    if (!isWarmup) {
       setWindowPosition(position);
     }
   };
 
   const windowResized = (size: { width: number; height: number }) => {
-    if (isWarmup) {
+    if (!isWarmup) {
       setWindowSize(size);
     }
   };

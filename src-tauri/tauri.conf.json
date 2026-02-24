@@ -14,7 +14,8 @@
       {
         "title": "magv",
         "width": 1400,
-        "height": 1000
+        "height": 1000,
+        "visible": false
       }
     ],
     "security": {

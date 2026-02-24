@@ -1,3 +1,57 @@
+use serde::Deserialize;
+use tauri::{AppHandle, LogicalPosition, LogicalSize, Manager};
+
+#[derive(Debug, Deserialize)]
+struct WindowConfig {
+    window: Option<WindowState>,
+}
+
+#[derive(Debug, Deserialize)]
+struct WindowState {
+    position: Option<WindowPosition>,
+    size: Option<WindowSize>,
+}
+
+#[derive(Debug, Deserialize)]
+struct WindowPosition {
+    x: f64,
+    y: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct WindowSize {
+    width: f64,
+    height: f64,
+}
+
+fn restore_main_window_config(app: &AppHandle) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+
+    let Ok(config_dir) = app.path().app_config_dir() else {
+        let _ = window.show();
+        return;
+    };
+
+    let config_path = config_dir.join("window.json");
+    let Ok(content) = std::fs::read_to_string(config_path) else {
+        let _ = window.show();
+        return;
+    };
+
+    if let Ok(config) = serde_json::from_str::<WindowConfig>(&content) {
+        if let Some(position) = config.window.as_ref().and_then(|v| v.position.as_ref()) {
+            let _ = window.set_position(LogicalPosition::new(position.x, position.y));
+        }
+        if let Some(size) = config.window.as_ref().and_then(|v| v.size.as_ref()) {
+            let _ = window.set_size(LogicalSize::new(size.width, size.height));
+        }
+    }
+
+    let _ = window.show();
+}
+
 /// 渡されたパスのディレクトリ内の画像ファイルの一覧を取得する
 ///
 /// 画像であることの判定は拡張子を元にして行う
@@ -84,6 +138,10 @@ fn get_archive_file_list(path: &str) -> Vec<String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            restore_main_window_config(app.handle());
+            Ok(())
+        })
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![

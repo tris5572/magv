@@ -1,7 +1,7 @@
 import { getCurrentWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
 import { useAtom } from "jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { windowConfigDataAtom, windowPositionAtom, windowSizeAtom } from "../atoms/config";
+import { useCallback, useEffect, useState } from "react";
+import { windowPositionAtom, windowSizeAtom } from "../atoms/config";
 import { WINDOW_CONFIG_FILE_NAME } from "../types/config";
 import { readConfigFile, storeConfigFile } from "../utils/utils";
 
@@ -16,29 +16,24 @@ export function useWindowEvent() {
   const [, setWindowPosition] = useAtom(windowPositionAtom);
   const [, setWindowSize] = useAtom(windowSizeAtom);
 
-  // 1秒経過を監視するためのもの
-  const isInitialRender = useRef(true);
   const [isWarmup, setIsWarmup] = useState(true);
 
   // 起動直後の位置・サイズ復元を無視するため、起動から1秒間をカウントする
   useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      const timerId = setTimeout(() => {
-        setIsWarmup(true);
-      }, 1000);
-      return () => clearTimeout(timerId);
-    }
-  });
+    const timerId = setTimeout(() => {
+      setIsWarmup(false);
+    }, 1000);
+    return () => clearTimeout(timerId);
+  }, []);
 
   const windowMoved = (position: { x: number; y: number }) => {
-    if (isWarmup) {
+    if (!isWarmup) {
       setWindowPosition(position);
     }
   };
 
   const windowResized = (size: { width: number; height: number }) => {
-    if (isWarmup) {
+    if (!isWarmup) {
       setWindowSize(size);
     }
   };
@@ -52,9 +47,19 @@ export function useWindowEvent() {
  * 保存する適切なタイミング（アプリの終了時など）に呼び出す
  */
 export function useStoreWindowConfig() {
-  const [configData] = useAtom(windowConfigDataAtom);
+  const f = useCallback(async () => {
+    const appWindow = getCurrentWindow();
+    const factor = await appWindow.scaleFactor();
+    const size = (await appWindow.innerSize()).toLogical(factor);
+    const position = (await appWindow.innerPosition()).toLogical(factor);
 
-  const f = useCallback(() => storeConfigFile(configData, WINDOW_CONFIG_FILE_NAME), [configData]);
+    await storeConfigFile(
+      {
+        window: { size, position },
+      },
+      WINDOW_CONFIG_FILE_NAME,
+    );
+  }, []);
   return f;
 }
 

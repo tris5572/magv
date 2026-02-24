@@ -1,6 +1,6 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
-import { exists, mkdir, open, readTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, open, readTextFile, rename } from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { type WindowConfig } from "../types/config";
 import type { ImageOrientation } from "../types/image";
@@ -74,6 +74,7 @@ export async function storeConfigFile(config: WindowConfig, name: string) {
   const json = JSON.stringify(config);
   const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
   const path = await join(dir, name);
+  const tmpPath = await join(dir, `${name}.tmp`);
 
   // 設定ファイルの破損を防ぐため、保存対象のデータがない場合は保存しない
   if (config.window?.position == null || config.window?.size == null) {
@@ -86,9 +87,12 @@ export async function storeConfigFile(config: WindowConfig, name: string) {
   }
 
   // ファイルを書き込む
-  const file = await open(path, { create: true, write: true, truncate: true });
+  const file = await open(tmpPath, { create: true, write: true, truncate: true });
   await file.write(new TextEncoder().encode(json));
   await file.close();
+
+  // 一時ファイルを本番ファイルに置き換える（原子的な更新）
+  await rename(tmpPath, path);
 }
 
 /**

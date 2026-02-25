@@ -24,6 +24,66 @@ struct WindowSize {
     height: f64,
 }
 
+#[derive(Clone, Copy)]
+struct LogicalRect {
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+}
+
+impl LogicalRect {
+    fn contains(self, x: f64, y: f64) -> bool {
+        x >= self.x && x <= self.x + self.width && y >= self.y && y <= self.y + self.height
+    }
+}
+
+fn clamp_window_position(
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+    monitor: LogicalRect,
+) -> (f64, f64) {
+    let max_x = monitor.x + (monitor.width - width).max(0.0);
+    let max_y = monitor.y + (monitor.height - height).max(0.0);
+    let clamped_x = x.clamp(monitor.x, max_x);
+    let clamped_y = y.clamp(monitor.y, max_y);
+    (clamped_x, clamped_y)
+}
+
+fn monitor_logical_rects(app: &AppHandle, window: &tauri::WebviewWindow) -> Vec<LogicalRect> {
+    let Ok(monitors) = app.available_monitors() else {
+        return Vec::new();
+    };
+
+    monitors
+        .iter()
+        .map(|monitor| {
+            let factor = monitor.scale_factor();
+            let position = monitor.position();
+            let size = monitor.size();
+            LogicalRect {
+                x: position.x as f64 / factor,
+                y: position.y as f64 / factor,
+                width: size.width as f64 / factor,
+                height: size.height as f64 / factor,
+            }
+        })
+        .chain(window.current_monitor().ok().flatten().map(|monitor| {
+            let factor = monitor.scale_factor();
+            let position = monitor.position();
+            let size = monitor.size();
+            LogicalRect {
+                x: position.x as f64 / factor,
+                y: position.y as f64 / factor,
+                width: size.width as f64 / factor,
+                height: size.height as f64 / factor,
+            }
+        }))
+        .collect()
+}
+
 fn restore_main_window_config(app: &AppHandle) {
     let Some(window) = app.get_webview_window("main") else {
         return;
@@ -41,11 +101,46 @@ fn restore_main_window_config(app: &AppHandle) {
     };
 
     if let Ok(config) = serde_json::from_str::<WindowConfig>(&content) {
-        if let Some(position) = config.window.as_ref().and_then(|v| v.position.as_ref()) {
-            let _ = window.set_position(LogicalPosition::new(position.x, position.y));
-        }
-        if let Some(size) = config.window.as_ref().and_then(|v| v.size.as_ref()) {
+        let restored_size = config.window.as_ref().and_then(|v| v.size.as_ref());
+        if let Some(size) = restored_size {
             let _ = window.set_size(LogicalSize::new(size.width, size.height));
+        }
+
+        if let Some(position) = config.window.as_ref().and_then(|v| v.position.as_ref()) {
+            let window_size = if let Some(size) = restored_size {
+                (size.width, size.height)
+            } else {
+                let factor = window.scale_factor().unwrap_or(1.0);
+                match window.inner_size() {
+                    Ok(size) => {
+                        let logical = size.to_logical::<f64>(factor);
+                        (logical.width, logical.height)
+                    }
+                    Err(_) => (640.0, 480.0),
+                }
+            };
+
+            let monitors = monitor_logical_rects(app, &window);
+
+            let target_monitor = monitors
+                .iter()
+                .find(|monitor| monitor.contains(position.x, position.y))
+                .copied()
+                .or_else(|| monitors.first().copied());
+
+            let corrected = if let Some(monitor) = target_monitor {
+                clamp_window_position(
+                    position.x,
+                    position.y,
+                    window_size.0,
+                    window_size.1,
+                    monitor,
+                )
+            } else {
+                (position.x, position.y)
+            };
+
+            let _ = window.set_position(LogicalPosition::new(corrected.0, corrected.1));
         }
     }
 

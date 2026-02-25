@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "magv",
-        "width": 1400,
-        "height": 1000,
+        "width": 640,
+        "height": 480,
         "visible": false
       }
     ],

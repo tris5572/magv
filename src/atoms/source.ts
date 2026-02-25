@@ -69,9 +69,25 @@ const $prevSourcePathAtom = atom<string | undefined>();
 const $nextSourcePathAtom = atom<string | undefined>();
 
 /**
+ * 最近使ったデータソースのパス一覧を保持する atom
+ *
+ * 先頭が最新で、重複は持たない
+ */
+const $recentSourcePathListAtom = atom<string[]>([]);
+
+/**
  * 各データソースで最後に開いた画像のインデックスを保持する atom
  */
 const $lastIndexArrayAtom = atom<LastIndex[]>([]);
+
+/**
+ * 最近使ったデータソースの履歴を更新する atom
+ */
+const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
+  const list = get($recentSourcePathListAtom);
+  const nextList = [path, ...list.filter((v) => v !== path)].slice(0, 20);
+  set($recentSourcePathListAtom, nextList);
+});
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
@@ -138,11 +154,14 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
   }
 
   // 保持するデータソースのパスとウィンドウのタイトルを更新
+  let openingSourcePath: string;
   if (kind === "image") {
-    set(updateOpeningSourcePathAtom, await dirFromPath(path)); // 画像を開いたときは、開いたインデックスの保存のために、そのディレクトリを保存する
+    openingSourcePath = await dirFromPath(path); // 画像を開いたときは、開いたインデックスの保存のために、そのディレクトリを保存する
   } else {
-    set(updateOpeningSourcePathAtom, path);
+    openingSourcePath = path;
   }
+  set(updateOpeningSourcePathAtom, openingSourcePath);
+  set(addRecentSourcePathAtom, openingSourcePath);
 
   getCurrentWindow().setFocus(); // ウィンドウを前面に出す
   set(stopSlideshowAtom); // スライドショーを停止する
@@ -262,7 +281,7 @@ export const handleAppEvent = atom(
         break;
       }
     }
-  }
+  },
 );
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -285,7 +304,7 @@ export const moveIndexAtom = atom(
       index: number | undefined;
       /** 強制的に1枚表示にするかどうかのフラグ */
       forceSingle?: boolean;
-    }
+    },
   ) => {
     const dataSource = get($openingSourceAtom);
     const singleOrDouble = get(singleOrDoubleAtom);
@@ -360,7 +379,7 @@ export const moveIndexAtom = atom(
       type: "single",
       source: dataSource.images[index1].source,
     });
-  }
+  },
 );
 
 /**
@@ -561,6 +580,13 @@ export const isOpenSourceAtom = atom((get) => {
 });
 
 /**
+ * 最近使ったデータソースのパス一覧を取得する atom
+ */
+export const recentSourcePathListAtom = atom((get) => {
+  return get($recentSourcePathListAtom);
+});
+
+/**
  * データソース内の画像ファイルの一覧を取得する atom
  */
 export const imageListAtom = atom((get) => {
@@ -715,7 +741,7 @@ const lastOpenIndexAtom = atom(
     // 当該パスの過去の履歴がない場合は新たに追加する
     array.push({ path, index });
     set($lastIndexArrayAtom, array);
-  }
+  },
 );
 
 /**

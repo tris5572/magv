@@ -11,7 +11,7 @@ import {
   singleOrDoubleAtom,
 } from "../atoms/app";
 import { handleEventAtom } from "../atoms/event";
-import { openFileAtom } from "../atoms/source";
+import { openFileAtom, recentSourcePathListAtom } from "../atoms/source";
 import { useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { AppEvent } from "../types/event";
 import { ImageView } from "./ImageView";
@@ -198,6 +198,8 @@ function useAppMenu() {
   const canMoveNext = useAtomValue(canMoveNextAtom);
   const canMovePrev = useAtomValue(canMovePrevAtom);
   const isOpenPage = useAtomValue(isOpenPageAtom);
+  const recentSourcePathList = useAtomValue(recentSourcePathListAtom);
+  const openSource = useSetAtom(openFileAtom);
   const [singleOrDouble, setSingleOrDouble] = useAtom(singleOrDoubleAtom);
 
   const createMenu = async () => {
@@ -250,6 +252,28 @@ function useAppMenu() {
           accelerator: "Command+o",
           action: () => {},
           enabled: false,
+        }),
+        await Submenu.new({
+          text: "最近使った項目を開く",
+          items:
+            recentSourcePathList.length === 0
+              ? [
+                  await MenuItem.new({
+                    text: "項目なし",
+                    action: () => {},
+                    enabled: false,
+                  }),
+                ]
+              : await Promise.all(
+                  recentSourcePathList.map((path) =>
+                    MenuItem.new({
+                      text: path,
+                      action: () => {
+                        openSource(path);
+                      },
+                    }),
+                  ),
+                ),
         }),
         separator,
         await MenuItem.new({

@@ -1,16 +1,15 @@
-import { getCurrentWindow, LogicalPosition, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAtom } from "jotai";
 import { useCallback, useEffect, useState } from "react";
 import { windowPositionAtom, windowSizeAtom } from "../atoms/config";
 import { WINDOW_CONFIG_FILE_NAME } from "../types/config";
-import { readConfigFile, storeConfigFile } from "../utils/utils";
+import { storeConfigFile } from "../utils/utils";
 
 /**
  * ウィンドウ操作のイベント（移動とリサイズ）を扱う関数を返すカスタムフック
  *
  * ウィンドウを移動・リサイズしたときに情報を atom として保持するが、起動から1秒間は行わない。
- * これは設定ファイルからの復元の移動・リサイズを反映しないための挙動。
- * TODO: 将来的には Rust 側で起動時にサイズを設定するなどで対応する。起動後にウィンドウサイズが変わる挙動も解消されるので。
+ * これは起動直後に発生する移動・リサイズイベントを保存対象から除外するための挙動。
  */
 export function useWindowEvent() {
   const [, setWindowPosition] = useAtom(windowPositionAtom);
@@ -61,27 +60,4 @@ export function useStoreWindowConfig() {
     );
   }, []);
   return f;
-}
-
-/**
- * 設定ファイルの値からウィンドウの位置とサイズを復元するカスタムフック
- */
-export function useRestoreWindowConfig() {
-  useEffect(() => {
-    readConfigFile(WINDOW_CONFIG_FILE_NAME).then((config) => {
-      if (!config) {
-        return;
-      }
-
-      const window = getCurrentWindow();
-      if (config.window?.position) {
-        const pos = config.window.position;
-        window.setPosition(new LogicalPosition(pos.x, pos.y));
-      }
-      if (config.window?.size) {
-        const size = config.window.size;
-        window.setSize(new LogicalSize(size.width, size.height));
-      }
-    });
-  }, []);
 }

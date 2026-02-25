@@ -12,7 +12,7 @@ import {
 } from "../atoms/app";
 import { handleEventAtom } from "../atoms/event";
 import { openFileAtom } from "../atoms/source";
-import { useRestoreWindowConfig, useStoreWindowConfig, useWindowEvent } from "../hooks/config";
+import { useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { AppEvent } from "../types/event";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
@@ -33,7 +33,6 @@ const APP_STYLE: CSSProperties = {
 export function App() {
   const isOpeningRenameView = useAtomValue(isOpeningRenameViewAtom);
 
-  useRestoreWindowConfig();
   useEventListener();
   useAppMenu();
 

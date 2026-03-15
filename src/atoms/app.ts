@@ -23,7 +23,7 @@ export const appViewMode = atom<AppViewMode>(AppViewMode.Image);
  *
  * 主にイベントをどの atom に対して発行するかを制御する
  */
-export const appModeAtom = atom<"zip" | "image">("zip");
+export const appModeAtom = atom<"archive" | "image">("archive");
 
 /**
  * 表示する画像の情報を保持する atom

@@ -45,9 +45,12 @@ describe("getPathKind", () => {
     }
   );
 
-  test("拡張子が zip のとき、zip ファイルと判定されること", async () => {
-    expect(await getPathKind("/a/b/c.zip")).toBe("zip");
-  });
+  test.each(["zip", "rar", "RAR"])(
+    "拡張子が %s のとき、アーカイブファイルと判定されること",
+    async (ext) => {
+      expect(await getPathKind(`/a/b/c.${ext}`)).toBe("archive");
+    }
+  );
 
   test("拡張子がないとき、undefined が返ること", async () => {
     expect(await getPathKind("/a/b/c")).toBeUndefined();
@@ -97,8 +100,8 @@ describe("parentDirPath", () => {
 });
 
 describe("getFileNameRemovedExtension", () => {
-  test("zip ファイルの拡張子を取り除いて返すこと", () => {
-    expect(getFileNameRemovedExtension("/a/b/アーカイブ.zip")).toBe("アーカイブ");
+  test.each(["zip", "rar"])("%s ファイルの拡張子を取り除いて返すこと", (ext) => {
+    expect(getFileNameRemovedExtension(`/a/b/アーカイブ.${ext}`)).toBe("アーカイブ");
   });
 
   test("拡張子がない場合、そのまま返すこと", () => {

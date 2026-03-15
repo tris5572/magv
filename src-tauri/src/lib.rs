@@ -189,12 +189,12 @@ fn get_image_file_list(path: &str) -> Vec<String> {
     files
 }
 
-/// 渡されたパス（ディレクトリまたはファイル）のディレクトリ内にある zip ファイルのリストを返す
+/// 渡されたパス（ディレクトリまたはファイル）のディレクトリ内にあるアーカイブファイルのリストを返す
 #[tauri::command]
 fn get_archive_file_list(path: &str) -> Vec<String> {
     let mut files = Vec::new();
 
-    let archive_extensions = vec!["zip"];
+    let archive_extensions = vec!["zip", "rar"];
 
     // path がファイルのときはディレクトリに変換する
     let path = if std::fs::metadata(path)

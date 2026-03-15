@@ -9,6 +9,10 @@ const host = process.env.TAURI_DEV_HOST;
 export default defineConfig(async () => ({
   plugins: [react()],
   test: { globals: true },
+  build: {
+    // RAR 展開用 wasm を data URL としてバンドルに埋め込み、Tauri 本番で追加 fetch 先に依存しないようにする
+    assetsInlineLimit: 512 * 1024,
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

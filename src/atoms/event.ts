@@ -32,7 +32,7 @@ export const handleEventAtom = atom<
   if (event instanceof KeyboardEvent) {
     const ev = convertKeyboardEvent(event, keyboardConfig, pageDirection);
     if (ev) {
-      if (ev === AppEvent.OPEN_RENAME_VIEW && appMode === "zip") {
+      if (ev === AppEvent.OPEN_RENAME_VIEW && appMode === "archive") {
         // 画像表示モードのときはリネームビューを表示しない
         set(isOpeningRenameViewAtom, !openingRenameView);
       } else {

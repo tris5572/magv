@@ -1,4 +1,5 @@
 import { exists, lstat, readDir, stat } from "@tauri-apps/plugin-fs";
+import { isArchivePath, isImagePath } from "./archive";
 
 /**
  * 渡されたパスのファイル種別を判別する
@@ -7,12 +8,12 @@ import { exists, lstat, readDir, stat } from "@tauri-apps/plugin-fs";
  */
 export async function getPathKind(
   path: string
-): Promise<"image" | "zip" | "directory" | undefined> {
-  if (path.toLowerCase().endsWith(".zip")) {
-    return "zip";
+): Promise<"image" | "archive" | "directory" | undefined> {
+  if (isArchivePath(path)) {
+    return "archive";
   }
 
-  if (/\.(jpe?g|png|gif|bmp|webp)$/i.test(path)) {
+  if (isImagePath(path)) {
     return "image";
   }
 
@@ -68,7 +69,7 @@ export function getFileNameRemovedExtension(path: string): string {
  */
 export async function getFileList(
   path: string,
-  kind: "zip" | "image" | "directory"
+  kind: "archive" | "image" | "directory"
 ): Promise<string[]> {
   const dir = await dirFromPath(path);
 
@@ -76,7 +77,7 @@ export async function getFileList(
   const array = [];
 
   for (const source of sourceList) {
-    if (kind === "zip" || kind === "image") {
+    if (kind === "archive" || kind === "image") {
       // ファイルではないときと、ピリオドから始まる特殊ファイル(.DS_Store 等)のときはスキップする
       if (!source.isFile || source.name.startsWith(".")) {
         continue;

@@ -20,6 +20,7 @@
     ],
     "security": {
       "csp": {
+        "script-src": "'self' 'unsafe-eval' 'wasm-unsafe-eval'",
         "img-src": "'self' asset: http://asset.localhost blob: data:"
       },
       "assetProtocol": {

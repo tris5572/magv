@@ -17,6 +17,7 @@
     "@tauri-apps/plugin-opener": "^2.5.2",
     "fflate": "^0.8.2",
     "jotai": "^2.16.1",
+    "node-unrar-js": "^2.0.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },

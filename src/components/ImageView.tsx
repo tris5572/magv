@@ -96,7 +96,7 @@ function EmptyMessage() {
       ファイルをドロップしてください
       <br />
       <br />
-      画像をまとめた zip ファイル
+      画像をまとめた zip / rar ファイル
       <br />
       画像ファイル
       <br />

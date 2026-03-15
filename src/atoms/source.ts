@@ -1,10 +1,9 @@
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
-import * as fflate from "fflate";
 import { atom } from "jotai";
 import type { DataSource, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
+import { extractArchiveImages } from "../utils/archive";
 import {
   createExclamationAddedPath,
   createRenamedPathToExcludeExtensionName,
@@ -94,9 +93,9 @@ const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 /**
- * アーカイブファイル(zip) またはフォルダを開く atom
+ * アーカイブファイル(zip / rar) またはフォルダを開く atom
  *
- * - zip ファイルの場合、渡されたパス(ローカル)のファイルを解凍し、画像ファイルのデータ (Blob) を取得する
+ * - アーカイブファイルの場合、渡されたパス(ローカル)のファイルを解凍し、画像ファイルのデータ (Blob) を取得する
  * - フォルダ/画像の場合、当該フォルダをそのまま開く
  *
  * 過去に開いた履歴があれば最後に開いていたページを、そうでなければ最初のページを表示する
@@ -109,28 +108,14 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
 
   const kind = await getPathKind(path);
 
-  if (kind === "zip") {
-    const response = await fetch(convertFileSrc(path));
-    const arrayBuffer = await response.arrayBuffer();
-    const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
-    // zip ファイルの中身から不要なファイルを除外して画像ファイルだけに絞り込む
-    const fileNames = Object.keys(unzipped)
-      .filter((name) => !name.startsWith("__MACOSX/")) // Mac のリソースファイルを除く
-      .filter((name) => !name.endsWith("/")) // ディレクトリを除く
-      .filter((name) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(name)) // 画像ファイルの拡張子を持つファイルだけを対象にする
-      .sort((a, b) => a.localeCompare(b, [], { numeric: true })); // Finder と同じ並び順にするため、ロケールを考慮してソート
+  if (kind === "archive") {
+    const images = await extractArchiveImages(path);
 
-    // 生データを保持データへ変換
-    const images = [];
-    for (const name of fileNames) {
-      const blob = new Blob([unzipped[name] as Uint8Array<ArrayBuffer>]); // 型エラーを一時的に解消するために型アサーション。TS 5.9 での型の変更に伴うもので、fflate の定義が変更されれば不要になる
-      images.push({ name, source: blob, orientation: undefined });
-    }
-    const fileList = await getFileList(path, "zip"); // 開くアーカイブと同じ階層にあるファイルのリスト
+    const fileList = await getFileList(path, "archive"); // 開くアーカイブと同じ階層にあるファイルのリスト
     const source = { images, siblings: fileList };
 
     set($openingSourceAtom, source); // 初期化したデータを保持
-    set(appModeAtom, "zip");
+    set(appModeAtom, "archive");
   } else {
     // フォルダまたは画像を開く場合
     const fileList = await getFileList(path, "image"); // 画像ファイルの一覧を取得
@@ -173,7 +158,7 @@ export const openFileAtom = atom(null, async (get, set, path: string | undefined
     const siblings = dataSource.siblings;
     // 前後の基準となる、現在開いているデータソースのパス
     const target =
-      appMode === "zip"
+      appMode === "archive"
         ? path // アーカイブを開いているときは、そのアーカイブ
         : await dirFromPath(path); // 画像を直接開いたときは、画像ではなくディレクトリのパスを見る必要がある
     const index = siblings.findIndex((p) => p === target); // 兄弟の中で、現在のデータソースのインデックスを探す
@@ -538,11 +523,11 @@ const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) =>
 
   set($openingSourcePathAtom, path);
 
-  if (appMode === "zip") {
+  if (appMode === "archive") {
     // アーカイブのファイル名をウィンドウのタイトルに設定
-    const zipName = path.split("/").pop();
-    if (zipName) {
-      getCurrentWindow().setTitle(zipName);
+    const archiveName = path.split("/").pop();
+    if (archiveName) {
+      getCurrentWindow().setTitle(archiveName);
     }
   } else {
     // ディレクトリ名をウィンドウのタイトルに設定

@@ -34,12 +34,11 @@ type Props = {
  * 画像のローカルなパスを渡すことで表示する
  */
 export function SingleImageView({ source, isHalf, justify }: Props) {
-  // TODO: ルーペの表示位置がずれるので対処する。ただ表示位置を CSS に任せているので自前で制御するのは難度が高い
-
   // ルーペのフラグ類
   const [showMagnifier, setShowMagnifier] = useState(false);
   const [[imgWidth, imgHeight], setSize] = useState([0, 0]);
-  const [[x, y], setXY] = useState([0, 0]);
+  const [[imageX, imageY], setImageXY] = useState([0, 0]);
+  const [[lensX, lensY], setLensXY] = useState([0, 0]);
   const isMagnifierEnabled = useAtomValue(isMagnifierEnabledAtom);
 
   // ルーペの定数
@@ -47,24 +46,46 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   const magnifierWidth = 600;
   const zoomLevel = 8;
 
-  const mouseEnter = (e: React.MouseEvent) => {
+  const mouseEnter = (e: React.MouseEvent<HTMLImageElement>) => {
     const el = e.currentTarget;
     const { width, height } = el.getBoundingClientRect();
-    setSize([width, height]);
+    const [displayedWidth, displayedHeight] = getContainedImageSize(
+      width,
+      height,
+      el.naturalWidth,
+      el.naturalHeight,
+    );
+    setSize([displayedWidth, displayedHeight]);
     setShowMagnifier(true);
   };
 
-  const mouseLeave = (e: React.MouseEvent) => {
+  const mouseLeave = (e: React.MouseEvent<HTMLImageElement>) => {
     e.preventDefault();
     setShowMagnifier(false);
   };
 
-  const mouseMove = (e: React.MouseEvent) => {
+  const mouseMove = (e: React.MouseEvent<HTMLImageElement>) => {
     const el = e.currentTarget;
-    const { top, left } = el.getBoundingClientRect();
-    const x = e.pageX - left - window.scrollX;
-    const y = e.pageY - top - window.scrollY;
-    setXY([x, y]);
+    const imgRect = el.getBoundingClientRect();
+    const containerRect = el.parentElement?.getBoundingClientRect() ?? imgRect;
+    const [displayedWidth, displayedHeight] = getContainedImageSize(
+      imgRect.width,
+      imgRect.height,
+      el.naturalWidth,
+      el.naturalHeight,
+    );
+    const offsetX = (imgRect.width - displayedWidth) / 2;
+    const offsetY = (imgRect.height - displayedHeight) / 2;
+    const rawX = e.clientX - imgRect.left - offsetX;
+    const rawY = e.clientY - imgRect.top - offsetY;
+    const clampedX = clamp(rawX, 0, displayedWidth);
+    const clampedY = clamp(rawY, 0, displayedHeight);
+
+    // ルーペの表示位置はコンテナ基準で計算する（絶対配置の基準がコンテナのため）
+    setLensXY([e.clientX - containerRect.left, e.clientY - containerRect.top]);
+    // 拡大参照位置は画像内の座標で計算する
+    setImageXY([clampedX, clampedY]);
+    setSize([displayedWidth, displayedHeight]);
   };
 
   /** img 要素の src に指定する文字列。ソース source の種類に応じて切替える */
@@ -121,11 +142,11 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
           borderRadius: "5px",
           backgroundImage: `url('${src}')`,
           backgroundRepeat: "no-repeat",
-          top: `${y - magnifierHeight / 2}px`,
-          left: `${x - magnifierWidth / 2}px`,
+          top: `${lensY - magnifierHeight / 2}px`,
+          left: `${lensX - magnifierWidth / 2}px`,
           backgroundSize: `${imgWidth * zoomLevel}px ${imgHeight * zoomLevel}px`,
-          backgroundPositionX: `${-x * zoomLevel + magnifierWidth / 2}px`,
-          backgroundPositionY: `${-y * zoomLevel + magnifierHeight / 2}px`,
+          backgroundPositionX: `${-imageX * zoomLevel + magnifierWidth / 2}px`,
+          backgroundPositionY: `${-imageY * zoomLevel + magnifierHeight / 2}px`,
         }}
       />
     </div>
@@ -151,3 +172,27 @@ const CONTAINER_STYLE: React.CSSProperties = {
   userSelect: "none",
   "-webkit-user-select": "none",
 };
+
+/**
+ * object-fit: contain で表示される実画像領域の幅・高さを返す
+ */
+function getContainedImageSize(
+  boxWidth: number,
+  boxHeight: number,
+  naturalWidth: number,
+  naturalHeight: number,
+): [number, number] {
+  if (!(boxWidth > 0 && boxHeight > 0 && naturalWidth > 0 && naturalHeight > 0)) {
+    return [boxWidth, boxHeight];
+  }
+
+  const scale = Math.min(boxWidth / naturalWidth, boxHeight / naturalHeight);
+  return [naturalWidth * scale, naturalHeight * scale];
+}
+
+/**
+ * 値を指定した最小値と最大値の範囲に収める
+ */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}

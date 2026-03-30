@@ -8,7 +8,7 @@ const IMAGE_FILE_PATTERN = /\.(jpe?g|png|gif|bmp|webp)$/i;
 const ARCHIVE_FILE_PATTERN = /\.(zip|rar)$/i;
 const MACOS_RESOURCE_PATH_PREFIX = "__MACOSX/";
 
-const unrarWasmBinaryPromise = loadWasmBinary(unrarWasmUrl);
+let unrarWasmBinaryPromise: Promise<ArrayBuffer> | undefined;
 
 type ArchiveFormat = "zip" | "rar";
 
@@ -92,7 +92,7 @@ async function extractRarImages(arrayBuffer: ArrayBuffer): Promise<ExtractedArch
   try {
     const extractor = await createExtractorFromData({
       data: arrayBuffer,
-      wasmBinary: await unrarWasmBinaryPromise,
+      wasmBinary: await getUnrarWasmBinary(),
     });
 
     return [...extractor.extract().files]
@@ -114,6 +114,14 @@ async function extractRarImages(arrayBuffer: ArrayBuffer): Promise<ExtractedArch
     const detail = error instanceof Error ? error.message : String(error);
     throw new Error(`RAR 展開に失敗: ${detail}`);
   }
+}
+
+/**
+ * unrar wasm を必要になったタイミングで一度だけ読み込む。
+ */
+function getUnrarWasmBinary(): Promise<ArrayBuffer> {
+  unrarWasmBinaryPromise ??= loadWasmBinary(unrarWasmUrl);
+  return unrarWasmBinaryPromise;
 }
 
 /**

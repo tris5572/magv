@@ -65,7 +65,7 @@ export const handleEventAtom = atom<
 function convertKeyboardEvent(
   input: KeyboardEvent,
   config: KeyboardConfig[],
-  pageDirection: "left" | "right"
+  pageDirection: "left" | "right",
 ): AppEvent | undefined {
   for (const c of config) {
     if (

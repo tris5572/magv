@@ -59,9 +59,7 @@ export async function extractArchiveImages(path: string): Promise<ImageData[]> {
   const response = await fetch(convertFileSrc(path));
   const arrayBuffer = await response.arrayBuffer();
   const images =
-    format === "zip"
-      ? extractZipImages(arrayBuffer)
-      : await extractRarImages(arrayBuffer);
+    format === "zip" ? extractZipImages(arrayBuffer) : await extractRarImages(arrayBuffer);
 
   return images.map(({ name, source }) => {
     return { name, source: new Blob([Uint8Array.from(source)]), orientation: undefined };
@@ -128,11 +126,7 @@ function getUnrarWasmBinary(): Promise<ArrayBuffer> {
  * macOS の補助ファイルや非画像を除外する。
  */
 function isDisplayableArchiveEntry(name: string): boolean {
-  return (
-    !name.startsWith(MACOS_RESOURCE_PATH_PREFIX) &&
-    !name.endsWith("/") &&
-    isImagePath(name)
-  );
+  return !name.startsWith(MACOS_RESOURCE_PATH_PREFIX) && !name.endsWith("/") && isImagePath(name);
 }
 
 /**

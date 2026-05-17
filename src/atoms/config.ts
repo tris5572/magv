@@ -159,7 +159,7 @@ export const windowSizeAtom = atom(
   },
   (_, set, size: { width: number; height: number }) => {
     set($windowSizeAtom, size);
-  }
+  },
 );
 
 /**
@@ -171,7 +171,7 @@ export const windowPositionAtom = atom(
   },
   (_, set, position: { x: number; y: number }) => {
     set($windowPositionAtom, position);
-  }
+  },
 );
 
 /**
@@ -214,5 +214,5 @@ export const keyboardConfigAtom = atom(
   (_, set, config: KeyboardConfig[]) => {
     // TODO: ちゃんとセットする
     set($keyboardConfigAtom, config);
-  }
+  },
 );

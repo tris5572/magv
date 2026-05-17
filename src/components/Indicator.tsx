@@ -69,7 +69,7 @@ export function Indicator() {
         moveIndex({ index: idx });
       }
     },
-    [direction, list.length, moveIndex]
+    [direction, list.length, moveIndex],
   );
 
   /** クリック時に呼び出されるコールバック */
@@ -81,7 +81,7 @@ export function Indicator() {
         setIsDragging(true);
       }
     },
-    [handleMoveEvent]
+    [handleMoveEvent],
   );
 
   /** ドラッグ中に呼び出されるコールバック */
@@ -91,7 +91,7 @@ export function Indicator() {
         handleMoveEvent(e);
       }
     },
-    [isDragging, handleMoveEvent]
+    [isDragging, handleMoveEvent],
   );
 
   // 要素の外（ウィンドウ内）でドラッグされたときにページを移動するためのリスナーを追加

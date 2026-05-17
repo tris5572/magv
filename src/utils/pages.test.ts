@@ -26,7 +26,7 @@ function createMockDataSourceByImageCount(imageCount: number): DataSource {
  * データソースのモックデータを、画像の向きの配列から生成する
  */
 function createMockDataSourceByImageOrientations(
-  orientations: ("portrait" | "landscape")[]
+  orientations: ("portrait" | "landscape")[],
 ): DataSource {
   return {
     images: orientations.map((orientation, i) => ({
@@ -114,7 +114,7 @@ describe("movePrevPage", () => {
         updateData: vi.fn(),
       });
       expect(result).toEqual(expected);
-    }
+    },
   );
 
   test.each<[("portrait" | "landscape")[], { index: number; forceSingle?: boolean }]>([
@@ -135,7 +135,7 @@ describe("movePrevPage", () => {
         updateData: vi.fn(),
       });
       expect(result).toEqual(expected);
-    }
+    },
   );
 });
 

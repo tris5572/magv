@@ -36,15 +36,15 @@ export const handleEventAtom = atom<
         // 画像表示モードのときはリネームビューを表示しない
         set(isOpeningRenameViewAtom, !openingRenameView);
       } else {
-        set(handleAppEvent, ev);
+        await set(handleAppEvent, ev);
       }
     }
   } else if (event instanceof WheelEvent) {
     // TODO: ホイールイベントはページ移動のみに決め打ちしているので、カスタマイズ可能にする
     if (0 < event.deltaY) {
-      set(handleAppEvent, AppEvent.MOVE_NEXT_PAGE);
+      await set(handleAppEvent, AppEvent.MOVE_NEXT_PAGE);
     } else if (event.deltaY < 0) {
-      set(handleAppEvent, AppEvent.MOVE_PREV_PAGE);
+      await set(handleAppEvent, AppEvent.MOVE_PREV_PAGE);
     }
   } else if (event instanceof MouseEvent) {
     // ホイールがクリックされたときは、ルーペの有効/無効を切り替える
@@ -53,7 +53,7 @@ export const handleEventAtom = atom<
     }
   } else {
     // ここでは AppEvent に絞り込まれているので、渡されたイベントを直接実行する
-    set(handleAppEvent, event);
+    await set(handleAppEvent, event);
   }
 });
 

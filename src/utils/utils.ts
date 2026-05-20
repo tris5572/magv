@@ -1,6 +1,12 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { appConfigDir, join } from "@tauri-apps/api/path";
-import { exists, mkdir, open, readTextFile, rename } from "@tauri-apps/plugin-fs";
+import {
+  exists,
+  mkdir,
+  open,
+  readTextFile,
+  rename,
+} from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { type WindowConfig } from "../types/config";
 import type { ImageOrientation } from "../types/image";
@@ -87,7 +93,11 @@ export async function storeConfigFile(config: WindowConfig, name: string) {
   }
 
   // ファイルを書き込む
-  const file = await open(tmpPath, { create: true, write: true, truncate: true });
+  const file = await open(tmpPath, {
+    create: true,
+    write: true,
+    truncate: true,
+  });
   await file.write(new TextEncoder().encode(json));
   await file.close();
 
@@ -100,7 +110,9 @@ export async function storeConfigFile(config: WindowConfig, name: string) {
  *
  * 設定が存在しない等で読み込めなかった場合は undefined を返す
  */
-export async function readConfigFile(name: string): Promise<WindowConfig | undefined> {
+export async function readConfigFile(
+  name: string,
+): Promise<WindowConfig | undefined> {
   const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
   const path = await join(dir, name);
 
@@ -130,6 +142,6 @@ export function searchAtBrowser(keyword: string) {
   if (word) {
     // const url = `https://www.google.com/search?q=${encodeURIComponent(word)}`;
     const url = `https://duckduckgo.com/?t=h_&q=${encodeURIComponent(word)}`;
-    openUrl(url);
+    void openUrl(url);
   }
 }

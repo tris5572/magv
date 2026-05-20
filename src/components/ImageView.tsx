@@ -22,7 +22,7 @@ export function ImageView() {
   async function handleContextMenu(event: React.MouseEvent) {
     event.preventDefault();
     const menu = await contextMenu;
-    menu.popup();
+    void menu.popup();
   }
 
   // 画像なし

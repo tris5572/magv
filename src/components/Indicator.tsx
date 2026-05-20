@@ -66,7 +66,7 @@ export function Indicator() {
         const ratio = direction === "left" ? 1 - clickX / width : clickX / width;
         const idx = Math.floor(ratio * list.length);
 
-        moveIndex({ index: idx });
+        void moveIndex({ index: idx });
       }
     },
     [direction, list.length, moveIndex],

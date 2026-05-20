@@ -84,7 +84,7 @@ function useEventListener() {
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
     async (path: string) => {
-      openSource(path);
+      await openSource(path);
     },
     [openSource],
   );
@@ -92,10 +92,10 @@ function useEventListener() {
   // ファイルをドロップしたときのリスナーを設定
   useEffect(() => {
     const unlisten = listen<{ paths: string[] }>("tauri://drag-drop", (event) => {
-      handleDrop(event.payload.paths[0]);
+      void handleDrop(event.payload.paths[0]);
     });
     return () => {
-      unlisten.then((f) => f());
+      void unlisten.then((f) => f());
     };
   }, [handleDrop]);
 
@@ -106,7 +106,7 @@ function useEventListener() {
       reserveStoreConfig();
     });
     return () => {
-      unlistenResize.then((f) => f());
+      void unlistenResize.then((f) => f());
     };
   }, [reserveStoreConfig, windowResized]);
 
@@ -117,7 +117,7 @@ function useEventListener() {
       reserveStoreConfig();
     });
     return () => {
-      unlistenMove.then((f) => f());
+      void unlistenMove.then((f) => f());
     };
   }, [reserveStoreConfig, windowMoved]);
 
@@ -128,7 +128,7 @@ function useEventListener() {
       void flushStoreConfig();
     });
     return () => {
-      unlisten.then((f) => f());
+      void unlisten.then((f) => f());
     };
   }, [flushStoreConfig]);
 
@@ -137,7 +137,7 @@ function useEventListener() {
     const appWindow = getCurrentWindow();
     let unlisten: (() => void) | undefined;
 
-    appWindow
+    void appWindow
       .onCloseRequested(async (event) => {
         if (isClosingRef.current) {
           return;
@@ -268,8 +268,8 @@ function useAppMenu() {
                   recentSourcePathList.map((path) =>
                     MenuItem.new({
                       text: path,
-                      action: () => {
-                        openSource(path);
+                      action: async () => {
+                        await openSource(path);
                       },
                     }),
                   ),
@@ -415,5 +415,5 @@ function useAppMenu() {
     await menu.setAsAppMenu();
   };
 
-  createMenu();
+  void createMenu();
 }

@@ -100,110 +100,118 @@ const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
  *
  * 過去に開いた履歴があれば最後に開いていたページを、そうでなければ最初のページを表示する
  */
-export const openFileAtom = atom(null, async (get, set, path: string | undefined) => {
-  // パスがない場合は何もしない
-  if (!path) {
-    return;
-  }
-
-  const kind = await getPathKind(path);
-
-  if (kind === "archive") {
-    const images = await extractArchiveImages(path);
-
-    const fileList = await getFileList(path, "archive"); // 開くアーカイブと同じ階層にあるファイルのリスト
-    const source = { images, siblings: fileList };
-
-    set($openingSourceAtom, source); // 初期化したデータを保持
-    set(appModeAtom, "archive");
-  } else {
-    // フォルダまたは画像を開く場合
-    const fileList = await getFileList(path, "image"); // 画像ファイルの一覧を取得
-
-    if (fileList.length === 0) {
-      return; // ディレクトリ内に画像ファイルがない場合は何もしない
-      // TODO: 前後のデータソースに移動後、フォルダ内に画像ファイルが存在しないときの挙動を検討
+export const openFileAtom = atom(
+  null,
+  async (get, set, path: string | undefined) => {
+    // パスがない場合は何もしない
+    if (!path) {
+      return;
     }
 
-    // 画像ファイル一覧を保持データへ変換
-    const images = [];
-    for (const name of fileList) {
-      images.push({ name, source: name, orientation: undefined });
+    const kind = await getPathKind(path);
+
+    if (kind === "archive") {
+      const images = await extractArchiveImages(path);
+
+      const fileList = await getFileList(path, "archive"); // 開くアーカイブと同じ階層にあるファイルのリスト
+      const source = { images, siblings: fileList };
+
+      set($openingSourceAtom, source); // 初期化したデータを保持
+      set(appModeAtom, "archive");
+    } else {
+      // フォルダまたは画像を開く場合
+      const fileList = await getFileList(path, "image"); // 画像ファイルの一覧を取得
+
+      if (fileList.length === 0) {
+        return; // ディレクトリ内に画像ファイルがない場合は何もしない
+        // TODO: 前後のデータソースに移動後、フォルダ内に画像ファイルが存在しないときの挙動を検討
+      }
+
+      // 画像ファイル一覧を保持データへ変換
+      const images = [];
+      for (const name of fileList) {
+        images.push({ name, source: name, orientation: undefined });
+      }
+      const parent = await parentDirPath(path);
+      const siblings =
+        parent != undefined ? await getFileList(parent, "directory") : [];
+      const source = { images, siblings };
+
+      set($openingSourceAtom, source); // 初期化したデータを保持
+      set(appModeAtom, "image");
     }
-    const parent = await parentDirPath(path);
-    const siblings = parent != undefined ? await getFileList(parent, "directory") : [];
-    const source = { images, siblings };
 
-    set($openingSourceAtom, source); // 初期化したデータを保持
-    set(appModeAtom, "image");
-  }
-
-  // 保持するデータソースのパスとウィンドウのタイトルを更新
-  let openingSourcePath: string;
-  if (kind === "image") {
-    openingSourcePath = await dirFromPath(path); // 画像を開いたときは、開いたインデックスの保存のために、そのディレクトリを保存する
-  } else {
-    openingSourcePath = path;
-  }
-  set(updateOpeningSourcePathAtom, openingSourcePath);
-  set(addRecentSourcePathAtom, openingSourcePath);
-
-  getCurrentWindow().setFocus(); // ウィンドウを前面に出す
-  set(stopSlideshowAtom); // スライドショーを停止する
-
-  // 前後のデータソースのパスを更新して保持する
-  const dataSource = get($openingSourceAtom);
-  const appMode = get(appModeAtom);
-  if (dataSource) {
-    const siblings = dataSource.siblings;
-    // 前後の基準となる、現在開いているデータソースのパス
-    const target =
-      appMode === "archive"
-        ? path // アーカイブを開いているときは、そのアーカイブ
-        : await dirFromPath(path); // 画像を直接開いたときは、画像ではなくディレクトリのパスを見る必要がある
-    const index = siblings.findIndex((p) => p === target); // 兄弟の中で、現在のデータソースのインデックスを探す
-
-    if (index !== -1) {
-      // 現在のデータソースが見つかったときのみ保持する（基本的に見つかるはず）
-      // 前後のファイルが存在しないときは undefined をセットする
-      const prevPath = siblings[index - 1];
-      const nextPath = siblings[index + 1];
-      set($prevSourcePathAtom, prevPath);
-      set($nextSourcePathAtom, nextPath);
+    // 保持するデータソースのパスとウィンドウのタイトルを更新
+    let openingSourcePath: string;
+    if (kind === "image") {
+      openingSourcePath = await dirFromPath(path); // 画像を開いたときは、開いたインデックスの保存のために、そのディレクトリを保存する
+    } else {
+      openingSourcePath = path;
     }
-  }
+    await set(updateOpeningSourcePathAtom, openingSourcePath);
+    set(addRecentSourcePathAtom, openingSourcePath);
 
-  // リネームビューを閉じる
-  // リネームビューを開いている状態で、テキストフィールドからフォーカスを外してアーカイブ移動（カーソル上下）したとき、
-  // テキストフィールドの内容と実際のファイルとの紐付けがゴチャゴチャになるので、一旦閉じる
-  set(isOpeningRenameViewAtom, false);
+    void getCurrentWindow().setFocus(); // ウィンドウを前面に出す
+    set(stopSlideshowAtom); // スライドショーを停止する
 
-  // 当該アーカイブを最後に開いていたときのインデックスを取得。初めて開く場合は 0
-  let index = get(lastOpenIndexAtom);
-  // 画像を直接指定して開いた場合は、そのインデックス
-  if (kind === "image") {
-    const paths = dataSource?.images.map((v) => v.source) ?? [];
-    const idx = paths.findIndex((file) => file === path);
-    if (idx !== -1) {
-      index = idx;
+    // 前後のデータソースのパスを更新して保持する
+    const dataSource = get($openingSourceAtom);
+    const appMode = get(appModeAtom);
+    if (dataSource) {
+      const siblings = dataSource.siblings;
+      // 前後の基準となる、現在開いているデータソースのパス
+      const target =
+        appMode === "archive"
+          ? path // アーカイブを開いているときは、そのアーカイブ
+          : await dirFromPath(path); // 画像を直接開いたときは、画像ではなくディレクトリのパスを見る必要がある
+      const index = siblings.findIndex((p) => p === target); // 兄弟の中で、現在のデータソースのインデックスを探す
+
+      if (index !== -1) {
+        // 現在のデータソースが見つかったときのみ保持する（基本的に見つかるはず）
+        // 前後のファイルが存在しないときは undefined をセットする
+        const prevPath = siblings[index - 1];
+        const nextPath = siblings[index + 1];
+        set($prevSourcePathAtom, prevPath);
+        set($nextSourcePathAtom, nextPath);
+      }
     }
-  }
 
-  // ページを表示
-  set(moveIndexAtom, { index });
-});
+    // リネームビューを閉じる
+    // リネームビューを開いている状態で、テキストフィールドからフォーカスを外してアーカイブ移動（カーソル上下）したとき、
+    // テキストフィールドの内容と実際のファイルとの紐付けがゴチャゴチャになるので、一旦閉じる
+    set(isOpeningRenameViewAtom, false);
+
+    // 当該アーカイブを最後に開いていたときのインデックスを取得。初めて開く場合は 0
+    let index = get(lastOpenIndexAtom);
+    // 画像を直接指定して開いた場合は、そのインデックス
+    if (kind === "image") {
+      const paths = dataSource?.images.map((v) => v.source) ?? [];
+      const idx = paths.findIndex((file) => file === path);
+      if (idx !== -1) {
+        index = idx;
+      }
+    }
+
+    // ページを表示
+    await set(moveIndexAtom, { index });
+  },
+);
 
 /**
  * 操作イベントを処理する atom
  */
 export const handleAppEvent = atom(
   null,
-  async (get, set, event: AppEvent | { event: AppEvent; payload: number | string }) => {
+  async (
+    get,
+    set,
+    event: AppEvent | { event: AppEvent; payload: number | string },
+  ) => {
     const singleOrDouble = get(singleOrDoubleAtom);
 
     if (typeof event === "object") {
       if (event.event === AppEvent.RENAME_SOURCE) {
-        set(renameSourceAtom, String(event.payload));
+        await set(renameSourceAtom, String(event.payload));
       }
       return;
     }
@@ -211,50 +219,50 @@ export const handleAppEvent = atom(
     switch (event) {
       case AppEvent.MOVE_NEXT_PAGE: {
         if (singleOrDouble === "single") {
-          set(moveNextSingleImageAtom);
+          await set(moveNextSingleImageAtom);
           break;
         }
-        set(moveNextPageAtom);
+        await set(moveNextPageAtom);
         break;
       }
       case AppEvent.MOVE_PREV_PAGE: {
         if (singleOrDouble === "single") {
-          set(movePrevSingleImageAtom);
+          await set(movePrevSingleImageAtom);
           break;
         }
-        set(movePrevPageAtom);
+        await set(movePrevPageAtom);
         break;
       }
       case AppEvent.MOVE_NEXT_SINGLE_IMAGE: {
-        set(moveNextSingleImageAtom);
+        await set(moveNextSingleImageAtom);
         break;
       }
       case AppEvent.MOVE_PREV_SINGLE_IMAGE: {
-        set(movePrevSingleImageAtom);
+        await set(movePrevSingleImageAtom);
         break;
       }
       case AppEvent.MOVE_FIRST_PAGE: {
-        set(moveFirstPageAtom);
+        await set(moveFirstPageAtom);
         break;
       }
       case AppEvent.MOVE_LAST_PAGE: {
-        set(moveLastPageAtom);
+        await set(moveLastPageAtom);
         break;
       }
       case AppEvent.SWITCH_NEXT_SOURCE: {
-        set(openNextSourceAtom);
+        await set(openNextSourceAtom);
         break;
       }
       case AppEvent.SWITCH_PREV_SOURCE: {
-        set(openPrevSourceAtom);
+        await set(openPrevSourceAtom);
         break;
       }
       case AppEvent.SWITCH_RANDOM_SOURCE: {
-        set(openRandomSourceAtom);
+        await set(openRandomSourceAtom);
         break;
       }
       case AppEvent.ADD_EXCLAMATION_MARK: {
-        set(renameAddExclamationMarkAtom);
+        await set(renameAddExclamationMarkAtom);
         break;
       }
       case AppEvent.SEARCH_FILE_NAME: {
@@ -262,7 +270,7 @@ export const handleAppEvent = atom(
         break;
       }
       case AppEvent.UPDATE_PAGE: {
-        set(updatePageAtom);
+        await set(updatePageAtom);
         break;
       }
     }
@@ -376,7 +384,7 @@ const moveNextPageAtom = atom(null, async (get, set) => {
 
   const result = moveNextPage({ index, imageProperty });
 
-  set(moveIndexAtom, { index: result });
+  await set(moveIndexAtom, { index: result });
 });
 
 /**
@@ -385,11 +393,15 @@ const moveNextPageAtom = atom(null, async (get, set) => {
 const movePrevPageAtom = atom(null, async (get, set) => {
   const index = get($openingImageIndexAtom);
   const dataSource = get($openingSourceAtom);
-  const updateData = (indexes: (number | undefined)[]) => set(updateImageDataAtom, indexes);
+  const updateData = (indexes: (number | undefined)[]) =>
+    set(updateImageDataAtom, indexes);
 
   const result = await movePrevPage({ index, dataSource, updateData });
 
-  set(moveIndexAtom, { index: result?.index, forceSingle: result?.forceSingle });
+  await set(moveIndexAtom, {
+    index: result?.index,
+    forceSingle: result?.forceSingle,
+  });
 });
 
 /**
@@ -402,7 +414,7 @@ const moveNextSingleImageAtom = atom(null, async (get, set) => {
 
   const result = moveNextSingleImage({ index, dataSource, imageProperty });
 
-  set(moveIndexAtom, { index: result });
+  await set(moveIndexAtom, { index: result });
 });
 
 /**
@@ -417,14 +429,14 @@ const movePrevSingleImageAtom = atom(null, async (get, set) => {
   const result = movePrevSingleImage({ index, dataSource });
 
   // 1枚分だけ前に戻り、見開き判定は表示処理側で実施
-  set(moveIndexAtom, { index: result });
+  await set(moveIndexAtom, { index: result });
 });
 
 /**
  * 最初のページを表示する atom
  */
 const moveFirstPageAtom = atom(null, async (_, set) => {
-  set(moveIndexAtom, { index: 0 });
+  await set(moveIndexAtom, { index: 0 });
 });
 
 /**
@@ -439,7 +451,7 @@ const moveLastPageAtom = atom(null, async (get, set) => {
 
   const result = await moveLastPage({ dataSource, singleOrDouble, updateData });
 
-  set(moveIndexAtom, { index: result });
+  await set(moveIndexAtom, { index: result });
 });
 
 /**
@@ -449,7 +461,7 @@ const moveLastPageAtom = atom(null, async (get, set) => {
  */
 const updatePageAtom = atom(null, async (get, set) => {
   const index = get($openingImageIndexAtom);
-  set(moveIndexAtom, { index });
+  await set(moveIndexAtom, { index });
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -461,7 +473,7 @@ const updatePageAtom = atom(null, async (get, set) => {
  */
 const openNextSourceAtom = atom(null, async (get, set) => {
   const path = get($nextSourcePathAtom);
-  set(openFileAtom, path);
+  await set(openFileAtom, path);
 });
 
 /**
@@ -469,7 +481,7 @@ const openNextSourceAtom = atom(null, async (get, set) => {
  */
 const openPrevSourceAtom = atom(null, async (get, set) => {
   const path = get($prevSourcePathAtom);
-  set(openFileAtom, path);
+  await set(openFileAtom, path);
 });
 
 /**
@@ -501,7 +513,7 @@ const openRandomSourceAtom = atom(null, async (get, set) => {
     const index = Math.floor(Math.random() * list.length);
     const path = list[index];
     if (path !== currentPath && (await exists(path))) {
-      set(openFileAtom, path);
+      await set(openFileAtom, path);
       return;
     }
   }
@@ -518,26 +530,29 @@ const openRandomSourceAtom = atom(null, async (get, set) => {
  *
  * 呼び出し前に、開いているデータソースの種類をセットしておく必要がある
  */
-const updateOpeningSourcePathAtom = atom(null, async (get, set, path: string) => {
-  const appMode = get(appModeAtom);
+const updateOpeningSourcePathAtom = atom(
+  null,
+  async (get, set, path: string) => {
+    const appMode = get(appModeAtom);
 
-  set($openingSourcePathAtom, path);
+    set($openingSourcePathAtom, path);
 
-  if (appMode === "archive") {
-    // アーカイブのファイル名をウィンドウのタイトルに設定
-    const archiveName = path.split("/").pop();
-    if (archiveName) {
-      getCurrentWindow().setTitle(archiveName);
+    if (appMode === "archive") {
+      // アーカイブのファイル名をウィンドウのタイトルに設定
+      const archiveName = path.split("/").pop();
+      if (archiveName) {
+        void getCurrentWindow().setTitle(archiveName);
+      }
+    } else {
+      // ディレクトリ名をウィンドウのタイトルに設定
+      const dirPath = await dirFromPath(path);
+      const dirName = dirPath.split("/").pop();
+      if (dirName) {
+        void getCurrentWindow().setTitle(dirName);
+      }
     }
-  } else {
-    // ディレクトリ名をウィンドウのタイトルに設定
-    const dirPath = await dirFromPath(path);
-    const dirName = dirPath.split("/").pop();
-    if (dirName) {
-      getCurrentWindow().setTitle(dirName);
-    }
-  }
-});
+  },
+);
 
 /**
  * 現在開いているデータソースに対して、名前の先頭にエクスクラメーションマークを付与してリネームする
@@ -553,8 +568,8 @@ const renameAddExclamationMarkAtom = atom(null, async (get, set) => {
   // ファイル名にエクスクラメーションマークを付与してリネーム
   const newPath = await createExclamationAddedPath(path);
   // リネームして、変更後のファイル名を開いていることにする
-  rename(path, newPath);
-  set(updateOpeningSourcePathAtom, newPath);
+  await rename(path, newPath);
+  await set(updateOpeningSourcePathAtom, newPath);
 });
 
 /**
@@ -676,11 +691,14 @@ const renameSourceAtom = atom(null, async (get, set, name: string) => {
     return;
   }
 
-  const newPath = await createRenamedPathToExcludeExtensionName(beforePath, name);
+  const newPath = await createRenamedPathToExcludeExtensionName(
+    beforePath,
+    name,
+  );
 
   // リネームして、変更後のファイル名を開いていることにする
-  rename(beforePath, newPath);
-  set(updateOpeningSourcePathAtom, newPath);
+  await rename(beforePath, newPath);
+  await set(updateOpeningSourcePathAtom, newPath);
 });
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -732,22 +750,27 @@ const lastOpenIndexAtom = atom(
 /**
  * 画像を表示する前に、画像のデータを更新する atom
  */
-const updateImageDataAtom = atom(null, async (get, set, targets: (number | undefined)[]) => {
-  const source = get($openingSourceAtom);
-  if (!source) {
-    return;
-  }
-
-  // 当該インデックスのデータを更新する
-  for (const n of targets) {
-    if (n === undefined) {
-      continue;
+const updateImageDataAtom = atom(
+  null,
+  async (get, set, targets: (number | undefined)[]) => {
+    const source = get($openingSourceAtom);
+    if (!source) {
+      return;
     }
-    if (source.images[n].orientation !== undefined) {
-      continue; // すでに取得済みの場合はスキップ
-    }
-    source.images[n].orientation = await getImageOrientation(source.images[n].source);
-  }
 
-  set($openingSourceAtom, source);
-});
+    // 当該インデックスのデータを更新する
+    for (const n of targets) {
+      if (n === undefined) {
+        continue;
+      }
+      if (source.images[n].orientation !== undefined) {
+        continue; // すでに取得済みの場合はスキップ
+      }
+      source.images[n].orientation = await getImageOrientation(
+        source.images[n].source,
+      );
+    }
+
+    set($openingSourceAtom, source);
+  },
+);

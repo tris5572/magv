@@ -66,10 +66,10 @@ export function Indicator() {
         const ratio = direction === "left" ? 1 - clickX / width : clickX / width;
         const idx = Math.floor(ratio * list.length);
 
-        moveIndex({ index: idx });
+        void moveIndex({ index: idx });
       }
     },
-    [direction, list.length, moveIndex]
+    [direction, list.length, moveIndex],
   );
 
   /** クリック時に呼び出されるコールバック */
@@ -81,7 +81,7 @@ export function Indicator() {
         setIsDragging(true);
       }
     },
-    [handleMoveEvent]
+    [handleMoveEvent],
   );
 
   /** ドラッグ中に呼び出されるコールバック */
@@ -91,7 +91,7 @@ export function Indicator() {
         handleMoveEvent(e);
       }
     },
-    [isDragging, handleMoveEvent]
+    [isDragging, handleMoveEvent],
   );
 
   // 要素の外（ウィンドウ内）でドラッグされたときにページを移動するためのリスナーを追加

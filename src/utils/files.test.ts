@@ -42,14 +42,14 @@ describe("getPathKind", () => {
     "拡張子が %s のとき、画像と判定されること",
     async (ext) => {
       expect(await getPathKind(`/a/b/c.${ext}`)).toBe("image");
-    }
+    },
   );
 
   test.each(["zip", "rar", "RAR"])(
     "拡張子が %s のとき、アーカイブファイルと判定されること",
     async (ext) => {
       expect(await getPathKind(`/a/b/c.${ext}`)).toBe("archive");
-    }
+    },
   );
 
   test("拡張子がないとき、undefined が返ること", async () => {
@@ -118,13 +118,13 @@ describe("getFileNameRemovedExtension", () => {
 
   test("拡張子部分が長い文字列の場合、拡張子を取り除かずに返すこと", () => {
     expect(getFileNameRemovedExtension("/a/b/単なる.区切りとして使っている")).toBe(
-      "単なる.区切りとして使っている"
+      "単なる.区切りとして使っている",
     );
   });
 
   test("途中にピリオドと長い文字列を含む場合、最後の拡張子を除いて返すこと", () => {
     expect(getFileNameRemovedExtension("/a/b/単なる.区切りとして使っている.zip")).toBe(
-      "単なる.区切りとして使っている"
+      "単なる.区切りとして使っている",
     );
   });
 });
@@ -154,7 +154,7 @@ describe("createRenamedPathToExcludeExtensionName", () => {
   test("リネームされたパスが返されること", async () => {
     vi.mocked(exists).mockReturnValue(Promise.resolve(false));
     expect(await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "変更後")).toBe(
-      "/a/b/変更後.txt"
+      "/a/b/変更後.txt",
     );
   });
 
@@ -162,7 +162,7 @@ describe("createRenamedPathToExcludeExtensionName", () => {
     vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
     vi.mocked(exists).mockReturnValueOnce(Promise.resolve(false));
     expect(await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "変更後")).toBe(
-      "/a/b/変更後_.txt"
+      "/a/b/変更後_.txt",
     );
   });
 
@@ -172,14 +172,14 @@ describe("createRenamedPathToExcludeExtensionName", () => {
     vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
     vi.mocked(exists).mockReturnValueOnce(Promise.resolve(false));
     expect(await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "変更後")).toBe(
-      "/a/b/変更後___.txt"
+      "/a/b/変更後___.txt",
     );
   });
 
   test("元がピリオド付きのファイル名だった場合、リネームされたパスが返されること", async () => {
     vi.mocked(exists).mockReturnValue(Promise.resolve(false));
     expect(
-      await createRenamedPathToExcludeExtensionName("/a/b/ピリオドの前.と後.txt", "変更後")
+      await createRenamedPathToExcludeExtensionName("/a/b/ピリオドの前.と後.txt", "変更後"),
     ).toBe("/a/b/変更後.txt");
   });
 
@@ -187,7 +187,7 @@ describe("createRenamedPathToExcludeExtensionName", () => {
     vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
     vi.mocked(exists).mockReturnValue(Promise.resolve(false));
     expect(
-      await createRenamedPathToExcludeExtensionName("/a/b/ピリオドの前.と後.txt", "変更後")
+      await createRenamedPathToExcludeExtensionName("/a/b/ピリオドの前.と後.txt", "変更後"),
     ).toBe("/a/b/変更後_.txt");
   });
 
@@ -195,14 +195,14 @@ describe("createRenamedPathToExcludeExtensionName", () => {
     vi.mocked(exists).mockReturnValueOnce(Promise.resolve(true));
     vi.mocked(exists).mockReturnValue(Promise.resolve(false));
     expect(
-      await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "ピリオドの前.と後")
+      await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "ピリオドの前.と後"),
     ).toBe("/a/b/ピリオドの前.と後_.txt");
   });
 
   test("前後のファイル名が同じ場合、アンダースコアが付与していないパスが返されること", async () => {
     vi.mocked(exists).mockReturnValue(Promise.resolve(true));
     expect(await createRenamedPathToExcludeExtensionName("/a/b/元の名前.txt", "元の名前")).toBe(
-      "/a/b/元の名前.txt"
+      "/a/b/元の名前.txt",
     );
   });
 });

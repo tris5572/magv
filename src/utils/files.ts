@@ -7,7 +7,7 @@ import { isArchivePath, isImagePath } from "./archive";
  * 不明なときは `undefined`
  */
 export async function getPathKind(
-  path: string
+  path: string,
 ): Promise<"image" | "archive" | "directory" | undefined> {
   if (isArchivePath(path)) {
     return "archive";
@@ -69,7 +69,7 @@ export function getFileNameRemovedExtension(path: string): string {
  */
 export async function getFileList(
   path: string,
-  kind: "archive" | "image" | "directory"
+  kind: "archive" | "image" | "directory",
 ): Promise<string[]> {
   const dir = await dirFromPath(path);
 
@@ -168,7 +168,7 @@ export async function createExclamationAddedPath(path: string): Promise<string> 
  */
 export async function createRenamedPathToExcludeExtensionName(
   path: string,
-  name: string
+  name: string,
 ): Promise<string> {
   const buf = path.split("/"); // TODO: どの文字で区切るかを環境に基づいて判定する
   const beforeName = buf.pop() ?? ""; // 元のファイル名を取り除きつつ、取得

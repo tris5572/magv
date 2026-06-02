@@ -6,6 +6,7 @@ import { type CSSProperties, useCallback, useEffect, useRef } from "react";
 import {
   canMoveNextAtom,
   canMovePrevAtom,
+  isCursorVisibleAtom,
   isOpeningRenameViewAtom,
   isOpenPageAtom,
   singleOrDoubleAtom,
@@ -14,6 +15,7 @@ import { handleEventAtom } from "../atoms/event";
 import { openFileAtom, recentSourcePathListAtom } from "../atoms/source";
 import { useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { AppEvent } from "../types/event";
+import { shouldShowCursorOnMouseMove } from "../utils/event";
 import { ImageView } from "./ImageView";
 import { Indicator } from "./Indicator";
 import { Log } from "./Log";
@@ -34,6 +36,7 @@ export function App() {
   const isOpeningRenameView = useAtomValue(isOpeningRenameViewAtom);
 
   useEventListener();
+  useCursorVisibilityController();
   useAppMenu();
 
   return (
@@ -48,6 +51,46 @@ export function App() {
       <Log />
     </main>
   );
+}
+
+/**
+ * カーソル表示を制御するカスタムフック
+ */
+function useCursorVisibilityController() {
+  const [isCursorVisible, setIsCursorVisible] = useAtom(isCursorVisibleAtom);
+  const isCursorVisibleRef = useRef(isCursorVisible);
+
+  useEffect(() => {
+    isCursorVisibleRef.current = isCursorVisible;
+  }, [isCursorVisible]);
+
+  // 非表示中のみ、マウス移動をトリガーにカーソルを再表示する
+  useEffect(() => {
+    const handleMouseMove = () => {
+      if (shouldShowCursorOnMouseMove(isCursorVisibleRef.current)) {
+        setIsCursorVisible(true);
+      }
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [setIsCursorVisible]);
+
+  // カーソルを表示/非表示する
+  useEffect(() => {
+    document.documentElement.classList.toggle("cursor-hidden", !isCursorVisible);
+    // void getCurrentWindow().setCursorVisible(isCursorVisible); // なぜか効かないのでコメントアウト
+  }, [isCursorVisible]);
+
+  // 終了時は必ずカーソルを表示へ戻す
+  useEffect(() => {
+    return () => {
+      document.documentElement.classList.remove("cursor-hidden");
+      // void getCurrentWindow().setCursorVisible(true); // なぜか効かないのでコメントアウト
+    };
+  }, []);
 }
 
 /**

@@ -53,6 +53,11 @@ export const singleOrDoubleAtom = atom<"single" | "double">("double");
 export const isMagnifierEnabledAtom = atom<boolean>(false);
 
 /**
+ * カーソルを表示するかどうかを保持する atom
+ */
+export const isCursorVisibleAtom = atom<boolean>(true);
+
+/**
  * 見開き方向を切り替える atom
  *
  * デフォルトでは左に進む（右開き）で `"left"`

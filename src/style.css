@@ -16,3 +16,8 @@ html {
   --black-color: hsl(180 10% 5%);
   --white-color: hsl(180 10% 80%);
 }
+
+.cursor-hidden,
+.cursor-hidden * {
+  cursor: none !important;
+}

@@ -20,9 +20,11 @@ import {
   movePrevPage,
   movePrevSingleImage,
 } from "../utils/pages";
+import { shouldHideCursorOnAppEvent } from "../utils/event";
 import { getImageOrientation, searchAtBrowser } from "../utils/utils";
 import {
   appModeAtom,
+  isCursorVisibleAtom,
   isOpeningRenameViewAtom,
   resetSlideshowAtom,
   singleOrDoubleAtom,
@@ -194,6 +196,9 @@ export const openFileAtom = atom(
 
     // ページを表示
     await set(moveIndexAtom, { index });
+
+    // カーソルを非表示にする
+    set(isCursorVisibleAtom, false);
   },
 );
 
@@ -214,6 +219,11 @@ export const handleAppEvent = atom(
         await set(renameSourceAtom, String(event.payload));
       }
       return;
+    }
+
+    // 一部イベントではカーソルを非表示にする
+    if (shouldHideCursorOnAppEvent(event)) {
+      set(isCursorVisibleAtom, false);
     }
 
     switch (event) {

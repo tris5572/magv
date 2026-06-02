@@ -10,6 +10,7 @@
     "core:window:allow-set-position",
     "core:window:allow-set-size",
     "core:window:allow-set-title",
+    "core:window:allow-set-cursor-visible",
     "fs:default",
     {
       "identifier": "fs:read-all",

@@ -1,7 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
 import { atom } from "jotai";
-import type { DataSource, LastIndex } from "../types/data";
+import type { DataSource, ImageData, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
 import { extractArchiveImages } from "../utils/archive";
 import {
@@ -82,6 +82,13 @@ const $recentSourcePathListAtom = atom<string[]>([]);
 const $lastIndexArrayAtom = atom<LastIndex[]>([]);
 
 /**
+ * アーカイブから展開した画像一覧をパス単位で保持する atom
+ *
+ * 前後のアーカイブ切替時に再展開を避け、表示のちらつきを抑える。
+ */
+const $archiveImageCacheAtom = atom<Record<string, ImageData[]>>({});
+
+/**
  * 最近使ったデータソースの履歴を更新する atom
  */
 const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
@@ -113,7 +120,16 @@ export const openFileAtom = atom(
     const kind = await getPathKind(path);
 
     if (kind === "archive") {
-      const images = await extractArchiveImages(path);
+      const cache = get($archiveImageCacheAtom);
+      const cachedImages = cache[path];
+      const images = cachedImages ?? (await extractArchiveImages(path));
+
+      if (!cachedImages) {
+        set($archiveImageCacheAtom, {
+          ...cache,
+          [path]: images,
+        });
+      }
 
       const fileList = await getFileList(path, "archive"); // 開くアーカイブと同じ階層にあるファイルのリスト
       const source = { images, siblings: fileList };

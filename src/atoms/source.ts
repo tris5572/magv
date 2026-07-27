@@ -1,7 +1,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { exists, rename } from "@tauri-apps/plugin-fs";
 import { atom } from "jotai";
-import type { DataSource, LastIndex } from "../types/data";
+import type { DataSource, ImageData, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
 import { extractArchiveImages } from "../utils/archive";
 import {
@@ -82,6 +82,22 @@ const $recentSourcePathListAtom = atom<string[]>([]);
 const $lastIndexArrayAtom = atom<LastIndex[]>([]);
 
 /**
+ * アーカイブから展開した画像一覧をパス単位で保持する atom
+ *
+ * 前後のアーカイブ切替時に再展開を避け、表示のちらつきを抑える。
+ */
+const $archiveImageCacheAtom = atom<Partial<Record<string, ImageData[]>>>({});
+
+/**
+ * アーカイブ画像の展開中 Promise をパス単位で保持する atom
+ *
+ * 先読みと通常表示で同じ展開処理を共有し、二重展開を防ぐ。
+ */
+const $archiveImageLoadingAtom = atom<
+  Partial<Record<string, Promise<ImageData[]>>>
+>({});
+
+/**
  * 最近使ったデータソースの履歴を更新する atom
  */
 const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
@@ -89,6 +105,62 @@ const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
   const nextList = [path, ...list.filter((v) => v !== path)].slice(0, 20);
   set($recentSourcePathListAtom, nextList);
 });
+
+/**
+ * 指定したアーカイブの画像一覧をキャッシュ付きで読み込む atom
+ */
+const loadArchiveImagesAtom = atom(null, async (get, set, path: string) => {
+  const cache = get($archiveImageCacheAtom);
+  const cachedImages = cache[path];
+  if (cachedImages) {
+    return cachedImages;
+  }
+
+  const loadingMap = get($archiveImageLoadingAtom);
+  const loadingPromise = loadingMap[path];
+  if (loadingPromise) {
+    return await loadingPromise;
+  }
+
+  const nextPromise = extractArchiveImages(path);
+  set($archiveImageLoadingAtom, {
+    ...loadingMap,
+    [path]: nextPromise,
+  });
+
+  try {
+    const images = await nextPromise;
+    set($archiveImageCacheAtom, {
+      ...get($archiveImageCacheAtom),
+      [path]: images,
+    });
+    return images;
+  } finally {
+    const currentLoadingMap = get($archiveImageLoadingAtom);
+    if (currentLoadingMap[path] === nextPromise) {
+      const { [path]: _, ...rest } = currentLoadingMap;
+      set($archiveImageLoadingAtom, rest);
+    }
+  }
+});
+
+/**
+ * 前後アーカイブをバックグラウンドで先読みする atom
+ */
+const preloadArchiveImagesAtom = atom(
+  null,
+  (get, set, paths: (string | undefined)[]) => {
+    const cache = get($archiveImageCacheAtom);
+    const loadingMap = get($archiveImageLoadingAtom);
+
+    for (const path of paths) {
+      if (!path || cache[path] || loadingMap[path]) {
+        continue;
+      }
+      void set(loadArchiveImagesAtom, path);
+    }
+  },
+);
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
@@ -113,7 +185,7 @@ export const openFileAtom = atom(
     const kind = await getPathKind(path);
 
     if (kind === "archive") {
-      const images = await extractArchiveImages(path);
+      const images = await set(loadArchiveImagesAtom, path);
 
       const fileList = await getFileList(path, "archive"); // 開くアーカイブと同じ階層にあるファイルのリスト
       const source = { images, siblings: fileList };
@@ -175,6 +247,10 @@ export const openFileAtom = atom(
         const nextPath = siblings[index + 1];
         set($prevSourcePathAtom, prevPath);
         set($nextSourcePathAtom, nextPath);
+
+        if (kind === "archive") {
+          set(preloadArchiveImagesAtom, [prevPath, nextPath]);
+        }
       }
     }
 

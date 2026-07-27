@@ -1,7 +1,12 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useAtomValue } from "jotai";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { isMagnifierEnabledAtom } from "../atoms/app";
+
+/**
+ * 同じ Blob から毎回別の URL を生成しないためのキャッシュ。
+ */
+const blobUrlCache = new WeakMap<Blob, string>();
 
 type Props = {
   /**
@@ -89,17 +94,7 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
   };
 
   /** img 要素の src に指定する文字列。ソース source の種類に応じて切替える */
-  const src = useMemo(() => {
-    if (!source) {
-      return undefined;
-    } else if (source instanceof Blob) {
-      return URL.createObjectURL(source); // Blob は URL を生成
-    } else if (source.startsWith("data:")) {
-      return source; // Base64 はそのまま
-    } else {
-      return convertFileSrc(source); // ローカルのパスは 表示用のパスに変換
-    }
-  }, [source]);
+  const src = toImageSrc(source);
 
   if (!source) {
     return null;
@@ -172,6 +167,33 @@ const CONTAINER_STYLE: React.CSSProperties = {
   userSelect: "none",
   "-webkit-user-select": "none",
 };
+
+/**
+ * 画像ソースを img 要素へ渡せる URL へ変換する。
+ */
+function toImageSrc(source?: string | Blob): string | undefined {
+  if (!source) {
+    return undefined;
+  }
+
+  if (source instanceof Blob) {
+    const cachedUrl = blobUrlCache.get(source);
+
+    if (cachedUrl) {
+      return cachedUrl;
+    }
+
+    const nextUrl = URL.createObjectURL(source);
+    blobUrlCache.set(source, nextUrl);
+    return nextUrl;
+  }
+
+  if (source.startsWith("data:")) {
+    return source;
+  }
+
+  return convertFileSrc(source);
+}
 
 /**
  * object-fit: contain で表示される実画像領域の幅・高さを返す

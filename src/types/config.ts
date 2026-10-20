@@ -1,27 +1,6 @@
 import { type AppEvent } from "./event";
 
 /**
- * ウィンドウの位置と保存する設定ファイルのファイル名
- */
-export const WINDOW_CONFIG_FILE_NAME = "window.json";
-
-/**
- * ウィンドウの位置とサイズを保存する設定ファイルの型
- */
-export type WindowConfig = {
-  window?: {
-    position?: {
-      x: number;
-      y: number;
-    };
-    size?: {
-      width: number;
-      height: number;
-    };
-  };
-};
-
-/**
  * キーボード操作の設定の型
  */
 export type KeyboardConfig = {

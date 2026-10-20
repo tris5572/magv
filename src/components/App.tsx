@@ -1,6 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
 import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { type CSSProperties, useCallback, useEffect, useRef } from "react";
 import {
@@ -13,7 +12,6 @@ import {
 } from "../atoms/app";
 import { handleEventAtom } from "../atoms/event";
 import { openFileAtom, recentSourcePathListAtom } from "../atoms/source";
-import { useStoreWindowConfig, useWindowEvent } from "../hooks/config";
 import { AppEvent } from "../types/event";
 import { shouldShowCursorOnMouseMove } from "../utils/event";
 import { ImageView } from "./ImageView";
@@ -98,31 +96,7 @@ function useCursorVisibilityController() {
  */
 function useEventListener() {
   const openSource = useSetAtom(openFileAtom);
-  const { windowResized, windowMoved } = useWindowEvent();
-  const storeConfig = useStoreWindowConfig();
   const handleEvent = useSetAtom(handleEventAtom);
-  const saveTimerIdRef = useRef<number | undefined>(undefined);
-  const isClosingRef = useRef(false);
-
-  // 保存予約中のタイマーを解除して、即時に設定保存を実行する
-  const flushStoreConfig = useCallback(async () => {
-    if (saveTimerIdRef.current !== undefined) {
-      clearTimeout(saveTimerIdRef.current);
-      saveTimerIdRef.current = undefined;
-    }
-    await storeConfig();
-  }, [storeConfig]);
-
-  // move / resize の連続発火に対して、一定時間後に1回だけ設定保存を実行する
-  const reserveStoreConfig = useCallback(() => {
-    if (saveTimerIdRef.current !== undefined) {
-      clearTimeout(saveTimerIdRef.current);
-    }
-    saveTimerIdRef.current = window.setTimeout(() => {
-      saveTimerIdRef.current = undefined;
-      void storeConfig();
-    }, 500);
-  }, [storeConfig]);
 
   // ファイルがドロップされたときの処理
   const handleDrop = useCallback(
@@ -141,72 +115,6 @@ function useEventListener() {
       void unlisten.then((f) => f());
     };
   }, [handleDrop]);
-
-  // ウィンドウ移動のリスナーを設定
-  useEffect(() => {
-    const unlistenResize = listen<{ width: number; height: number }>("tauri://resize", (event) => {
-      windowResized(event.payload);
-      reserveStoreConfig();
-    });
-    return () => {
-      void unlistenResize.then((f) => f());
-    };
-  }, [reserveStoreConfig, windowResized]);
-
-  // ウィンドウリサイズのリスナーを設定
-  useEffect(() => {
-    const unlistenMove = listen<{ x: number; y: number }>("tauri://move", (event) => {
-      windowMoved(event.payload);
-      reserveStoreConfig();
-    });
-    return () => {
-      void unlistenMove.then((f) => f());
-    };
-  }, [reserveStoreConfig, windowMoved]);
-
-  // フォーカスが外れたときの処理を設定
-  useEffect(() => {
-    // フォーカスが外れた時点で保存しておき、終了時保存失敗の影響を下げる
-    const unlisten = listen("tauri://blur", () => {
-      void flushStoreConfig();
-    });
-    return () => {
-      void unlisten.then((f) => f());
-    };
-  }, [flushStoreConfig]);
-
-  // 終了時は保存完了を待ってから終了する
-  useEffect(() => {
-    const appWindow = getCurrentWindow();
-    let unlisten: (() => void) | undefined;
-
-    void appWindow
-      .onCloseRequested(async (event) => {
-        if (isClosingRef.current) {
-          return;
-        }
-
-        event.preventDefault();
-        isClosingRef.current = true;
-
-        try {
-          await flushStoreConfig();
-        } finally {
-          await appWindow.destroy();
-        }
-      })
-      .then((f) => {
-        unlisten = f;
-      });
-
-    return () => {
-      if (saveTimerIdRef.current !== undefined) {
-        clearTimeout(saveTimerIdRef.current);
-        saveTimerIdRef.current = undefined;
-      }
-      unlisten?.();
-    };
-  }, [flushStoreConfig]);
 
   // キー押下のイベントリスナーを設定
   useEffect(() => {

@@ -1,14 +1,5 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { appConfigDir, join } from "@tauri-apps/api/path";
-import {
-  exists,
-  mkdir,
-  open,
-  readTextFile,
-  rename,
-} from "@tauri-apps/plugin-fs";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { type WindowConfig } from "../types/config";
 import type { ImageOrientation } from "../types/image";
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -67,64 +58,6 @@ export async function getImageOrientation(
   }
 
   return size.width < size.height ? "portrait" : "landscape";
-}
-
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-// #region 設定ファイル系
-// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-/**
- * 設定ファイルを指定された名前で保存する
- */
-export async function storeConfigFile(config: WindowConfig, name: string) {
-  const json = JSON.stringify(config);
-  const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
-  const path = await join(dir, name);
-  const tmpPath = await join(dir, `${name}.tmp`);
-
-  // 設定ファイルの破損を防ぐため、保存対象のデータがない場合は保存しない
-  if (config.window?.position == null || config.window?.size == null) {
-    return;
-  }
-
-  // 保存先のディレクトリが存在しないときは作成する
-  if (!(await exists(dir))) {
-    await mkdir(dir);
-  }
-
-  // ファイルを書き込む
-  const file = await open(tmpPath, {
-    create: true,
-    write: true,
-    truncate: true,
-  });
-  await file.write(new TextEncoder().encode(json));
-  await file.close();
-
-  // 一時ファイルを本番ファイルに置き換える（原子的な更新）
-  await rename(tmpPath, path);
-}
-
-/**
- * 指定されたファイル名の設定ファイルを読み込む
- *
- * 設定が存在しない等で読み込めなかった場合は undefined を返す
- */
-export async function readConfigFile(
-  name: string,
-): Promise<WindowConfig | undefined> {
-  const dir = await appConfigDir(); // macOS では /Users/{username}/Library/Application Support/{identifier}
-  const path = await join(dir, name);
-
-  // 設定ファイルが見つからないときは何もしない
-  if (!(await exists(path))) {
-    return undefined;
-  }
-
-  // ファイルを読み込む
-  const text = await readTextFile(path);
-  const json = JSON.parse(text) as WindowConfig;
-  return json;
 }
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

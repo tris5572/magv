@@ -128,6 +128,8 @@ export function SingleImageView({ source, isHalf, justify }: Props) {
         style={{
           display: isMagnifierEnabled && showMagnifier ? "" : "none",
           position: "absolute",
+          // 見開きの隣のページより手前にルーペ全体を表示する
+          zIndex: 1,
           pointerEvents: "none",
           height: `${magnifierHeight}px`,
           width: `${magnifierWidth}px`,

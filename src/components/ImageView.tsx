@@ -55,6 +55,8 @@ export function ImageView() {
 /** 画像単体表示時のスタイル */
 const SINGLE_STYLE: CSSProperties = {
   height: "calc(100dvh - 32px)",
+  // ルーペの重なり順を画像表示領域内に限定する
+  isolation: "isolate",
   overflow: "hidden",
 };
 
@@ -65,6 +67,7 @@ const SINGLE_STYLE: CSSProperties = {
 function getDoubleStyle(pageDirection: "right" | "left"): CSSProperties {
   return {
     height: "calc(100dvh - 32px)",
+    isolation: "isolate",
     display: "flex",
     flexDirection: pageDirection === "left" ? "row-reverse" : "row",
     justifyContent: "center",

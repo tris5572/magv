@@ -32,6 +32,7 @@ import {
   stopSlideshowAtom,
   viewingImageAtom,
 } from "./app";
+import { addLogMessageAtom, clearLogMessageAtom } from "./log";
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 内部データ保持 atom
@@ -96,7 +97,7 @@ const $archiveImageCacheAtom = atom(() => new ArchiveImageCache());
  * 先読みと通常表示で同じ展開処理を共有し、二重展開を防ぐ。
  */
 const $archiveImageLoadingAtom = atom<
-  Partial<Record<string, Promise<ImageData[]>>>
+  Partial<Record<string, { promise: Promise<ImageData[] | undefined>; preload: boolean }>>
 >({});
 
 /**
@@ -111,55 +112,65 @@ const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
 /**
  * 指定したアーカイブの画像一覧をキャッシュ付きで読み込む atom
  */
-const loadArchiveImagesAtom = atom(null, async (get, set, path: string) => {
-  const cache = get($archiveImageCacheAtom);
-  const cachedImages = cache.get(path);
-  if (cachedImages) {
-    return cachedImages;
-  }
-
-  const loadingMap = get($archiveImageLoadingAtom);
-  const loadingPromise = loadingMap[path];
-  if (loadingPromise) {
-    return await loadingPromise;
-  }
-
-  const nextPromise = extractArchiveImages(path);
-  set($archiveImageLoadingAtom, {
-    ...loadingMap,
-    [path]: nextPromise,
-  });
-
-  try {
-    const images = await nextPromise;
-    cache.set(path, images);
-    return images;
-  } finally {
-    const currentLoadingMap = get($archiveImageLoadingAtom);
-    if (currentLoadingMap[path] === nextPromise) {
-      const { [path]: _, ...rest } = currentLoadingMap;
-      set($archiveImageLoadingAtom, rest);
+const loadArchiveImagesAtom = atom(
+  null,
+  async (get, set, path: string, preload: boolean = false) => {
+    const cache = get($archiveImageCacheAtom);
+    const cachedImages = cache.get(path);
+    if (cachedImages) {
+      return cachedImages;
     }
-  }
-});
+
+    const loadingMap = get($archiveImageLoadingAtom);
+    const loading = loadingMap[path];
+    if (loading) {
+      // 先読みが対象外だった場合、通常表示では制限を切り替えて読み直す。
+      try {
+        const images = await loading.promise;
+        if (images || preload || !loading.preload) return images;
+      } catch (error) {
+        if (preload || !loading.preload) throw error;
+      }
+      const retry = get($archiveImageLoadingAtom)[path];
+      if (retry && retry !== loading) return await retry.promise;
+    }
+
+    const nextPromise = extractArchiveImages(path, { preload });
+    set($archiveImageLoadingAtom, {
+      ...get($archiveImageLoadingAtom),
+      [path]: { promise: nextPromise, preload },
+    });
+
+    try {
+      const images = await nextPromise;
+      if (images) cache.set(path, images);
+      return images;
+    } finally {
+      const currentLoadingMap = get($archiveImageLoadingAtom);
+      if (currentLoadingMap[path]?.promise === nextPromise) {
+        const { [path]: _, ...rest } = currentLoadingMap;
+        set($archiveImageLoadingAtom, rest);
+      }
+    }
+  },
+);
 
 /**
  * 前後アーカイブをバックグラウンドで先読みする atom
  */
-const preloadArchiveImagesAtom = atom(
-  null,
-  (get, set, paths: (string | undefined)[]) => {
-    const cache = get($archiveImageCacheAtom);
-    const loadingMap = get($archiveImageLoadingAtom);
+const preloadArchiveImagesAtom = atom(null, (get, set, paths: (string | undefined)[]) => {
+  const cache = get($archiveImageCacheAtom);
+  const loadingMap = get($archiveImageLoadingAtom);
 
-    for (const path of paths) {
-      if (!path || cache.has(path) || loadingMap[path]) {
-        continue;
-      }
-      void set(loadArchiveImagesAtom, path);
+  for (const path of paths) {
+    if (!path || cache.has(path) || loadingMap[path]) {
+      continue;
     }
-  },
-);
+    void set(loadArchiveImagesAtom, path, true).catch(() => {
+      // 壊れたファイルなどのエラーは、実際にそのファイルを開いたときに表示する。
+    });
+  }
+});
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // #region 外部公開 atom
@@ -182,9 +193,18 @@ export const openFileAtom = atom(
     }
 
     const kind = await getPathKind(path);
+    set(clearLogMessageAtom);
 
     if (kind === "archive") {
-      const images = await set(loadArchiveImagesAtom, path);
+      let images: ImageData[];
+      try {
+        const loaded = await set(loadArchiveImagesAtom, path);
+        if (!loaded?.length) throw new Error("表示可能な画像がない");
+        images = loaded;
+      } catch (error) {
+        set(addLogMessageAtom, error instanceof Error ? error.message : String(error));
+        return;
+      }
 
       const fileList = await getFileList(path, "archive"); // 開くアーカイブと同じ階層にあるファイルのリスト
       const source = { images, siblings: fileList };

@@ -4,6 +4,7 @@ import { atom } from "jotai";
 import type { DataSource, ImageData, LastIndex } from "../types/data";
 import { AppEvent } from "../types/event";
 import { extractArchiveImages } from "../utils/archive";
+import { ArchiveImageCache } from "../utils/archiveCache";
 import {
   createExclamationAddedPath,
   createRenamedPathToExcludeExtensionName,
@@ -86,7 +87,8 @@ const $lastIndexArrayAtom = atom<LastIndex[]>([]);
  *
  * 前後のアーカイブ切替時に再展開を避け、表示のちらつきを抑える。
  */
-const $archiveImageCacheAtom = atom<Partial<Record<string, ImageData[]>>>({});
+// derived atom によりストアごとに独立したキャッシュを作る。
+const $archiveImageCacheAtom = atom(() => new ArchiveImageCache());
 
 /**
  * アーカイブ画像の展開中 Promise をパス単位で保持する atom
@@ -111,7 +113,7 @@ const addRecentSourcePathAtom = atom(null, (get, set, path: string) => {
  */
 const loadArchiveImagesAtom = atom(null, async (get, set, path: string) => {
   const cache = get($archiveImageCacheAtom);
-  const cachedImages = cache[path];
+  const cachedImages = cache.get(path);
   if (cachedImages) {
     return cachedImages;
   }
@@ -130,10 +132,7 @@ const loadArchiveImagesAtom = atom(null, async (get, set, path: string) => {
 
   try {
     const images = await nextPromise;
-    set($archiveImageCacheAtom, {
-      ...get($archiveImageCacheAtom),
-      [path]: images,
-    });
+    cache.set(path, images);
     return images;
   } finally {
     const currentLoadingMap = get($archiveImageLoadingAtom);
@@ -154,7 +153,7 @@ const preloadArchiveImagesAtom = atom(
     const loadingMap = get($archiveImageLoadingAtom);
 
     for (const path of paths) {
-      if (!path || cache[path] || loadingMap[path]) {
+      if (!path || cache.has(path) || loadingMap[path]) {
         continue;
       }
       void set(loadArchiveImagesAtom, path);
